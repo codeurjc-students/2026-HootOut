@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="HootOutAPI/HootOutAPI.csproj" />
+  <Project Path="HootOutWebsockets/HootOutWebsockets.csproj" Id="085350e5-a31a-4564-acde-5a85189d1aed" />
+</Solution>
