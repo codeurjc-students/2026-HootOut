@@ -1,4 +1,19 @@
 <Solution>
+  <Folder Name="/Common/">
+    <Project Path="Common/CommonDomain/CommonDomain.csproj" Id="b2a49e3e-63be-432f-b0d2-d504e5fba2e3" />
+  </Folder>
+  <Folder Name="/Contracts/">
+    <Project Path="Contracts/Contracts/Contracts.csproj" Id="ce02a532-a2ef-4871-87f9-b1f00119f700" />
+  </Folder>
+  <Folder Name="/Domains/">
+    <Project Path="Domains/User/Users.csproj" Id="b5e07815-b989-4b8c-8d5b-0328e17b11b6" />
+  </Folder>
+  <Folder Name="/Infraestructure/">
+    <Project Path="Infraestructure/Infraestructure/Infraestructure.csproj" Id="102a6654-bafd-47be-bb54-09d81ad070e0" />
+  </Folder>
+  <Folder Name="/Integrations/">
+    <Project Path="Integrations/PostgreSQL/PostgreSQL.csproj" Id="0dfcf893-6bb3-45c4-b4ff-85775ac5321a" />
+  </Folder>
   <Project Path="HootOutAPI/HootOutAPI.csproj" />
   <Project Path="HootOutWebsockets/HootOutWebsockets.csproj" Id="085350e5-a31a-4564-acde-5a85189d1aed" />
 </Solution>

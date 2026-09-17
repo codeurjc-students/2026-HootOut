@@ -26,4 +26,4 @@ RUN dotnet publish "./HootOutAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "HootOutAPI.dll"]
+ENTRYPOINT ["dotnet", "HootOut.HootOutAPI.dll"]

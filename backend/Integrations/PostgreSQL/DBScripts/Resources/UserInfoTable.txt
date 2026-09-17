@@ -1,0 +1,35 @@
+DO $$
+BEGIN
+
+if NOT EXISTS  (
+SELECT  schema_name
+FROM	information_schema.schemata
+WHERE	schema_name = 'HootOut' )
+then 
+	CREATE SCHEMA "HootOut";
+end if;
+
+end $$; 
+
+-- USER INFO TABLE ---------------------------------------------------------------
+----------------------------------------------------------------------------------
+
+DO $$
+BEGIN
+if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
+				WHERE TABLE_SCHEMA = 'HootOut'
+				AND   TABLE_NAME = 'UserInfo')
+then
+	CREATE TABLE "HootOut"."UserInfo"(
+		"Uid" UUID NOT NULL PRIMARY KEY ,
+		"Email" VARCHAR (255) NOT NULL UNIQUE,
+		"Username" VARCHAR (255) NOT NULL UNIQUE,
+		"Password" VARCHAR (255) NOT NULL,
+		"CreatedDate" timestamptz  NOT NULL,
+		"ModifiedDate" timestamptz NOT NULL
+	);
+
+end if;
+ 
+
+end $$;
