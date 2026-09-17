@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Net.WebSockets;
 
-namespace HootOutWebsockets.Controllers
+namespace HootOut.HootOutWebsockets.Controllers
 {
     public class WebSocketController : ControllerBase
     {

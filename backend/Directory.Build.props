@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup> 
+    <RootNamespace>HootOut.$(MSBuildProjectName)</RootNamespace>
+    <AssemblyName>HootOut.$(MSBuildProjectName)</AssemblyName>
+  </PropertyGroup>
+</Project>

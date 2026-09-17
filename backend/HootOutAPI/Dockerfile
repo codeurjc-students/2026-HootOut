@@ -2,6 +2,7 @@
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+RUN mkdir -p /var/logs && chown -R $APP_UID /var/logs
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
@@ -26,4 +27,4 @@ RUN dotnet publish "./HootOutAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "HootOutAPI.dll"]
+ENTRYPOINT ["dotnet", "HootOut.HootOutAPI.dll"]
