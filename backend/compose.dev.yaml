@@ -15,10 +15,10 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
-      LOGS_FOLDER: /var/log/hootoutapi
+      LOGS_FOLDER: /var/logs
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
-      - logs:/var/logs/hootoutapi
+      - logs:/var/logs
 
   hootoutwebsockets:
     image: hootoutwebsockets
@@ -31,15 +31,15 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - 80:80
-      - 81:81
+      - 8880:80
+      - 8881:81
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
-      LOGS_FOLDER: /var/log/hootoutwebsockets
+      LOGS_FOLDER: /var/logs
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
-      - logs:/var/logs/hootoutwebsockets
+      - logs:/var/logs
 
   postgres:
     image: postgres:18.6-trixie
