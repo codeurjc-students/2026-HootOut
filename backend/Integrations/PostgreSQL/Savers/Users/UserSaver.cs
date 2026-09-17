@@ -17,9 +17,6 @@ namespace HootOut.PostgreSQL.Savers.Users
         private const string addOrReplaceUserInfo = """
             INSERT INTO "HootOut"."UserInfo" ("Uid", "Username", "Email", "Password", "ModifiedDate", "CreatedDate") 
             VALUES (@Uid, @Username, @Email, @Password, @ModifiedDate, @CreatedDate)
-            ON CONFLICT ("Uid") DO UPDATE 
-              SET "Email" = @Email,
-                  "ModifiedDate" = @ModifiedDate; 
         """;
 
         public void Save(UserInfo item)
