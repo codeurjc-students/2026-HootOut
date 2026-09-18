@@ -1,10 +1,7 @@
 <script setup lang="ts">
-// import TheWelcome from '../components/TheWelcome.vue'
+import TemporalData from '../components/temporalData/TemporalData.vue'
 </script>
 
-<template>
-  <main>
-    <!-- <TheWelcome /> -->
-     Hello World
-  </main>
+<template> 
+      <TemporalData/> 
 </template>

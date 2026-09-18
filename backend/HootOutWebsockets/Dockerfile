@@ -5,8 +5,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 RUN mkdir -p /var/logs && chown -R $APP_UID /var/logs
 USER $APP_UID
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+EXPOSE ${ASPNETCORE_HTTP_PORTS}
+EXPOSE ${ASPNETCORE_HTTPS_PORTS}
 
 
 # This stage is used to build the service project

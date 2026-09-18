@@ -1,32 +1,45 @@
-var builder = WebApplication.CreateBuilder(args);
+using Autofac.Extensions.DependencyInjection; 
+using NLog;
+using NLog.Web;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
-// Add services to the container.
 
-builder.Services.AddControllers();
-
-var app = builder.Build();
-
-app.UseWebSockets();
-
-var websocketsOptions = new WebSocketOptions
+namespace HootOut.HootOutWebsockets
 {
-    KeepAliveTimeout = TimeSpan.FromMinutes(2)
-};
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 
-//websocketsOptions.AllowedOrigins.Add("https://client.com");
-//websocketsOptions.AllowedOrigins.Add("https://www.client.com");
+            try
+            {
+                var host = CreateHostBuilder(args).Build();
+                //InitDefaultValues.Init(host.Services.GetAutofacRoot());
+                host.Run();
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Stopped program because of exception");
+                throw;
+            }
+            finally
+            {
+                NLog.LogManager.Shutdown();
+            }
+        }
 
-app.Run(async (context) =>
-{
-    //using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-    //var socketFinishedTcs = new TaskCompletionSource<object>();
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .UseServiceProviderFactory(new AutofacServiceProviderFactory())
 
-    //BackgroundSocketProcessor.AddSocket(webSocket, socketFinishedTcs);
-
-    //await socketFinishedTcs.Task;
-});
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                }).ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.SetMinimumLevel(LogLevel.Trace);
+                }).UseNLog(); // NLog: Setup NLog for Dependency injection 
+    }
 }
