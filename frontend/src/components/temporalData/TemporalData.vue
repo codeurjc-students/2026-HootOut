@@ -45,9 +45,9 @@ function sendMessage() {
     <div class="temporal-data">
         <section id='user-list'>
             <h2>User List:</h2>
-            <ul>
-                <li v-for='user in users' :key='user.Uid'>
-                    ID: {{ user.uid }} Username: {{ user.username }} Password: {{ user.password }}
+            <ul role="list">
+                <li v-for='(user, index) in users' :key='user.Uid'>
+                    {{ index }}: ID: {{ user.uid }} Username: {{ user.username }} Password: {{ user.password }}
                 </li>
             </ul>
         </section>
