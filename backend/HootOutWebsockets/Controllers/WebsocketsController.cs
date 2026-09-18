@@ -46,7 +46,7 @@ namespace HootOut.HootOutWebsockets.Controllers
                 var msg = System.Text.Encoding.Default.GetBytes(str);
 
                 await webSocket.SendAsync(
-                    new ArraySegment<byte>(msg, 0, msg.Length + 5),
+                    new ArraySegment<byte>(msg, 0, msg.Length),
                     receiveResult.MessageType,
                     receiveResult.EndOfMessage,
                     CancellationToken.None);
