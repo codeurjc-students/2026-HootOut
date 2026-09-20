@@ -46,6 +46,11 @@ namespace HootOut.Users.IntegrationTests.UserService
 
         public ValueTask InitializeAsync()
         {
+            //Clear DB
+            if (clearTables != null)
+            {
+                clearTables.ClearTables();
+            }
             return ValueTask.CompletedTask;
         }
 
