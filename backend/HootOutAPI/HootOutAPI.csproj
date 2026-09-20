@@ -19,7 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\CommonDomain\CommonDomain.csproj" />
     <ProjectReference Include="..\Contracts\Contracts\Contracts.csproj" />
-    <ProjectReference Include="..\Domains\User\Users.csproj" />
+    <ProjectReference Include="..\Domains\Users\Users.csproj" />
     <ProjectReference Include="..\Infraestructure\Infraestructure\Infraestructure.csproj" />
     <ProjectReference Include="..\Integrations\PostgreSQL\PostgreSQL.csproj" />
   </ItemGroup>

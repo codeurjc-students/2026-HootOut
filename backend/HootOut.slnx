@@ -6,7 +6,8 @@
     <Project Path="Contracts/Contracts/Contracts.csproj" Id="ce02a532-a2ef-4871-87f9-b1f00119f700" />
   </Folder>
   <Folder Name="/Domains/">
-    <Project Path="Domains/User/Users.csproj" Id="b5e07815-b989-4b8c-8d5b-0328e17b11b6" />
+    <Project Path="Domains/Users.Tests/Users.Tests.csproj" />
+    <Project Path="Domains/Users/Users.csproj" />
   </Folder>
   <Folder Name="/Infraestructure/">
     <Project Path="Infraestructure/Infraestructure/Infraestructure.csproj" Id="102a6654-bafd-47be-bb54-09d81ad070e0" />
