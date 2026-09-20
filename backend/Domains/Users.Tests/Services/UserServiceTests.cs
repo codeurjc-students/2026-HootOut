@@ -47,13 +47,16 @@ namespace HootOut.Users.UnitTests.Services
             });
 
             IEnumerable<UserDto> users = userService.GetUserDtos();
-            Assert.Single(users);
 
+            Assert.Single(users); 
             UserDto user = users.Single();
             Assert.NotEqual(Guid.Empty, user.Uid);
             Assert.Equal(username, user.Username);
             Assert.Equal(email, user.Email);
             Assert.NotEqual(password, user.Password);
+
+            m_UserSaver.Verify(x => x.Save(It.IsAny<UserInfo>()), Times.Once());
+            m_UserSearch.Verify(x => x.GetUserDtos(), Times.Once());
         }
 
         [Fact]
@@ -66,6 +69,9 @@ namespace HootOut.Users.UnitTests.Services
             userService.CreateUser(new CreateUserRequest { Email = "3", Password = "3", Username = "3" });
 
             Assert.Equal(3, userService.GetUserDtos().Count());
+
+            m_UserSaver.Verify(x => x.Save(It.IsAny<UserInfo>()), Times.Exactly(3));
+            m_UserSearch.Verify(x => x.GetUserDtos(), Times.Once());
         }
     }
 }
