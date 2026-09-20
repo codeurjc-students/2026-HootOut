@@ -1,12 +1,15 @@
 <Solution>
   <Folder Name="/Common/">
     <Project Path="Common/CommonDomain/CommonDomain.csproj" Id="b2a49e3e-63be-432f-b0d2-d504e5fba2e3" />
+    <Project Path="Common/CommonIntegrationTests/CommonIntegrationTests/CommonIntegrationTests.csproj" Id="c4e1cf92-b9fe-4ceb-aafc-35e5ee34ccdf" />
   </Folder>
   <Folder Name="/Contracts/">
     <Project Path="Contracts/Contracts/Contracts.csproj" Id="ce02a532-a2ef-4871-87f9-b1f00119f700" />
   </Folder>
-  <Folder Name="/Domains/">
-    <Project Path="Domains/Users.Tests/Users.Tests.csproj" />
+  <Folder Name="/Domains/" />
+  <Folder Name="/Domains/UsersDomain/">
+    <Project Path="Domains/Users.IntegrationTests/Users.IntegrationTests.csproj" />
+    <Project Path="Domains/Users.Tests/Users.UnitTests.csproj" />
     <Project Path="Domains/Users/Users.csproj" />
   </Folder>
   <Folder Name="/Infraestructure/">

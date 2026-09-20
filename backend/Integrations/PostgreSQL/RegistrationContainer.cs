@@ -18,7 +18,7 @@ namespace HootOut.PostgreSQL
         {
             builder.RegisterType<DBInit>().As<IDefaultValues>().SingleInstance();
             builder.RegisterType<InitTypeMappers>().As<IDefaultValues>().SingleInstance();
-            builder.RegisterType<PostgreSQLProvider>().AsSelf().As<IPersistenceProvider>().SingleInstance();
+            builder.RegisterType<PostgreSQLProvider>().As<IPersistenceProvider>().SingleInstance();
 
             RegisterSavers(builder);
             RegisterSearchs(builder);

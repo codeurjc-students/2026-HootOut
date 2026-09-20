@@ -6,12 +6,9 @@ using HootOut.Contracts.Users.Services;
 using HootOut.Users.Entities;
 using HootOut.Users.Mappers;
 using HootOut.Users.Services;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Moq; 
 
-namespace HootOut.Users.Tests.Services
+namespace HootOut.Users.UnitTests.Services
 {
     public class UserServiceTests
     {
@@ -50,7 +47,7 @@ namespace HootOut.Users.Tests.Services
             });
 
             IEnumerable<UserDto> users = userService.GetUserDtos();
-            Assert.Single<UserDto>(users);
+            Assert.Single(users);
 
             UserDto user = users.Single();
             Assert.NotEqual(Guid.Empty, user.Uid);
