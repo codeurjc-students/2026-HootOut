@@ -28,7 +28,7 @@ namespace HootOut.Users.UnitTests.Services
         }
 
         [Fact]
-        public async Task GetUserList_Empty()
+        public async Task GetUserDtos_Emtpy()
         {
             IUserService userService = new UserService(m_UserSaver.Object, m_UserSearch.Object);
             userService.GetUserDtos().Should().BeEmpty();
@@ -36,7 +36,7 @@ namespace HootOut.Users.UnitTests.Services
 
         [Theory]
         [InlineData("email@test.com", "username1", "password12345")]
-        public async Task GetUserList_One(string username, string email, string password)
+        public async Task GetUserDtos_One(string username, string email, string password)
         {
             IUserService userService = new UserService(m_UserSaver.Object, m_UserSearch.Object);
 
@@ -63,7 +63,7 @@ namespace HootOut.Users.UnitTests.Services
         }
 
         [Fact]
-        public async Task GetUserList_Many()
+        public async Task GetUserDtos_Many()
         {
             IUserService userService = new UserService(m_UserSaver.Object, m_UserSearch.Object);
 

@@ -12,13 +12,13 @@ using System.Net.Http.Json;
 
 namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 {
-    public class UserControllerTests : IClassFixture<APIFixture>, IDisposable, IAsyncLifetime
+    public class UsersControllerTests : IClassFixture<APIFixture>, IDisposable, IAsyncLifetime
     {
         private readonly ILifetimeScope container;
         private readonly HttpClient httpClient;
         private ClearAllTables clearTables;
 
-        public UserControllerTests(APIFixture apiFixture)
+        public UsersControllerTests(APIFixture apiFixture)
         {
             httpClient = apiFixture.CreateClient();
             container = apiFixture.AutofacRoot.BeginLifetimeScope();
@@ -50,7 +50,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
         [Fact]
         public async Task GetUsersAll_ReturnsOk_Empty()
         {
-            var response = await httpClient.GetAsync("/api/v1/user/all", CancellationToken.None);
+            var response = await httpClient.GetAsync("/api/v1/users/all", CancellationToken.None);
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -66,7 +66,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 
             userService.CreateUser(new CreateUserRequest { Username = "Test1", Email = "email@email.com", Password = "test1" });
 
-            var response = await httpClient.GetAsync("/api/v1/user/all", CancellationToken.None);
+            var response = await httpClient.GetAsync("/api/v1/users/all", CancellationToken.None);
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -87,7 +87,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             userService.CreateUser(new CreateUserRequest { Username = "2", Email = "2", Password = "2" });
             userService.CreateUser(new CreateUserRequest { Username = "3", Email = "3", Password = "3" });
 
-            var response = await httpClient.GetAsync("/api/v1/user/all", CancellationToken.None);
+            var response = await httpClient.GetAsync("/api/v1/users/all", CancellationToken.None);
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 

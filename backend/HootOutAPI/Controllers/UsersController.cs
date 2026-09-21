@@ -7,13 +7,13 @@ namespace HootOut.HootOutAPI.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class UserController : ControllerBase
+    public class UsersController : ControllerBase
     {
         private readonly ILogger logger;
         private readonly IUserService userService;
 
-        public UserController(
-            ILogger<UserController> logger,
+        public UsersController(
+            ILogger<UsersController> logger,
             IUserService userService)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));

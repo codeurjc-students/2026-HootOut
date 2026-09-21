@@ -54,14 +54,14 @@ namespace HootOut.Users.IntegrationTests.UserService
         }
 
         [Fact]
-        public async Task GetUserList_ReturnsEmpty()
+        public async Task GetUserDtos_Emtpy()
         {
             userService.GetUserDtos().Should().BeEmpty();
         }
 
         [Theory]
         [InlineData("email@test.com", "username1", "password12345")]
-        public async Task GetUserList_ReturnsOne(string username, string email, string password)
+        public async Task GetUserDtos_One(string username, string email, string password)
         {
             userService.CreateUser(new CreateUserRequest
             {
@@ -82,7 +82,7 @@ namespace HootOut.Users.IntegrationTests.UserService
         }
 
         [Fact]
-        public async Task GetUserList_ReturnsMany()
+        public async Task GetUserDtos_Many()
         {
             userService.CreateUser(new CreateUserRequest { Email = "1", Password = "1", Username = "1" });
             userService.CreateUser(new CreateUserRequest { Email = "2", Password = "2", Username = "2" });
