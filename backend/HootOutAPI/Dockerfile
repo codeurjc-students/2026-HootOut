@@ -15,7 +15,9 @@ WORKDIR /src
 COPY ["HootOutAPI/HootOutAPI.csproj", "HootOutAPI/"]
 RUN dotnet restore "./HootOutAPI/HootOutAPI.csproj"
 COPY . .
-WORKDIR "/src/HootOutAPI"
+RUN dotnet tool restore
+WORKDIR "/src/HootOutAPI" 
+RUN dotnet tool restore
 RUN dotnet build "./HootOutAPI.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage

@@ -1,4 +1,5 @@
-﻿using Autofac;
+﻿using System.Reflection;
+using Autofac;
 using HootOut.Infraestructure.DI;
 using Microsoft.AspNetCore.HttpOverrides;
 
@@ -21,7 +22,9 @@ namespace HootOut.HootOutAPI
 
             services.AddControllers();
 
-            services.AddOpenApi();
+            services.AddOpenApi(); 
+
+            services.AddSwaggerGen();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -40,7 +43,19 @@ namespace HootOut.HootOutAPI
                 app.UseCors(
                      options => options.WithOrigins("*").AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin()
                  );
+
+                app.UseRouting();
+
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapOpenApi(); 
+                    endpoints.MapSwagger();
+                    endpoints.MapSwaggerUI();
+                });
+
             }
+
+
 
             app.UseHttpsRedirection();
 
@@ -62,7 +77,11 @@ namespace HootOut.HootOutAPI
             //// call builder.Populate(), that happens in AutofacServiceProviderFactory
             //// for you.
 
-            RegistrationManager.RegisterAllAssemblies(builder);
+            /// Check for OpenAPI build time generation
+            if (Environment.GetEnvironmentVariable("GENERATING_OPENAPI_DOC") != "true")
+{
+                RegistrationManager.RegisterAllAssemblies(builder);
+            }
         }
     }
 }
