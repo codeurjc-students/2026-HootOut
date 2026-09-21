@@ -27,15 +27,15 @@ function sendMessage() {
 <template>
     <section id="websockets">
         <h2>Websockets:</h2>
-        <div>{{ wsStatus }}</div>
+        <div id="wsstatus">{{ wsStatus }}</div>
         <div>
             <p>Send Message:</p>
-            <input v-model="message" type="text" />
-            <button type="button" @click="sendMessage">Send Message</button>
+            <input v-model="message" type="text" id="wsmessage-input" />
+            <button type="button" @click="sendMessage" id="wsmessage-btn">Send Message</button>
         </div>
         <div>
             <p>Received message:</p>
-            <div>{{ wsMessage }}</div>
+            <div id="wsmessage">{{ wsMessage }}</div>
         </div>
     </section>
 </template>

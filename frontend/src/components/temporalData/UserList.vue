@@ -20,7 +20,7 @@ onMounted(async () => {
 <template>
     <section v-if="!error" id='user-list'>
         <h2>User List:</h2>
-        <ul role="list">
+        <ul role="list" id="user-list">
             <li v-for='(user, index) in users' :key='user.uid'>
                 {{ index }}: ID: {{ user.uid }} Username: {{ user.username }} Password: {{ user.password }}
             </li>

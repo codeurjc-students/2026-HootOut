@@ -4,15 +4,15 @@
   --vt-c-white-soft: rgb(248, 248, 248);
   --vt-c-white-mute: rgb(242, 242, 242);
 
-  --vt-c-dark: rgb(37, 36, 34);
-  --vt-c-dark-soft: rgb(44, 43, 41);
-  --vt-c-dark-light: rgb(76, 75, 74);
+  --vt-c-dark: rgb(36, 36, 36);
+  --vt-c-dark-soft: rgb(44, 44, 44);
+  --vt-c-dark-light: rgb(75, 75, 75);
 
   --vt-c-indigo: rgb(44, 62, 80);
 
   --vt-c-divider-light-1: rgba(60, 60, 60, 0.29);
   --vt-c-divider-light-2: rgba(60, 60, 60, 0.12);
-  --vt-c-divider-dark-1: rgb(76, 75, 74);
+  --vt-c-divider-dark-1: rgb(75, 75, 75);
   --vt-c-divider-dark-2: var(--vt-c-divider-dark-1);
 
   --vt-c-text-light-1: var(--vt-c-indigo);
