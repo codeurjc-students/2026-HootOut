@@ -16,3 +16,15 @@ Conversation with Claude about how to setup fuzzy text search on the content of 
 - We landed on the conclusion that this is how other systems that implement an "Enterprise Key Management” like Slack may work.
 - There is a possible risk of the Elasticsearch index growing too much over time. We can have a TTL on older messages, and sharding by the conversation id or date.
 - Since we have Elasticsearch on the application stack, we can use it for other non-cyphered searches, such as members of a Server or Users in a Rol.
+
+
+## Phase 2:
+#### Objective: Setup Frontend Unit and Integration Testing with Websockets.
+##### Date
+21/09/2026
+##### Tool;
+Claude Chat, Sonnet 5 Medium
+##### Problem to solve:
+We have a Frontend application with Vue 3. We have set up testing with Vitest and @vue/test-utils. There are some tests for testing a js component and a vue component. We want to setup some tests for testing Websocket functionality and 
+##### Usage:
+Chat with Claude. We establish the tests that already exists, and how to write the WebsocketService and tests so it can be used on a component that uses Websockets. With the tests and changes to be prepared for future usage/tests around websockets, [commit bb1795c](https://github.com/codeurjc-students/2026-HootOut/commit/bb1795c3ff40c2254ba0ec964460b43eccfccb03) was made
