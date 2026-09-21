@@ -2,15 +2,10 @@
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
-using HootOut.CommonIntegrationTests.Services;
 using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.Users.Dtos.Request;
-using HootOut.Contracts.Users.Search;
 using HootOut.Contracts.Users.Services;
 using HootOut.Infraestructure.DI;
-using HootOut.PostgreSQL.Savers.Users;
-using HootOut.PostgreSQL.Searchs.Users;
-using HootOut.Users.Entities;
 
 namespace HootOut.Users.IntegrationTests.UserService
 {
@@ -47,7 +42,7 @@ namespace HootOut.Users.IntegrationTests.UserService
         public ValueTask InitializeAsync()
         {
 
-            clearTables?.ClearTables(); 
+            clearTables?.ClearTables();
             return ValueTask.CompletedTask;
         }
 
@@ -91,6 +86,6 @@ namespace HootOut.Users.IntegrationTests.UserService
             userService.CreateUser(new CreateUserRequest { Email = "3", Password = "3", Username = "3" });
 
             Assert.Equal(3, userService.GetUserDtos().Count());
-        } 
+        }
     }
 }

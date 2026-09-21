@@ -6,7 +6,7 @@ using HootOut.Contracts.Users.Services;
 using HootOut.Users.Entities;
 using HootOut.Users.Mappers;
 using HootOut.Users.Services;
-using Moq; 
+using Moq;
 
 namespace HootOut.Users.UnitTests.Services
 {
@@ -22,7 +22,7 @@ namespace HootOut.Users.UnitTests.Services
 
             List<UserInfo> users = new List<UserInfo>();
 
-            m_UserSearch.Setup(x => x.GetUserDtos()).Returns(users.Select(x=> x.ToDto()));
+            m_UserSearch.Setup(x => x.GetUserDtos()).Returns(users.Select(x => x.ToDto()));
             m_UserSaver.Setup(x => x.Save(It.IsAny<UserInfo>())).Callback<UserInfo>(x => users.Add(x));
         }
 
@@ -48,7 +48,7 @@ namespace HootOut.Users.UnitTests.Services
 
             IEnumerable<UserDto> users = userService.GetUserDtos();
 
-            Assert.Single(users); 
+            Assert.Single(users);
             UserDto user = users.Single();
             Assert.NotEqual(Guid.Empty, user.Uid);
             Assert.Equal(username, user.Username);
@@ -62,9 +62,9 @@ namespace HootOut.Users.UnitTests.Services
         [Fact]
         public async Task GetUserList_Many()
         {
-            IUserService userService = new UserService(m_UserSaver.Object, m_UserSearch.Object); 
+            IUserService userService = new UserService(m_UserSaver.Object, m_UserSearch.Object);
 
-            userService.CreateUser(new CreateUserRequest { Email = "1", Password="1", Username="1"});
+            userService.CreateUser(new CreateUserRequest { Email = "1", Password = "1", Username = "1" });
             userService.CreateUser(new CreateUserRequest { Email = "2", Password = "2", Username = "2" });
             userService.CreateUser(new CreateUserRequest { Email = "3", Password = "3", Username = "3" });
 

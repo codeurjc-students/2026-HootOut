@@ -1,8 +1,5 @@
 ﻿using HootOut.Contracts.Users.Dtos;
 using HootOut.Users.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.Users.Mappers
 {

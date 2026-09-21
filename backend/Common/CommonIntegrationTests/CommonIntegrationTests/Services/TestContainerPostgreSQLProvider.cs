@@ -1,9 +1,6 @@
 ﻿using HootOut.CommonDomain.Persistence;
 using Npgsql;
-using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Text;
 using Testcontainers.PostgreSql;
 
 namespace HootOut.CommonIntegrationTests.Services
@@ -29,7 +26,7 @@ namespace HootOut.CommonIntegrationTests.Services
 
         public ValueTask DisposeAsync()
         {
-            return Container.DisposeAsync(); 
+            return Container.DisposeAsync();
         }
     }
 }

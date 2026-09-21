@@ -1,13 +1,14 @@
 ﻿using HootOut.CommonDomain.DefaultValues;
-using HootOut.Contracts.Users.Services;
 using HootOut.Contracts.Users.Dtos.Request;
+using HootOut.Contracts.Users.Services;
 
 namespace HootOut.HootOutAPI.Temporal
 {
     public class TemporalDBInitialization : IDefaultValues
     {
         private IUserService userService;
-        public TemporalDBInitialization(IUserService userService) {
+        public TemporalDBInitialization(IUserService userService)
+        {
             this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
         public void Init()
@@ -16,7 +17,7 @@ namespace HootOut.HootOutAPI.Temporal
             {
                 string tempId = Guid.NewGuid().ToString();
                 userService.CreateUser(new CreateUserRequest
-                { 
+                {
                     Email = $"email{tempId}.email.com",
                     Password = "password",
                     Username = $"username-{tempId}",

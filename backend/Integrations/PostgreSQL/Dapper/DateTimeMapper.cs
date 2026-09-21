@@ -13,6 +13,6 @@ namespace HootOut.PostgreSQL.Dapper
         public override DateTime Parse(object value)
         {
             return DateTime.SpecifyKind((DateTime)value, DateTimeKind.Utc);
-        } 
+        }
     }
 }

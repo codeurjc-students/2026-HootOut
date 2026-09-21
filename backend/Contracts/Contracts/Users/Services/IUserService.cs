@@ -5,7 +5,7 @@ namespace HootOut.Contracts.Users.Services
 {
     public interface IUserService
     {
-        Guid CreateUser(CreateUserRequest createUserRequest); 
+        Guid CreateUser(CreateUserRequest createUserRequest);
         IEnumerable<UserDto> GetUserDtos();
     }
 }

@@ -1,10 +1,6 @@
 ﻿using Dapper;
-using Docker.DotNet.Models;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.Services;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.CommonIntegrationTests.PostgreSQL
 {

@@ -1,9 +1,6 @@
 ﻿using Autofac;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.Infraestructure.DI;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.CommonIntegrationTests
 {
