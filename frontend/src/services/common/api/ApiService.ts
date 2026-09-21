@@ -1,40 +1,34 @@
 const apiUrl = import.meta.env.VITE_API_URL;
 const apiVersion = 'v1';
 
-const get = async function (url: string, parameters: any = null): Promise<any> {
+const get = async function <T = unknown>(url: string, parameters: Record<string, unknown> = {}): Promise<T> {
 
     const headers = {
     };
 
-    if (parameters) {
-        let count = 0;
-        const keys = Object.keys(parameters);
+    const query = new URLSearchParams(Object.entries(parameters).map(([key, value]) => [key, String(value)])).toString();
 
-        keys.forEach(key => {
-            url += count == 0 ? '?' : '&';
-            url += `${key}=${parameters[key]}`;
-            count++;
-        });
-    }
-
-    const request = fetch(`${apiUrl}/${apiVersion}/${url}`, {
+    const request: Promise<Response> = fetch(`${apiUrl}/${apiVersion}/${url}${query}`, {
         method: 'GET',
         mode: 'cors',
         headers: headers
     });
 
-    const res = await request;
-    if (!res.ok) throw new Error(`${res.status}`);
+    const res: Response = await request;
+    if (!res.ok) {
+        const errorBody = await res.json().catch(() => null);
+        throw new Error(errorBody?.message ?? `HTTP ${res.status}`);
+    }
 
     return res.json();
 }
 
-const post = async function (url: string, body: any): Promise<Response> {
+const post = async function <T = unknown>(url: string, body: any): Promise<T> {
     const headers = {
         'Content-Type': 'application/json'
     };
 
-    let request = fetch(`${apiUrl}/${apiVersion}/${url}`, {
+    const request = fetch(`${apiUrl}/${apiVersion}/${url}`, {
         method: 'POST',
         mode: 'cors',
         headers: headers,
@@ -42,7 +36,11 @@ const post = async function (url: string, body: any): Promise<Response> {
     });
 
     const res = await request;
-    if (!res.ok) throw new Error(`${res.status}`);
+
+    if (!res.ok) {
+        const errorBody = await res.json().catch(() => null);
+        throw new Error(errorBody?.message ?? `HTTP ${res.status}`);
+    }
 
     return res.json();
 }
