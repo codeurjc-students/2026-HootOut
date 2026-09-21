@@ -1,4 +1,5 @@
-﻿using HootOut.Contracts.Common.Saver;
+﻿using FluentAssertions;
+using HootOut.Contracts.Common.Saver;
 using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.Contracts.Users.Search;
@@ -30,7 +31,7 @@ namespace HootOut.Users.UnitTests.Services
         public async Task GetUserList_Empty()
         {
             IUserService userService = new UserService(m_UserSaver.Object, m_UserSearch.Object);
-            Assert.Empty(userService.GetUserDtos());
+            userService.GetUserDtos().Should().BeEmpty();
         }
 
         [Theory]
@@ -48,12 +49,14 @@ namespace HootOut.Users.UnitTests.Services
 
             IEnumerable<UserDto> users = userService.GetUserDtos();
 
-            Assert.Single(users);
+            users.Should().HaveCount(1);
+
             UserDto user = users.Single();
-            Assert.NotEqual(Guid.Empty, user.Uid);
-            Assert.Equal(username, user.Username);
-            Assert.Equal(email, user.Email);
-            Assert.NotEqual(password, user.Password);
+
+            user.Uid.Should().NotBeEmpty();
+            user.Username.Should().Be(username);
+            user.Email.Should().Be(email);
+            user.Password.Should().NotBe(password);
 
             m_UserSaver.Verify(x => x.Save(It.IsAny<UserInfo>()), Times.Once());
             m_UserSearch.Verify(x => x.GetUserDtos(), Times.Once());
@@ -68,7 +71,7 @@ namespace HootOut.Users.UnitTests.Services
             userService.CreateUser(new CreateUserRequest { Email = "2", Password = "2", Username = "2" });
             userService.CreateUser(new CreateUserRequest { Email = "3", Password = "3", Username = "3" });
 
-            Assert.Equal(3, userService.GetUserDtos().Count());
+            userService.GetUserDtos().Should().HaveCount(3);
 
             m_UserSaver.Verify(x => x.Save(It.IsAny<UserInfo>()), Times.Exactly(3));
             m_UserSearch.Verify(x => x.GetUserDtos(), Times.Once());

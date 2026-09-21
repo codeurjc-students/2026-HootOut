@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using FluentAssertions;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
@@ -53,14 +54,14 @@ namespace HootOut.Users.IntegrationTests.UserService
         }
 
         [Fact]
-        public async Task GetUserList_Empty()
+        public async Task GetUserList_ReturnsEmpty()
         {
-            Assert.Empty(userService.GetUserDtos());
+            userService.GetUserDtos().Should().BeEmpty();
         }
 
         [Theory]
         [InlineData("email@test.com", "username1", "password12345")]
-        public async Task GetUserList_One(string username, string email, string password)
+        public async Task GetUserList_ReturnsOne(string username, string email, string password)
         {
             userService.CreateUser(new CreateUserRequest
             {
@@ -70,22 +71,24 @@ namespace HootOut.Users.IntegrationTests.UserService
             });
 
             IEnumerable<UserDto> users = userService.GetUserDtos();
-            Assert.Single(users);
+            users.Should().HaveCount(1);
+
             UserDto user = users.Single();
-            Assert.NotEqual(Guid.Empty, user.Uid);
-            Assert.Equal(username, user.Username);
-            Assert.Equal(email, user.Email);
-            Assert.NotEqual(password, user.Password);
+
+            user.Uid.Should().NotBeEmpty();
+            user.Username.Should().Be(username);
+            user.Email.Should().Be(email);
+            user.Password.Should().NotBe(password);
         }
 
         [Fact]
-        public async Task GetUserList_Many()
+        public async Task GetUserList_ReturnsMany()
         {
             userService.CreateUser(new CreateUserRequest { Email = "1", Password = "1", Username = "1" });
             userService.CreateUser(new CreateUserRequest { Email = "2", Password = "2", Username = "2" });
             userService.CreateUser(new CreateUserRequest { Email = "3", Password = "3", Username = "3" });
 
-            Assert.Equal(3, userService.GetUserDtos().Count());
+            userService.GetUserDtos().Should().HaveCount(3); 
         }
     }
 }
