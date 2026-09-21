@@ -4,11 +4,11 @@ using System.Reflection;
 
 namespace HootOut.Infraestructure.DI
 {
-    public static class RegistratorManager
+    public class RegistrationManager : IRegistrationManager
     {
         private static readonly string projectStartingName = "HootOut";
 
-        public static ContainerBuilder RegisterAllAssemblies(ContainerBuilder builder)
+        public virtual ContainerBuilder RegisterAllAssemblies(ContainerBuilder builder)
         {
 
             var assemblies = DependencyContext.Default?.RuntimeLibraries

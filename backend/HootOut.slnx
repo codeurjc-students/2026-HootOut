@@ -18,6 +18,9 @@
   <Folder Name="/Integrations/">
     <Project Path="Integrations/PostgreSQL/PostgreSQL.csproj" Id="0dfcf893-6bb3-45c4-b4ff-85775ac5321a" />
   </Folder>
-  <Project Path="HootOutAPI/HootOutAPI.csproj" />
-  <Project Path="HootOutWebsockets/HootOutWebsockets.csproj" Id="085350e5-a31a-4564-acde-5a85189d1aed" />
+  <Folder Name="/Sites/">
+    <Project Path="HootOutAPI/HootOutAPI.csproj" />
+    <Project Path="HootOutWebsockets/HootOutWebsockets.csproj" Id="085350e5-a31a-4564-acde-5a85189d1aed" />
+    <Project Path="Sites/HootOutAPI.IntegrationTests/HootOutAPI.IntegrationTests.csproj" />
+  </Folder>
 </Solution>

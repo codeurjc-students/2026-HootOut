@@ -26,7 +26,7 @@ namespace HootOut.Users.IntegrationTests.UserService
         public UserServiceTests(PostgresTestContainer postgressContainer)
         {
             var builder = new ContainerBuilder();
-            RegistratorManager.RegisterAllAssemblies(builder);
+            new RegistrationManager().RegisterAllAssemblies(builder);
             builder.RegisterInstance(postgressContainer.postgreSQLProvider).As<IPersistenceProvider>().SingleInstance();
             container = builder.Build();
 
@@ -34,7 +34,7 @@ namespace HootOut.Users.IntegrationTests.UserService
             Assert.Same(postgressContainer.postgreSQLProvider, testPersistenceProvider);
 
             clearTables = container.Resolve<ClearAllTables>();
-            var defaultValues = container.Resolve<IEnumerable<IDefaultValues>>();
+            var defaultValues = container.Resolve<IEnumerable<IDefaultValues>>().OrderBy(x => x.Priority); ;
 
             foreach (var value in defaultValues)
             {
@@ -46,21 +46,14 @@ namespace HootOut.Users.IntegrationTests.UserService
 
         public ValueTask InitializeAsync()
         {
-            //Clear DB
-            if (clearTables != null)
-            {
-                clearTables.ClearTables();
-            }
+
+            clearTables?.ClearTables(); 
             return ValueTask.CompletedTask;
         }
 
         public ValueTask DisposeAsync()
         {
-            //Clear DB
-            if (clearTables != null)
-            {
-                clearTables.ClearTables();
-            }
+            clearTables?.ClearTables();
             return ValueTask.CompletedTask;
         }
 

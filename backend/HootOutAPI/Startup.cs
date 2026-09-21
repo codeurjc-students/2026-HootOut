@@ -6,6 +6,7 @@ namespace HootOut.HootOutAPI
 {
     public class Startup
     {
+        public static IRegistrationManager RegistrationManager { get; set; } = new RegistrationManager();
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -45,7 +46,6 @@ namespace HootOut.HootOutAPI
 
             app.UseRouting();
 
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
@@ -62,7 +62,7 @@ namespace HootOut.HootOutAPI
             //// call builder.Populate(), that happens in AutofacServiceProviderFactory
             //// for you.
 
-            RegistratorManager.RegisterAllAssemblies(builder);
+            RegistrationManager.RegisterAllAssemblies(builder);
         }
     }
 }
