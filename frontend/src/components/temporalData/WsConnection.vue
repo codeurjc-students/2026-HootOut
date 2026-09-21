@@ -1,47 +1,33 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
+import webSocketService from '@/services/common/websockets/WebSocketService';
 
 const wsStatus = ref('');
 const wsMessage = ref('');
 const message = ref('');
 
-onMounted(async () => {
-    websocketsService.connect();
+onMounted(() => {
+    webSocketService.connect(import.meta.env.VITE_WSS_URL, {
+        onOpen: () => { wsStatus.value = 'Connection Opened'; },
+        onClose: () => { wsStatus.value = 'Connection Closed'; },
+        onError: () => { wsStatus.value = 'Connection Error'; },
+        onMessage: (event) => { wsMessage.value = event.data; },
+    });
 });
 
-const websocketsService = {
-    socket: WebSocket,
-    connect: function () {
-        this.socket = new WebSocket(`${import.meta.env.VITE_WSS_URL}`);
-        this.socket.onopen = (event) => {
-            wsStatus.value = 'Connection Opened';
-        }
-        this.socket.onclose = (event) => {
-            wsStatus.value = 'Connection Closed';
-        }
-        this.socket.onerror = (event) => {
-            wsStatus.value = 'Connection Error';
-        }
-        this.socket.onmessage = (event) => {
-            wsMessage.value = event.data;
-        }
-    },
-    sendMessage: function (message) {
-        const data = message.value;
-        this.socket.send(data);
-    }
-}
+onUnmounted(() => {
+    webSocketService.close();
+});
 
 function sendMessage() {
-    websocketsService.sendMessage(message);
+    webSocketService.send(message.value);
 }
-
 </script>
 
 <template>
-    <section id='websockets'>
+    <section id="websockets">
         <h2>Websockets:</h2>
-        <div> {{ wsStatus }}</div>
+        <div>{{ wsStatus }}</div>
         <div>
             <p>Send Message:</p>
             <input v-model="message" type="text" />
@@ -49,7 +35,7 @@ function sendMessage() {
         </div>
         <div>
             <p>Received message:</p>
-            <div> {{ wsMessage }}</div>
+            <div>{{ wsMessage }}</div>
         </div>
     </section>
 </template>
