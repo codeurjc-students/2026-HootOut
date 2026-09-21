@@ -1,4 +1,4 @@
-using Autofac.Extensions.DependencyInjection; 
+using Autofac.Extensions.DependencyInjection;
 using NLog;
 using NLog.Web;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;

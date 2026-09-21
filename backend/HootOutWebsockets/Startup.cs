@@ -6,6 +6,7 @@ namespace HootOut.HootOutWebsockets
 {
     public class Startup
     {
+        public static IRegistrationManager RegistrationManager { get; set; } = new RegistrationManager();
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -15,8 +16,8 @@ namespace HootOut.HootOutWebsockets
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        { 
-            services.AddControllers(); 
+        {
+            services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,7 +53,7 @@ namespace HootOut.HootOutWebsockets
             //// call builder.Populate(), that happens in AutofacServiceProviderFactory
             //// for you.
 
-            RegistratorManager.RegisterAllAssemblies(builder);
+            RegistrationManager.RegisterAllAssemblies(builder);
         }
     }
 }

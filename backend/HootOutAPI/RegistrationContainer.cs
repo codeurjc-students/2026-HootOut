@@ -1,7 +1,7 @@
 ﻿using Autofac;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.HootOutAPI.Temporal;
-using HootOut.Infraestructure.DI; 
+using HootOut.Infraestructure.DI;
 
 namespace HootOut.HootOutAPI
 {

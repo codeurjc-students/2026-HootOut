@@ -18,7 +18,7 @@ namespace HootOut.PostgreSQL
         {
             builder.RegisterType<DBInit>().As<IDefaultValues>().SingleInstance();
             builder.RegisterType<InitTypeMappers>().As<IDefaultValues>().SingleInstance();
-            builder.RegisterType<PostgreSQLProvider>().AsSelf().As<IPersistenceProvider>().SingleInstance();
+            builder.RegisterType<PostgreSQLProvider>().As<IPersistenceProvider>().SingleInstance();
 
             RegisterSavers(builder);
             RegisterSearchs(builder);
@@ -27,11 +27,11 @@ namespace HootOut.PostgreSQL
         private void RegisterSavers(ContainerBuilder builder)
         {
             var assembly = Assembly.GetExecutingAssembly(); ;
-            builder.RegisterAssemblyTypes(assembly).AsClosedTypesOf(typeof(ISaver<>)).SingleInstance(); 
+            builder.RegisterAssemblyTypes(assembly).AsClosedTypesOf(typeof(ISaver<>)).SingleInstance();
         }
         private void RegisterSearchs(ContainerBuilder builder)
-        { 
-            builder.RegisterType<UserSearch>().As<IUserSearch>().SingleInstance(); 
+        {
+            builder.RegisterType<UserSearch>().As<IUserSearch>().SingleInstance();
         }
     }
 }
