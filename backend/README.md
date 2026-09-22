@@ -24,3 +24,18 @@ npx --yes @redocly/cli build-docs './api-docs.yaml' --output './api-docs.html'
 
 ### SwaggerUI:
 Route: /swagger/index.html
+
+### Install Sonar tool:
+```sh
+dotnet tool install --global dotnet-coverage
+dotnet tool install --global dotnet-sonarscanner
+```
+
+### Use Sonar Tool:
+
+```sh
+dotnet sonarscanner begin /d:sonar.host.url="<sonar-url>" /k:"<sonar-project-key>" /d:sonar.token="<sonar-token>" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
+dotnet build --no-incremental
+dotnet-coverage collect "dotnet test" -f xml -o "coverage.xml"
+dotnet sonarscanner end /d:sonar.token="<sonar-token>"
+```
