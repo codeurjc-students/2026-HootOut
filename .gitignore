@@ -435,6 +435,11 @@ FodyWeavers.xsd
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
 
+/backend/HootOutAPI/api-docs.yaml
+/backend/HootOutAPI/api-docs.html
+/backend/sonar-run.bat
+
+backend/.sonarqube/
 
 ## Frontend gitignore
 
@@ -480,5 +485,3 @@ __screenshots__/
 
 test-results/
 playwright-report/
-/backend/HootOutAPI/api-docs.yaml
-/backend/HootOutAPI/api-docs.html
