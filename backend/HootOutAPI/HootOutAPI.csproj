@@ -29,6 +29,10 @@
     <ProjectReference Include="..\Integrations\PostgreSQL\PostgreSQL.csproj" />
   </ItemGroup>
 
+<Target Name="PreBuild" BeforeTargets="Build">
+	<Exec Command="dotnet tool restore"></Exec>
+</Target>
+
   <Target Name="GenerateSwaggerYaml" AfterTargets="Build">
   <Exec Command="dotnet tool run swagger tofile --yaml --output &quot;$(MSBuildProjectDirectory)/api-docs.yaml&quot; &quot;$(TargetPath)&quot; v1"
         EnvironmentVariables="GENERATING_OPENAPI_DOC=true" />
