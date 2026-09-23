@@ -56,12 +56,16 @@ jobs:
         run: ${{ runner.temp }}/scanner/dotnet-sonarscanner begin /k:"hootout_hootoutapi" /o:"hootout" /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
       - name: Build Backend
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: dotnet build
 
       - name: Backend Unit and Integration Tests
         run: dotnet-coverage collect "dotnet test" -f xml -o "coverage.xml"
 
       - name: End Sonar Scan 
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ${{ runner.temp }}/scanner/dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
   # frontend:
