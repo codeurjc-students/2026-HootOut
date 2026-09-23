@@ -1,5 +1,10 @@
 name: pr-main-tests-workflow
 
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
 on:
   workflow_dispatch:
   push:
@@ -30,7 +35,14 @@ jobs:
         run: dotnet tool install --global dotnet-coverage
 
       - name: Begin Sonar Scan
-        run: dotnet-sonarscanner begin /k:"hootout_hootoutapi" /o:"hootout" /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          dotnet-sonarscanner begin
+          /k:"hootout_hootoutapi"
+          /o:"hootout"
+          /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml"
 
       - name: Build Backend
         run: dotnet build
@@ -39,6 +51,8 @@ jobs:
         run: dotnet-coverage collect "dotnet test" -f xml -o "coverage.xml"
 
       - name: End Sonar Scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
   # frontend:
