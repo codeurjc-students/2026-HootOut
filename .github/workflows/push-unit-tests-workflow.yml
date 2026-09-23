@@ -1,4 +1,4 @@
-name: commit-unit-tests-workflow
+name: push-unit-tests-workflow
 
 on:
   push:
