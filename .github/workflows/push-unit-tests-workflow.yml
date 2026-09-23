@@ -2,6 +2,9 @@ name: commit-unit-tests-workflow
 
 on:
   push:
+    paths:
+      - backend/**
+      - frontend/**
 
 jobs:
   backend:
@@ -19,8 +22,9 @@ jobs:
       - name: Build Backend
         run: dotnet build
 
+      #Ignoring code 8 because we skipped Integration Tests 
       - name: Backend Unit Tests 
-        run: dotnet test --filter DisplayName~UnitTests --ignore-exit-code 8 #Ignoring code 8 because we skipped Integration Tests
+        run: dotnet test --filter DisplayName~UnitTests --ignore-exit-code 8 >> $GITHUB_STEP_SUMMARY 
 
   frontend:
     runs-on: ubuntu-latest
