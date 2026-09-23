@@ -41,7 +41,7 @@ jobs:
           dotnet tool update dotnet-sonarscanner --tool-path ${{ runner.temp }}\scanner
 
       - name: Install Dotnet Coverage Tool
-      - run: dotnet tool install --global dotnet-coverage
+        run: dotnet tool install --global dotnet-coverage
 
       - name: Begin Sonar Scan
         env:
