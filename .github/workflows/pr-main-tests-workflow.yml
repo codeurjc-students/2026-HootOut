@@ -1,4 +1,4 @@
-name: commit-unit-tests-workflow
+name: pr-main-tests-workflow
 
 on:
   push:
