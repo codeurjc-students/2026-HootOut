@@ -42,7 +42,7 @@ jobs:
           dotnet-sonarscanner begin
           /k:"hootout_hootoutapi"
           /o:"hootout"
-          /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          /d:sonar.token="${{ secrets.SONAR_BACKEND_TOKEN }}"
           /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml"
 
       - name: Build Backend
@@ -54,7 +54,7 @@ jobs:
       - name: End Sonar Scan
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+        run: dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_BACKEND_TOKEN }}"
 
   frontend:
     runs-on: ubuntu-latest
@@ -85,7 +85,7 @@ jobs:
         run: npm run build:test
 
       - name: Unit Tests
-        run: npm run test:unit
+        run: npm run test:unit:coverage
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
@@ -102,6 +102,18 @@ jobs:
           name: playwright-report
           path: frontend/playwright-report/
           retention-days: 5
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v8
+        with:
+          args: >
+            -Dsonar.projectKey=hootout_hootoutfrontend
+            -Dsonar.organization=hootout
+            -Dsonar.sources=frontend
+            -Dsonar.javascript.lcov.reportPaths=coverage/vitest/lcov.info
+            -Dsonar.coverage.exclusions=e2e/**,**/*.test.ts,**/*.spec.ts
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_FRONTEND_TOKEN }}  
 
       - name: Stop containers
         if: always()

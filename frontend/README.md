@@ -46,3 +46,17 @@ npm run test:e2e -- --debug
 ```sh
 npm run lint
 ```
+
+### Install Sonar locally:
+
+```sh
+npm install -g @sonar/scan
+```
+
+### Run Sonar Scan locally:
+
+```sh
+
+npm run test:unit:coverage
+sonar-scanner-npm -Dsonar.token=<sonar-token> -Dsonar.projectKey=<sonar-project-key> -Dsonar.organization=<sonar-organization-key> -Dsonar.javascript.lcov.reportPaths=coverage/vitest/lcov.info -Dsonar.coverage.exclusions=e2e/**,**/*.test.ts,**/*.spec.ts
+```
