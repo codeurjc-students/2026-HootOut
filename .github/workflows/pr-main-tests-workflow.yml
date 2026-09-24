@@ -17,47 +17,47 @@ on:
       - main
 
 jobs:
-  # backend:
-  #   runs-on: ubuntu-latest
-  #   defaults:
-  #       run:
-  #         working-directory: ./backend
-  #   steps:
-  #     - uses: actions/checkout@v7
-  #       with:
-  #         fetch-depth: 0
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+        run:
+          working-directory: ./backend
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       
-  #     - name: Setup Dotnet 10.0
-  #       uses: actions/setup-dotnet@v6
-  #       with:
-  #         dotnet-version: '10.0'
+      - name: Setup Dotnet 10.0
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0'
 
-  #     - name: Install SonarQube Cloud scanner
-  #       run: dotnet tool install --global dotnet-sonarscanner
+      - name: Install SonarQube Cloud scanner
+        run: dotnet tool install --global dotnet-sonarscanner
 
-  #     - name: Install Dotnet Coverage Tool
-  #       run: dotnet tool install --global dotnet-coverage
+      - name: Install Dotnet Coverage Tool
+        run: dotnet tool install --global dotnet-coverage
 
-  #     - name: Begin Sonar Scan
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       run: >
-  #         dotnet-sonarscanner begin
-  #         /k:"hootout_hootoutapi"
-  #         /o:"hootout"
-  #         /d:sonar.token="${{ secrets.SONAR_BACKEND_TOKEN }}"
-  #         /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml"
+      - name: Begin Sonar Scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          dotnet-sonarscanner begin
+          /k:"hootout_hootoutapi"
+          /o:"hootout"
+          /d:sonar.token="${{ secrets.SONAR_BACKEND_TOKEN }}"
+          /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml"
 
-  #     - name: Build Backend
-  #       run: dotnet build
+      - name: Build Backend
+        run: dotnet build
 
-  #     - name: Backend Unit and Integration Tests
-  #       run: dotnet-coverage collect "dotnet test" -f xml -o "coverage.xml"
+      - name: Backend Unit and Integration Tests
+        run: dotnet-coverage collect "dotnet test" -f xml -o "coverage.xml"
 
-  #     - name: End Sonar Scan
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       run: dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_BACKEND_TOKEN }}"
+      - name: End Sonar Scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_BACKEND_TOKEN }}"
   
   frontend:
     runs-on: ubuntu-latest
@@ -90,21 +90,21 @@ jobs:
       - name: Unit Tests
         run: npm run test:unit:coverage
 
-      # - name: Install Playwright Browsers
-      #   run: npx playwright install --with-deps
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
 
-      # - name: Docker Compose Backend
-      #   run: docker compose -f ../backend/compose.dev.yaml up -d --build
+      - name: Docker Compose Backend
+        run: docker compose -f ../backend/compose.dev.yaml up -d --build
 
-      # - name: Run Playwright tests
-      #   run: npm run test:e2e
+      - name: Run Playwright tests
+        run: npm run test:e2e
 
-      # - uses: actions/upload-artifact@v4
-      #   if: ${{ !cancelled() }}
-      #   with:
-      #     name: playwright-report
-      #     path: frontend/playwright-report/
-      #     retention-days: 5
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 5
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v8
