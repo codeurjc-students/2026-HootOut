@@ -46,4 +46,4 @@ jobs:
         run: npm run build
 
       - name: Unit Tests
-        run: npm run test:unit >> $GITHUB_STEP_SUMMARY
+        run: npm run test:unit
