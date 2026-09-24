@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:test": "vite --mode test",
     "build": "run-p type-check \"build-only {@}\" --",
+    "build:test": "vite build --mode test",
     "preview": "vite preview",
     "test:unit": "vitest",
     "test:e2e": "playwright test",

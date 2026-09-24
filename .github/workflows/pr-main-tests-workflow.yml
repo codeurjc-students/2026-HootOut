@@ -1,0 +1,108 @@
+name: pr-main-tests-workflow
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+        run:
+          working-directory: ./backend
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Dotnet 10.0
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0'
+
+      - name: Install SonarQube Cloud scanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Install Dotnet Coverage Tool
+        run: dotnet tool install --global dotnet-coverage
+
+      - name: Begin Sonar Scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          dotnet-sonarscanner begin
+          /k:"hootout_hootoutapi"
+          /o:"hootout"
+          /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml"
+
+      - name: Build Backend
+        run: dotnet build
+
+      - name: Backend Unit and Integration Tests
+        run: dotnet-coverage collect "dotnet test" -f xml -o "coverage.xml"
+
+      - name: End Sonar Scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    env:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_pwd
+      POSTGRES_DB: test_db
+      POSTGRES_PORT: 5432
+      HOOTOUTAPI_HTTP_PORTS: 1234
+      HOOTOUTAPI_HTTPS_PORTS: 1235
+      HOOTOUTWEBSOCKETS_HTTP_PORTS: 4321
+      HOOTOUTWEBSOCKETS_HTTPS_PORTS: 4323
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Use Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24.12.0'
+
+      - name: Install npm dependencies
+        run: npm ci 
+      
+      - name: npm Build
+        run: npm run build:test
+
+      - name: Unit Tests
+        run: npm run test:unit
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Docker Compose Backend
+        run: docker compose -f ../backend/compose.dev.yaml up -d --build
+
+      - name: Run Playwright tests
+        run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 5
+
+      - name: Stop containers
+        if: always()
+        run: docker compose -f ../backend/compose.dev.yaml down

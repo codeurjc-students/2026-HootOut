@@ -36,9 +36,12 @@ describe('WebSocketService', () => {
         service.connect('ws://test', { onOpen });
 
         const instance = FakeWebSocket.instances[0];
+
+        expect(instance).not.toBeNullable();
+
         expect(instance?.url).toBe('ws://test');
 
-        instance.onopen(new Event('open'));
+        instance?.onopen?.(new Event('open'));
         expect(onOpen).toHaveBeenCalledTimes(1);
     });
 
@@ -47,8 +50,10 @@ describe('WebSocketService', () => {
         service.connect('ws://test', { onMessage });
 
         const instance = FakeWebSocket.instances[0];
+        expect(instance).not.toBeNullable();
+        
         const event = new MessageEvent('message', { data: 'data' });
-        instance.onmessage(event);
+        instance?.onmessage?.(event);
 
         expect(onMessage).toHaveBeenCalledWith(event);
     });
