@@ -7,8 +7,11 @@ permissions:
 
 on:
   pull_request:
+    pull_request:
+      types: [opened, synchronize, reopened]
     branches:
       - main
+      
   push:
     branches:
       - main
@@ -55,7 +58,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_BACKEND_TOKEN }}"
-
+  
   frontend:
     runs-on: ubuntu-latest
     defaults:
@@ -110,6 +113,7 @@ jobs:
             -Dsonar.projectKey=hootout_hootoutfrontend
             -Dsonar.organization=hootout
             -Dsonar.sources=frontend
+            -Dsonar.projectName=HootOutFrontend
             -Dsonar.javascript.lcov.reportPaths=coverage/vitest/lcov.info
             -Dsonar.coverage.exclusions=e2e/**,**/*.test.ts,**/*.spec.ts
         env:
