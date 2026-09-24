@@ -82,14 +82,14 @@ jobs:
 
       - name: Docker Compose Backend
         env:
-          POSTGRES_USER=test_user
-          POSTGRES_PASSWORD=test_pwd
-          POSTGRES_DB=test_db
-          POSTGRES_PORT=5432
-          HOOTOUTAPI_HTTP_PORTS=1234
-          HOOTOUTAPI_HTTPS_PORTS=1235
-          HOOTOUTWEBSOCKETS_HTTP_PORTS=4321
-          HOOTOUTWEBSOCKETS_HTTPS_PORTS=4323
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pwd
+          POSTGRES_DB: test_db
+          POSTGRES_PORT: 5432
+          HOOTOUTAPI_HTTP_PORTS: 1234
+          HOOTOUTAPI_HTTPS_PORTS: 1235
+          HOOTOUTWEBSOCKETS_HTTP_PORTS: 4321
+          HOOTOUTWEBSOCKETS_HTTPS_PORTS: 4323
         run: docker compose -f ../backend/compose.dev.yaml up -d --build
 
       - name: Run Playwright tests
