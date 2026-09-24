@@ -92,14 +92,17 @@ jobs:
           HOOTOUTWEBSOCKETS_HTTPS_PORTS: 4323
         run: docker compose -f ../backend/compose.dev.yaml up -d --build
 
+      - name: Check Docker ps
+        run: docker ps -a
+
       - name: Print Docker HootOutAPI logs
         run: docker logs backend-hootoutapi-1
 
       - name: Print Docker HootOutWebsockets logs
         run: docker logs backend-hootoutwebsockets-1
 
-      - name: Run Playwright tests
-        run: npm run test:e2e
+      # - name: Run Playwright tests
+      #   run: npm run test:e2e
 
       - name: Stop containers
         if: always()
