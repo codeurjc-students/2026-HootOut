@@ -75,7 +75,7 @@ jobs:
         run: npm run build:test
 
       - name: Debug - check API URL in bundle
-        run: grep -o "VITE_API_URL[^,}]*\|https\?://[a-zA-Z0-9./:_-]*" dist/assets/*.js | head -20
+        run: grep -o "VITE_API_URL[^,}]*\|http\?://[a-zA-Z0-9./:_-]*" dist/assets/*.js | head -20
 
       - name: Unit Tests
         run: npm run test:unit
