@@ -138,10 +138,99 @@ Here we tests the interaction with the webSocket server, where it returns "HELLO
 
 ### Backend:
 
+### Unit Testing
+
+We use [xUnit.net v3 MTP v2](https://xunit.net/?tabs=cs) as the testing framework along with [Fluent Assertions](https://fluentassertions.com/). For unit tests, we use [Moq](https://github.com/devlooped/moq) as our mocking library. We separate the unit test of a project on their UnitTest project.
+
+This is a output example of running: (We ignore exit code 8 is because we only run Unit Tests Projects and we skip Integration Tests projects)
+```sh
+dotnet test --filter DisplayName~UnitTests --ignore-exit-code 8
+```
+![Backend Unit Test](/docs/images/tests/Backend-UnitTests.png)
+
+### Backend Integration and API Testing
+
+We use the same tools we use on Unit Testing (xUnit, Moq, FluentAssertions) and we add [TestContainers](https://dotnet.testcontainers.org/) to run Docker containers we need for testing (like PostgreSQL container).
+
+For API testing, we have API Integration test projects, and we use [ASP.NET Core MVC Tesing](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.Testing). We start the API server and we send it requests with a test client.
+
+This is a output example of running:
+```sh
+dotnet test --filter DisplayName~IntegrationTests --ignore-exit-code 8
+```
+
+![Backend Integration Test](/docs/images/tests/Backend-IntegrationTests.png)
+
+To run all the test we can simply run:
+```sh
+dotnet test
+```
+![Backend All Tests](/docs/images/tests/Backend-AllTests.png)
 
 
+### Static Code Analysis with Sonar:
 
+We added [SonarQube](https://www.sonarsource.com/products/sonarqube/) code analysis to have insights and traceability of code coverage, analytics, etc. We set up a project for the Backend and another one for the Frontend. We can see the results on a dashboard on SonarCloud
 
-## Development process:
+![Sonar Dashboard](/docs/images/sonar/sonar-projects.png)
+
+For the Backend we use [dotnet-coverage](https://www.nuget.org/packages/dotnet-coverage) to get all the tests coverage results, and for the Frontend we use [V8 Code Coverage](https://v8.dev/blog/javascript-code-coverage)
+
+As of now, we don't have any real functionality implemented, but we have Sonar setup for the future. We added it to the CI pipeline to generate reports on pull request to main and on code changes in main.
+
+#### Frontend Summary:
+![Sonar Frontend](/docs/images/sonar/sonar-frontend.png)
+
+#### Backend Summary:
+![Sonar Backend](/docs/images/sonar/sonar-backend.png)
+
+## Development Process:
+
+### Tasks Management:
+The development process is iterative and incremental, following Agile principles and Extreme Programming and Kanban practices.
+
+There is a Github Project with a Kanban board, where Github Issues are the tasks to be completed. They are first added to the Backlog, and then moved to different columns following the task progress (Ready, In Progress, In Review, Done).
+
+Since this is the end of Phase 2, most items are on the Done column.
+![Kanban Board](/docs/images/development-process/Kanban-board.png)
+
+If we click on an issue, we can see its timeline, the branch or pull request associated to it, and comments made during development.
+![Task details](/docs/images/development-process/Task_details_view.png)
+
+### Git
+
+This project uses Git as its version control software. We use GitFlow as the branching strategy. For each new issue, we create a new branch from main following the pattern "gh-$issueNumber/issue-short-name". When the task is ready to review, a pull request to merge into main is created. After review, we merge the pull request into main and delete the feature branch to have a clean git environment.
+
+There are only the main branch and the branches that are in development
+![Github branches](/docs/images/development-process/ExampleGithubBranch.png)
+
+We can see the pull requests merged into main.
+![Github analytics pulse](/docs/images/development-process/Github-insights-pulse.png)
+
+Since it is an iterative and incremental process, commits are being made over time.
+![Github commits](/docs/images/development-process/Githug-commits-history.png)
+
+On the [Network graph](https://github.com/codeurjc-students/2026-HootOut/network), we can see how feature branches are coming in and out of main.
+![Github Network Graph](/docs/images/development-process/Github-insights-network-graph.png)
+
+### Continuous Integration
+
+We have setup Github Actions as our Continuous Integration pipeline. We configure them with Workflows.
+
+We have a basic workflow called "push-unit-tests-workflow.yml" that runs each time we push commits to origin (github). In this workflow be build the applications and we run the Unit Tests. They run only if there are changes on the /backend or /frontend folder.
+
+![Github actions backend](/docs/images/development-process/github-actions-basic-backend.png)
+
+![Github actions frontend](/docs/images/development-process/github-actions-basic-frontend.png)
+
+We have a complete workflow called "pr-main-tests-workflow.yml" that runs each time we open, synchronize or reopen a pull request to main and when we merge the pull request to main. It builds the applications, runs all the tests (unit, integration, e2e) and uploads a new Sonar scan.
+The workflow also generates a Playwright result artifact that we can check locally with the command:
+```sh
+npx playwright show-report playwright-report.zip
+```
+
+![Github actions backend](/docs/images/development-process/github-actions-complete-backend.png)
+
+![Github actions frontend](/docs/images/development-process/github-actions-complete-frontend.png)
 
 ## Code Editing and Execution:
