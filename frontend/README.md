@@ -1,5 +1,7 @@
 ## Project Setup
 
+Node.js >=24.12.0is required to be installed as a dependency along with npm.
+
 ```sh
 npm install
 ```
@@ -47,7 +49,7 @@ npm run test:e2e -- --debug
 npm run lint
 ```
 
-### Install Sonar locally:
+### Install npm Sonar dependency:
 
 ```sh
 npm install -g @sonar/scan
