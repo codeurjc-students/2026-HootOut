@@ -78,16 +78,43 @@ Features include support for debugging, syntax highlighting, intelligent code co
 
 Visual Studio is and IDE developed by Microsoft. It supports syntax highlighting and code completion using IntelliSense for variables, functions, methods, loops, and LINQ queries. Visual Studio includes a debugger that works both as a source-level debugger and as a machine-level debugger. Visual Studio allows developers to write extensions for Visual Studio to extend its capabilities. These extensions "plug into" Visual Studio and extend its functionality. Extensions come in the form of macros, add-ins, and packages. 
 
+#### [Docker](https://www.docker.com/)
+
+Docker is a set of products that uses operating system-level virtualization to deliver software in packages called containers. Docker automates the deployment of applications within lightweight containers, enabling them to run consistently across different computing environments.
+
 #### [OpenAPI V3](https://www.openapis.org/)
 
 The OpenAPI Specification (OAS) defines a standard, programming language-agnostic interface description for HTTP APIs, which allows both humans and computers to discover and understand the capabilities of a service without requiring access to source code, additional documentation, or inspection of network traffic. 
 
 ## Architecture:
 
-
-
 ### Deployment:
 
+The Frontend compiled at build time, and generates an HTML, CSS and JS file. These three files. This is the client code.
+
+The Backend is compiled at build time and there will be 2 services, HootOut Rest API and HootOut Websocket. It is expected to have a few instances of the REST API service, but many more HootOut WebSocket services to handle real time WebSocket communication. They will sync by messages using RabbitMQ, and the data will be stored on PostgreSQL.
+
+```mermaid
+flowchart TD
+    A[Vue.js client] <-->|HTTPS| B[HootOut REST API]
+    A[Vue.js client] <-->|HTTPS, WSS| C[HootOut WSS]
+
+    B <-->  D[RabbitMQ]
+    C <-->D
+    C1[HootOut WSS] <-->  D
+    C2[HootOut WSS] <-->  D
+
+    A1[Vue.js client 2] <--> |HTTPS, WSS| C1
+    A2[Vue.js client 3] <--> |HTTPS, WSS| C2
+
+    A1 <--> |HTTPS| B
+    A2 <--> |HTTPS| B
+
+    B --> E[PostgreSQL]
+    C --> E
+    C1 --> E
+    C2 --> E
+```
 
 ### REST API Documentation
 
@@ -208,7 +235,7 @@ We can see the pull requests merged into main.
 ![Github analytics pulse](/docs/images/development-process/Github-insights-pulse.png)
 
 Since it is an iterative and incremental process, commits are being made over time.
-![Github commits](/docs/images/development-process/Githug-commits-history.png)
+![Github commits](/docs/images/development-process/Github-commits-history.png)
 
 On the [Network graph](https://github.com/codeurjc-students/2026-HootOut/network), we can see how feature branches are coming in and out of main.
 ![Github Network Graph](/docs/images/development-process/Github-insights-network-graph.png)
@@ -234,3 +261,20 @@ npx playwright show-report playwright-report.zip
 ![Github actions frontend](/docs/images/development-process/github-actions-complete-frontend.png)
 
 ## Code Editing and Execution:
+
+### Cloning the repository:
+
+To download the repository, you can go to the [Github HootOut Page](https://github.com/codeurjc-students/2026-HootOut) and download as a .zip file.
+
+To clone the repository, you need [git](https://git-scm.com/) installed on your system, and in a Terminal run the following command:
+
+```sh
+git clone https://github.com/codeurjc-students/2026-HootOut.git
+```
+
+### Project Execution and Testing
+
+Each project has its own README.md with instructions on how to run and test locally these projects:
+
+- [Backend Readme](/backend/README.md)
+- [Frontend Readme](/frontend/README.md)

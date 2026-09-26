@@ -1,3 +1,16 @@
+### Run Locally:
+
+[.Net SDK 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) is required to build and run this locally
+
+To build the project run 
+```sh
+dotnet build
+```
+
+### Environment variables:
+
+Before running docker compose, create a .env file, following the .env.example file, and update the variables with your own.
+
 ### Run Docker Compose:
 On the backend folder:
 
@@ -23,7 +36,10 @@ npx --yes @redocly/cli build-docs './api-docs.yaml' --output './api-docs.html'
 ```
 
 ### SwaggerUI:
-Route: /swagger/index.html
+SwaggerUI is accesible on the Development environment for the Rest API
+Url: host:port/swagger/index.html
+
+### 
 
 ### Install Sonar tool:
 ```sh
