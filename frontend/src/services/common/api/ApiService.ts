@@ -1,7 +1,7 @@
 const apiUrl = import.meta.env.VITE_API_URL;
 const apiVersion = 'v1';
 
-type APIService_get = <T = unknown >(url: string, parameters: Record<string, unknown>) => Promise<T>;
+type APIService_get = <T = unknown >(url: string, parameters?: Record<string, unknown>) => Promise<T>;
 type APIService_post = <T = unknown>(url: string, body: any) => Promise<T>;
 
 const get: APIService_get = async function APIService_get(url, parameters = {}) {
