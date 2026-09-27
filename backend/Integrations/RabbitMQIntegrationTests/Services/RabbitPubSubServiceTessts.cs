@@ -1,0 +1,93 @@
+﻿using Autofac;
+using FluentAssertions;
+using HootOut.Contracts.Common.Messages.Events;
+using HootOut.Contracts.Common.Messages.Services;
+using HootOut.Infraestructure.DI;
+using HootOut.RabbitMQ.Configuration;
+using RabbitMQ.Client;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using Testcontainers.RabbitMq;
+
+namespace HootOut.RabbitMQIntegrationTests.Services
+{
+    public class RabbitPubSubServiceTests : IAsyncLifetime
+    {
+        private IContainer container;
+
+        private IPubSubService pubSubService;
+
+        private RabbitTestConnectionFactory rabbitFactory = new RabbitTestConnectionFactory();
+
+        private RabbitMqContainer rabbitContainer { get; } = new RabbitMqBuilder("rabbitmq:4.3.6").Build();
+
+        public async ValueTask InitializeAsync()
+        {
+            await rabbitContainer.StartAsync()
+                .ConfigureAwait(false);
+
+            rabbitFactory.ConnectionString = rabbitContainer.GetConnectionString();
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            return rabbitContainer.DisposeAsync();
+        }
+
+        public RabbitPubSubServiceTests()
+        {
+            var builder = new ContainerBuilder();
+            new RegistrationManager().RegisterAllAssemblies(builder);
+            builder.RegisterInstance(rabbitFactory).As<IRabbitConnectionFactory>();
+
+            container = builder.Build();
+
+            pubSubService = container.Resolve<IPubSubService>();
+        }
+
+        [Fact]
+        public async Task PublishMessage()
+        {
+            var sentMessage = new MessageEvent { Queue = "test" };
+
+            var tcs = new TaskCompletionSource<MessageEvent>();
+
+            await pubSubService.Subscribe<MessageEvent>(sentMessage.Queue, (message) =>
+            {
+                tcs.SetResult(message);
+            });
+
+            await Task.Run(async () => {
+                var publisherService = container.Resolve<IPubSubService>();
+                await publisherService.Publish(sentMessage.Queue, sentMessage);
+            }, TestContext.Current.CancellationToken);
+
+            var receivedMessage = await tcs.Task;
+
+            receivedMessage.Should().NotBeNull();
+            receivedMessage.Should().NotBeSameAs(sentMessage);
+            receivedMessage.ID.Should().Be(sentMessage.ID);
+            receivedMessage.Queue.Should().Be(sentMessage.Queue);
+            receivedMessage.CreatedDate.Should().Be(sentMessage.CreatedDate);
+        }
+    }
+
+    public class RabbitTestConnectionFactory : IRabbitConnectionFactory
+    {
+        public string ConnectionString { get; set; } = string.Empty;
+        private ConnectionFactory? connectionFactory;
+        public ConnectionFactory GetConnectionFactory()
+        {
+            if (connectionFactory == null)
+            {
+                connectionFactory = new ConnectionFactory
+                {
+                    Uri = new Uri(ConnectionString)
+                };
+            }
+
+            return connectionFactory;
+        }
+    }
+}

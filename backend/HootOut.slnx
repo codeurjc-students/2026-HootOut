@@ -17,6 +17,8 @@
   </Folder>
   <Folder Name="/Integrations/">
     <Project Path="Integrations/PostgreSQL/PostgreSQL.csproj" Id="0dfcf893-6bb3-45c4-b4ff-85775ac5321a" />
+    <Project Path="Integrations/RabbitMQ/RabbitMQ.csproj" Id="aa9d1ffe-599f-42a3-b6ee-e5fd37f149ec" />
+    <Project Path="Integrations/RabbitMQIntegrationTests/RabbitMQIntegrationTests.csproj" Id="b298a748-204a-4096-8657-03e53e61275f" />
   </Folder>
   <Folder Name="/Sites/">
     <Project Path="HootOutAPI/HootOutAPI.csproj" />

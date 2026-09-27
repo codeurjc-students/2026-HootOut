@@ -1,14 +1,17 @@
 const apiUrl = import.meta.env.VITE_API_URL;
 const apiVersion = 'v1';
 
-const get = async function <T = unknown>(url: string, parameters: Record<string, unknown> = {}): Promise<T> {
+type APIService_get = <T = unknown >(url: string, parameters?: Record<string, unknown>) => Promise<T>;
+type APIService_post = <T = unknown>(url: string, body: any) => Promise<T>;
+
+const get: APIService_get = async function APIService_get(url, parameters = {}) {
 
     const headers = {
     };
 
     const query = new URLSearchParams(Object.entries(parameters).map(([key, value]) => [key, String(value)])).toString();
 
-    const request: Promise<Response> = fetch(`${apiUrl}/${apiVersion}/${url}${query}`, {
+    const request: Promise<Response> = fetch(`${apiUrl}/${apiVersion}/${url}${query ? `?${query}` : ''}`, {
         method: 'GET',
         mode: 'cors',
         headers: headers
@@ -23,7 +26,7 @@ const get = async function <T = unknown>(url: string, parameters: Record<string,
     return res.json();
 }
 
-const post = async function <T = unknown>(url: string, body: any): Promise<T> {
+const post: APIService_post = async function (url, body) {
     const headers = {
         'Content-Type': 'application/json'
     };

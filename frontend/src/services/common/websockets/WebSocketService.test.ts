@@ -1,4 +1,3 @@
-// src/services/websockets/WebSocketService.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WebSocketService } from './WebSocketService.ts';
 
@@ -51,7 +50,7 @@ describe('WebSocketService', () => {
 
         const instance = FakeWebSocket.instances[0];
         expect(instance).not.toBeNullable();
-        
+
         const event = new MessageEvent('message', { data: 'data' });
         instance?.onmessage?.(event);
 
