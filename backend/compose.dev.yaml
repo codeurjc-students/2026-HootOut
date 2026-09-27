@@ -9,6 +9,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     ports:
       - ${HOOTOUTAPI_HTTP_PORTS}:${HOOTOUTAPI_HTTP_PORTS}
       - ${HOOTOUTAPI_HTTPS_PORTS}:${HOOTOUTAPI_HTTPS_PORTS}
@@ -17,6 +19,9 @@ services:
       ASPNETCORE_HTTP_PORTS: ${HOOTOUTAPI_HTTP_PORTS}
       #ASPNETCORE_HTTPS_PORTS: ${HOOTOUTAPI_HTTPS_PORTS}
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      RABBITMQ_HOST: ${RABBIT_HOSTNAME}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSOWRD}
       LOGS_FOLDER: /var/logs
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
@@ -32,6 +37,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     ports:
       - ${HOOTOUTWEBSOCKETS_HTTP_PORTS}:${HOOTOUTWEBSOCKETS_HTTP_PORTS}
       - ${HOOTOUTWEBSOCKETS_HTTPS_PORTS}:${HOOTOUTWEBSOCKETS_HTTPS_PORTS}
@@ -40,6 +47,9 @@ services:
       ASPNETCORE_HTTP_PORTS: ${HOOTOUTWEBSOCKETS_HTTP_PORTS}
       #ASPNETCORE_HTTPS_PORTS: ${HOOTOUTWEBSOCKETS_HTTPS_PORTS}
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      RABBITMQ_HOST: ${RABBIT_HOSTNAME}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSOWRD}
       LOGS_FOLDER: /var/logs
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
@@ -63,6 +73,28 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq: 
+    image: rabbitmq:4.3.6-management
+    restart: unless-stopped
+    ports: 
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_HOST: ${RABBIT_HOSTNAME}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSOWRD}
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq/
+      - rabbitmq:/var/log/rabbitmq
+
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
+      retries: 3
+      timeout: 5s
+      interval: 30s
+
 volumes:
   pgdata:
   logs:
+  rabbitmq:
+    driver: local
