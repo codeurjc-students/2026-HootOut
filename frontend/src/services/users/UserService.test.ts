@@ -22,8 +22,8 @@ describe('UserService', () => {
 
     it('getAllUsers returns a user list', async () => {
         const mockUsers = [
-            { uid: 1123123, username: 'test1', password: '1' },
-            { uid: 4141241, username: 'test2', password: '2' },
+            { uid: 1123123, username: 'test1', email: 'email1@test.com' },
+            { uid: 4141241, username: 'test2', email: 'email2@test.com' },
         ];
         (get as ReturnType<typeof vi.fn>).mockResolvedValueOnce(mockUsers);
 

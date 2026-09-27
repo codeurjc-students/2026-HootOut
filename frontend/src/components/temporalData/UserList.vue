@@ -22,7 +22,7 @@ onMounted(async () => {
         <h2>User List:</h2>
         <ul role="list" id="user-list">
             <li v-for='(user, index) in users' :key='user.uid'>
-                {{ index }}: ID: {{ user.uid }} Username: {{ user.username }} Password: {{ user.password }}
+                {{ index }}: ID: {{ user.uid }} Username: {{ user.username }} Email: {{ user.email }}
             </li>
         </ul>
     </section>
