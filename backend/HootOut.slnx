@@ -12,6 +12,9 @@
     <Project Path="Domains/Users.Tests/Users.UnitTests.csproj" />
     <Project Path="Domains/Users/Users.csproj" />
   </Folder>
+  <Folder Name="/Domains/WebSocketsDomain/">
+    <Project Path="Domains/WebSockets/WebSockets/WebSockets.csproj" Id="ef895e6c-035c-423d-bc4e-eb8b3f85d8bc" />
+  </Folder>
   <Folder Name="/Infraestructure/">
     <Project Path="Infraestructure/Infraestructure/Infraestructure.csproj" Id="102a6654-bafd-47be-bb54-09d81ad070e0" />
   </Folder>

@@ -1,7 +1,4 @@
 ﻿using HootOut.Contracts.Common.Messages.Events;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.Contracts.Common.Messages.Services
 {

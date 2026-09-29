@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace HootOut.Contracts.Common.Messages.Events
+﻿namespace HootOut.Contracts.Common.Messages.Events
 {
     public class MessageEvent
     {

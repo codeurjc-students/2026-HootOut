@@ -5,9 +5,6 @@ using HootOut.Contracts.Common.Messages.Services;
 using HootOut.Infraestructure.DI;
 using HootOut.RabbitMQ.Configuration;
 using RabbitMQ.Client;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Testcontainers.RabbitMq;
 
 namespace HootOut.RabbitMQIntegrationTests.Services
@@ -58,7 +55,8 @@ namespace HootOut.RabbitMQIntegrationTests.Services
                 tcs.SetResult(message);
             });
 
-            await Task.Run(async () => {
+            await Task.Run(async () =>
+            {
                 var publisherService = container.Resolve<IPubSubService>();
                 await publisherService.Publish(sentMessage.Queue, sentMessage);
             }, TestContext.Current.CancellationToken);

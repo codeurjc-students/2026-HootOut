@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\CommonDomain\CommonDomain.csproj" />
     <ProjectReference Include="..\Contracts\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\Domains\WebSockets\WebSockets\WebSockets.csproj" />
     <ProjectReference Include="..\Infraestructure\Infraestructure\Infraestructure.csproj" />
   </ItemGroup>
 

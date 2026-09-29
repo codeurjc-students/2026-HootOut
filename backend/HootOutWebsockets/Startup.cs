@@ -30,7 +30,8 @@ namespace HootOut.HootOutWebsockets
 
             var websocketsOptions = new WebSocketOptions
             {
-                KeepAliveTimeout = TimeSpan.FromSeconds(15)
+                KeepAliveInterval = TimeSpan.FromSeconds(30),
+                KeepAliveTimeout = TimeSpan.FromSeconds(15),
             };
 
             app.UseWebSockets(websocketsOptions);

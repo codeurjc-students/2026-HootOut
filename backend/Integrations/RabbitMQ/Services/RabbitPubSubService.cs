@@ -10,14 +10,14 @@ namespace HootOut.RabbitMQ.Services
 {
     public class RabbitPubSubService : IPubSubService
     {
-        private IRabbitConnectionFactory connectionFactory;  
+        private IRabbitConnectionFactory connectionFactory;
 
         private IConnection? connection;
 
         private IChannel? channel;
 
         private IEnumerable<AsyncEventingBasicConsumer> consumers = new List<AsyncEventingBasicConsumer>();
-        
+
         public RabbitPubSubService(IRabbitConnectionFactory connectionFactory)
         {
             this.connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
@@ -29,18 +29,18 @@ namespace HootOut.RabbitMQ.Services
 
             channel ??= await connection!.CreateChannelAsync();
 
-                await QueueDeclare(channel, queue);
+            await QueueDeclare(channel, queue);
 
-                var message = JsonConvert.SerializeObject(@event);
-                var byteMessage = Encoding.UTF8.GetBytes(message);
+            var message = JsonConvert.SerializeObject(@event);
+            var byteMessage = Encoding.UTF8.GetBytes(message);
 
-                await channel.BasicPublishAsync(
-                    exchange: string.Empty,
-                    routingKey: queue,
-                    mandatory: true,
-                    basicProperties: new BasicProperties { Persistent = false },
-                    body: byteMessage
-                    ); 
+            await channel.BasicPublishAsync(
+                exchange: string.Empty,
+                routingKey: queue,
+                mandatory: true,
+                basicProperties: new BasicProperties { Persistent = false },
+                body: byteMessage
+                );
         }
         public async Task Subscribe<T>(string queue, Action<T> onMessagReceived) where T : MessageEvent
         {
@@ -60,7 +60,7 @@ namespace HootOut.RabbitMQ.Services
                 onMessagReceived.Invoke(message!);
             };
 
-            await channel.BasicConsumeAsync(queue, autoAck: false, consumer); 
+            await channel.BasicConsumeAsync(queue, autoAck: false, consumer);
         }
 
         private async Task QueueDeclare(IChannel channel, string queue)
