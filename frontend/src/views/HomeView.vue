@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import TemporalData from '../components/temporalData/TemporalData.vue'
+import ChatLayout from '@/components/chat/ChatLayout.vue'; 
 </script>
 
-<template> 
-      <TemporalData/> 
+
+<template>
+      <ChatLayout />
 </template>
