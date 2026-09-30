@@ -4,6 +4,8 @@ import ChatMessageBar from './ChatConversation/ChatMessageBar.vue';
 import ChatMessages from './ChatConversation/ChatMessages.vue';
 
 
+
+
 </script>
 
 <template>

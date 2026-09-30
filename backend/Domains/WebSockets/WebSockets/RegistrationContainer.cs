@@ -5,9 +5,6 @@ using HootOut.Infraestructure.DI;
 using HootOut.WebSockets.Actions;
 using HootOut.WebSockets.Handlers;
 using HootOut.WebSockets.Service;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.WebSockets
 {

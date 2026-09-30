@@ -1,5 +1,4 @@
 ﻿using HootOut.Contracts.WebSocket;
-using HootOut.WebSockets.Service;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
@@ -7,21 +6,18 @@ using System.Text;
 
 namespace HootOut.HootOutWebsockets.Services
 {
-    public class ConnectionManager : IWSConnectionManager
+    public class WSConnectionManager : IWSConnectionManager
     {
         private readonly ConcurrentDictionary<string, WebSocket> connections = new();
 
-        private readonly ILogger<ConnectionManager> logger;
-        private readonly WSMessageDeserializer webSocketMessageHandler;
+        private readonly ILogger<WSConnectionManager> logger;
 
-        public ConnectionManager(ILogger<ConnectionManager> logger,
-            WSMessageDeserializer websocketMessageHandler)
+        public WSConnectionManager(ILogger<WSConnectionManager> logger)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            this.webSocketMessageHandler = websocketMessageHandler ?? throw new ArgumentNullException(nameof(websocketMessageHandler));
         }
 
-        public async Task AddConnectionAsync(WebSocket websocket, HttpContext httpContext)
+        public async Task<string> AddConnectionAsync(WebSocket websocket, HttpContext httpContext)
         {
             var connectionId = Guid.CreateVersion7().ToString();
 
@@ -31,69 +27,32 @@ namespace HootOut.HootOutWebsockets.Services
 
             logger.LogInformation("WebSocket connected: {ConnectionId} for user: {UserId}", connectionId, userId);
 
-            try
-            {
-                await HandleMessagesAsync(websocket, connectionId, userId);
-            }
-            finally
-            {
-                connections.TryRemove(connectionId, out _);
-
-                logger.LogInformation("Websocket disconnected: {ConnectionId} for user: {UserId}", connectionId, userId);
-            }
+            return connectionId;
         }
 
-        private async Task HandleMessagesAsync(WebSocket websocket, string connectionId, string userId)
+        public async Task<WebSocket?> GetWebSocketByConnectionIdAsync(string connectionId)
         {
-            var buffer = new byte[1024 * 4];
-            var messageBuffer = new StringBuilder();
-
-            while (websocket.State == WebSocketState.Open)
+            WebSocket? webSocket;
+            if (connections.TryGetValue(connectionId, out webSocket))
             {
-                WebSocketReceiveResult result;
-
-                try
-                {
-                    result = await websocket.ReceiveAsync(
-                        new ArraySegment<byte>(buffer),
-                        CancellationToken.None);
-
-                }
-                catch (WebSocketException ex)
-                {
-                    logger.LogWarning(ex, "WebSocket error for connection {ConnectionId} and user {UserId}", connectionId, userId);
-                    break;
-                }
-
-                if (result.MessageType == WebSocketMessageType.Close)
-                {
-                    await websocket.CloseAsync(
-                        WebSocketCloseStatus.NormalClosure,
-                        "Closing",
-                        CancellationToken.None
-                        );
-                    break;
-                }
-
-                if (result.MessageType == WebSocketMessageType.Text)
-                {
-                    messageBuffer.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
-                }
-
-                if (result.EndOfMessage)
-                {
-                    var message = messageBuffer.ToString();
-                    messageBuffer.ToString();
-                }
+                return webSocket;
             }
+            return webSocket;
         }
 
         public async Task SendMessageAsync(string connectionId, WebSocketMessage message)
         {
-            if (!connections.TryGetValue(connectionId, out var webSocket))
+            var webSocket = await GetWebSocketByConnectionIdAsync(connectionId);
+
+            if (webSocket == null)
             {
                 return;
             }
+            await SendMessageAsync(webSocket, connectionId, message);
+        }
+
+        public async Task SendMessageAsync(WebSocket webSocket, string connectionId, WebSocketMessage message)
+        {
             try
             {
                 if (webSocket.State == WebSocketState.Open)
@@ -113,6 +72,11 @@ namespace HootOut.HootOutWebsockets.Services
                 logger.LogWarning(ex, "Error sending message to connection {ConnectionId}", connectionId);
                 throw;
             }
+        }
+
+        public async Task RemoveConnectionAsync(string connectionId)
+        {
+            connections.TryRemove(connectionId, out _);
         }
     }
 }

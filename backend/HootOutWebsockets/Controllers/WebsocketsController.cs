@@ -8,12 +8,16 @@ namespace HootOut.HootOutWebsockets.Controllers
         private ILogger logger { get; set; }
         private IWSConnectionManager connectionManager;
 
+        private IWSConnectionHandler connectionHandler;
+
         public WebSocketController(
             ILogger<WebSocketController> logger,
-            IWSConnectionManager connectionManager)
+            IWSConnectionManager connectionManager,
+            IWSConnectionHandler connectionHandler)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
+            this.connectionHandler = connectionHandler ?? throw new ArgumentNullException(nameof(connectionHandler));
         }
 
         [Route("/ws")]
@@ -22,14 +26,19 @@ namespace HootOut.HootOutWebsockets.Controllers
             if (HttpContext.WebSockets.IsWebSocketRequest)
             {
                 var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                var connectionId = await connectionManager.AddConnectionAsync(webSocket, HttpContext);
                 try
                 {
-                    await connectionManager.AddConnectionAsync(webSocket, HttpContext);
+                    await connectionHandler.ReadMessagesAsync(webSocket, connectionId, "");
                 }
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "Exception during Websockets communication");
                     throw;
+                }
+                finally
+                {
+                    await connectionManager.RemoveConnectionAsync(connectionId);
                 }
             }
             else

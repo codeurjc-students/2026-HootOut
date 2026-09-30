@@ -8,6 +8,8 @@
 <style>
 #chat-info {
     background-color: var(--color-background-light);
-    padding: 1rem;
+    padding: .5rem;
+    display: flex;
+    align-items: center;
 }
 </style>

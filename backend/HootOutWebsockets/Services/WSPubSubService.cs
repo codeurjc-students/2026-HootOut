@@ -11,9 +11,10 @@ namespace HootOut.WebSockets.Service
         private readonly IWSConnectionManager wsConnectionManager;
         private readonly ConcurrentDictionary<string, HashSet<string>> channelSubscribers = new();
 
-        public WSPubSubService(ILogger<WSPubSubService> logger)
+        public WSPubSubService(ILogger<WSPubSubService> logger, IWSConnectionManager wsConnectionManager)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.wsConnectionManager = wsConnectionManager ?? throw new ArgumentNullException(nameof(wsConnectionManager));
         }
 
         public async Task HandleSubscribeAsync(string connectionId, string userId, string channel)

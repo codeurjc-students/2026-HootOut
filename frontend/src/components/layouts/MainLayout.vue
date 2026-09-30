@@ -22,6 +22,7 @@ import navbarLogo from '@/assets/img/navbar-logo.svg'
     background-color: var(--color-background);
     width: 100vw;
     height: 100vh;
+    max-height: 100vh;
     display: grid;
     grid-template-rows: 3rem 1fr;
 }
