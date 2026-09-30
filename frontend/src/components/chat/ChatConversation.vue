@@ -22,5 +22,6 @@ import ChatMessages from './ChatConversation/ChatMessages.vue';
       grid-template-rows: auto 1fr auto;
       background-color: var(--color-background);
       border: 1px solid var(--color-border);
+      max-height: inherit; 
 }
 </style>

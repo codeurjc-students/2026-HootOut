@@ -16,6 +16,7 @@ import ChatMainSection from './ChatMainSection.vue';
 #chat-layout {
     display: grid;
     grid-template-columns: 100px 1fr;
-    height: 100%;
+    max-height: calc(100vh - 3rem);
+    height: calc(100vh - 3rem);
 }
 </style>

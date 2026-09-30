@@ -2,7 +2,7 @@
     import wsMessageService from "@/services/common/websocketsMesage/WebSocketsMessageService"
 import { onMounted, ref } from "vue";
 
-const messages = ref(["test1", "test1"]);
+const messages = ref(["test1", "test1","test1", "test1","test1", "test1","test1", "test1", "test1","test1", "test1","test1", "test1","test1", "test1","test1", "test1","test1", "test1", "test1","test1", "test1","test1", "test1","test1", "test1","test1", "test1", "test1","test1", "test1","test1", "test1","test1", "test1","test1", "test1"]);
 onMounted(() => {
     wsMessageService.connect(() => {
         wsMessageService.subscribe("chat123", (payload: string) => {
@@ -13,28 +13,25 @@ onMounted(() => {
 </script>
 
 <template>
-    <div id="messages">
-        <ul role="list" id="messages-list">
-            <li class="message-entry" v-for='(message, index) in messages' :key='message'>
-                {{ message }}
-            </li>
-        </ul>
+    <div id="messages-list"> 
+        <div class="message-entry" v-for='(message, index) in messages' :key='message'>
+            {{ message }}
+        </div> 
     </div>
 </template>
 
 <style>
-#messages { 
-    max-height: inherit;
-}
 
 #messages-list {
-    overflow-y: scroll;
+    min-height: 100%;
+    max-height: 100ch;
+    overflow-y: auto;
     padding: 1rem;
     display: flex;
-    flex-direction: column-reverse;
-    max-height: inherit;
+    flex-direction: column-reverse; 
 }
 
-.message-entry  { 
+.message-entry  {
+
 }
 </style>

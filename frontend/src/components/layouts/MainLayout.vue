@@ -40,4 +40,8 @@ import navbarLogo from '@/assets/img/navbar-logo.svg'
 #navbar-user {
     margin-left: auto;
 }
+
+#content {
+    height: 100%;
+}
 </style>
