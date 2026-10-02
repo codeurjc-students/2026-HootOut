@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import wsMessageService from "@/services/common/websocketsMesage/WebSocketsMessageService"
+import { serverInfoStore } from "@/stores/serverInfo";
+import { userInfoStore } from "@/stores/userInfo";
+import type { ChatMessage } from "@/types";
 import { onMounted, ref } from "vue";
 
-
+const serverInfo = serverInfoStore();
+const userInfo = userInfoStore();
 const message = ref("");
 
 onMounted(() => {
@@ -10,7 +14,12 @@ onMounted(() => {
 });
 
 function sendMessage() {
-    wsMessageService.sendMessage("chat123", message.value);
+    const chatMessage = {
+        author: userInfo.getUserInfo(),
+        content: message.value,
+    } as ChatMessage
+    wsMessageService.sendMessage(serverInfo.currentChatName, chatMessage);
+    message.value = "";
 }
 
 
@@ -18,12 +27,13 @@ function sendMessage() {
 
 <template>
     <div id="message-input-bar">
-        <div id="message-box">
-            <div>
-            <p>Send Message:</p>
-            <input v-model="message" type="text" id="wsmessage-input" />
-            <button type="button" @click="sendMessage" id="wsmessage-btn">Send Message</button>
-        </div>
+        <div id="message-box"> 
+            <input v-model="message" type="text" id="message-input" @keyup.enter="sendMessage"  />
+            <div class="btn" type="button" @click="sendMessage" id="wsmessage-btn">
+                <span class="material-symbols-sharp">
+                    send
+                </span>
+            </div>
         </div>
     </div>
 </template>
@@ -31,6 +41,7 @@ function sendMessage() {
 <style>
 #message-input-bar {
     margin: 1rem;
+    margin-top: 0;
 }
 
 #message-box {
@@ -39,5 +50,32 @@ function sendMessage() {
     border-radius: 10px;
     height: 3rem;
     width: 100%;
+    display: flex;
+    align-items: center;
+    max-width: 80%;
+    margin: 0 auto;
+}
+
+#message-input {
+    all: unset;
+    flex-grow: 1;
+    height: 100%;
+    padding-left: 1rem; 
+    
+}
+
+.material-symbols-sharp {
+    color: rgba(255, 255, 255, 1);
+}
+
+.btn {
+    padding: 12px;
+    align-items: center;
+    display: flex;
+    margin-left: auto;
+}
+
+.btn:hover {
+    cursor: pointer;
 }
 </style>

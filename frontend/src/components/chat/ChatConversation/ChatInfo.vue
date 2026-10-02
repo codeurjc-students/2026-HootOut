@@ -1,8 +1,13 @@
 <script setup>
+import { serverInfoStore } from '@/stores/serverInfo';
+import { storeToRefs } from 'pinia';
+
+
+const { currentChatName } = storeToRefs(serverInfoStore())
 </script>
 
 <template>
-    <div id="chat-info"> Chat name </div>
+    <div id="chat-info"> {{ currentChatName }}</div>
 </template>
 
 <style>

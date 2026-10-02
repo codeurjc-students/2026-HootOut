@@ -1,10 +1,8 @@
 <script setup>
+
 import ChatInfo from './ChatConversation/ChatInfo.vue';
 import ChatMessageBar from './ChatConversation/ChatMessageBar.vue';
 import ChatMessages from './ChatConversation/ChatMessages.vue';
-
-
-
 
 </script>
 

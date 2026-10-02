@@ -62,3 +62,7 @@ npm install -g @sonar/scan
 npm run test:unit:coverage
 sonar-scanner-npm -Dsonar.token=<sonar-token> -Dsonar.projectKey=<sonar-project-key> -Dsonar.organization=<sonar-organization-key> -Dsonar.javascript.lcov.reportPaths=coverage/vitest/lcov.info -Dsonar.coverage.exclusions=e2e/**,**/*.test.ts,**/*.spec.ts
 ```
+
+## Icons:
+This applications uses Google Material Symbols (Sharp):
+https://fonts.google.com/icons?icon.query=send&icon.set=Material+Symbols&icon.style=Sharp&icon.size=24&icon.color=%23e3e3e3

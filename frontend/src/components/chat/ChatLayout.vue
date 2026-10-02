@@ -1,7 +1,18 @@
 <script setup lang="ts">
 import ChatSideBar from './ChatSideBar.vue';
 import ChatMainSection from './ChatMainSection.vue';
+import wsMessageService from '@/services/common/websocketsMesage/WebSocketsMessageService.ts';
+import { onMounted, provide } from 'vue';
+import { userInfoStore } from '@/stores/userInfo.ts';
 
+provide('wsMessageService', wsMessageService)
+
+const userInfo = userInfoStore();
+
+onMounted(() => {
+    wsMessageService.connect(() => {}); 
+    userInfo.setUsername(`User${Math.floor(Math.random() * 100000)}`);
+})
 
 </script>
 

@@ -31,6 +31,10 @@ export class WebSocketService {
         this.socket?.close();
         this.socket = null;
     }
+
+    isConnected(): boolean { 
+        return this.socket == null ? false : this.socket?.OPEN == WebSocket.OPEN;
+    }
 }
 
 export default new WebSocketService();

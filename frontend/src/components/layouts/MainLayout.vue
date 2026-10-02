@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import navbarLogo from '@/assets/img/navbar-logo.svg'
+import { userInfoStore } from '@/stores/userInfo';
+import { storeToRefs } from 'pinia';
+
+const userInfo = userInfoStore();
+
+const {username} = storeToRefs(userInfo)
+
 </script>
 
 <template>
@@ -8,7 +15,7 @@ import navbarLogo from '@/assets/img/navbar-logo.svg'
             <img id="navbar-logo" :src="navbarLogo" alt="HootOutLogo" />
 
             <div id="navbar-user">
-                Username
+                {{username}}
             </div>
         </nav>
         <section id="content">
