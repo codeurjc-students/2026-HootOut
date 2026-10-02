@@ -16,7 +16,7 @@ namespace HootOut.PostgreSQL.Searchs.Users
 
         private const string getUsersQuery = """
             SELECT 
-                "Uid",
+                "Id",
                 "Email",
                 "Username"
             FROM "HootOut"."UserInfo"

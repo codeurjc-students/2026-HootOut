@@ -8,7 +8,7 @@ namespace HootOut.HootOutWebsockets.Services
 {
     public class WSConnectionManager : IWSConnectionManager
     {
-        private readonly ConcurrentDictionary<string, WebSocket> connections = new();
+        public readonly ConcurrentDictionary<string, WebSocket> Connections = new();
 
         private readonly ILogger<WSConnectionManager> logger;
 
@@ -21,11 +21,11 @@ namespace HootOut.HootOutWebsockets.Services
         {
             var connectionId = Guid.CreateVersion7().ToString();
 
-            connections.TryAdd(connectionId, websocket);
+            Connections.TryAdd(connectionId, websocket);
 
             string userId = "Usuario Test";
 
-            logger.LogInformation("WebSocket connected: {ConnectionId} for user: {UserId}. Connections count {ConnectionCount}", connectionId, userId, connections.Count);
+            logger.LogInformation("WebSocket connected: {ConnectionId} for user: {UserId}. Connections count {ConnectionCount}", connectionId, userId, Connections.Count);
 
             return connectionId;
         }
@@ -33,7 +33,7 @@ namespace HootOut.HootOutWebsockets.Services
         public async Task<WebSocket?> GetWebSocketByConnectionIdAsync(string connectionId)
         {
             WebSocket? webSocket;
-            if (connections.TryGetValue(connectionId, out webSocket))
+            if (Connections.TryGetValue(connectionId, out webSocket))
             {
                 return webSocket;
             }
@@ -76,8 +76,8 @@ namespace HootOut.HootOutWebsockets.Services
 
         public async Task RemoveConnectionAsync(string connectionId)
         {
-            connections.TryRemove(connectionId, out _);
-            logger.LogInformation("WebSocket disconnected: {ConnectionId}. Connections count {ConnectionCount}", connectionId, connections.Count);
+            Connections.TryRemove(connectionId, out _);
+            logger.LogInformation("WebSocket disconnected: {ConnectionId}. Connections count {ConnectionCount}", connectionId, Connections.Count);
         }
     }
 }

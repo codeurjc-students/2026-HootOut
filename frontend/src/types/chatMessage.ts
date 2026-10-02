@@ -4,6 +4,6 @@ export interface ChatMessage {
   id: string;
   author: UserInfo;
   content: string;
-  createdAt: string;
-  modifiedAt: string;
+  createdAt: string | null;
+  modifiedAt: string | null;
 }

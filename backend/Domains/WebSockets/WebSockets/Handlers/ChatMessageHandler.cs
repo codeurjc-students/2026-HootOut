@@ -1,4 +1,5 @@
-﻿using HootOut.Contracts.Users.Dtos;
+﻿using HootOut.Contracts.ChatMessage.Dtos;
+using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.WebSocket;
 using HootOut.Contracts.WebSockets.Handlers;
 using HootOut.Contracts.WebSockets.Services;
@@ -6,18 +7,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace HootOut.WebSockets.Actions
-{
-    class ChatMessageDto // TO-DO Move to its own Domain Project
-    {
-        public Guid Id { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime ModifiedAt { get; set; }
-
-        public UserDto Author { get; set; }
-
-        public string Content { get; set; }
-
-    }
+{ 
     public class ChatMessageHandler : IWSMessageHandler
     {
         public WSHandlerType Type => WSHandlerType.ChatMessage;

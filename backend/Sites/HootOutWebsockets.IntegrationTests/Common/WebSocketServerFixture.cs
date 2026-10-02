@@ -4,20 +4,20 @@ using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting; 
 
-namespace HootOut.HootOutAPI.IntegrationTests.Common
+namespace HootOut.HootOutWebsockets.IntegrationTests.Common
 {
-    public class APIFixture : WebApplicationFactory<Program>, IAsyncLifetime
+    public class WebSocketServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
     {
         public ILifetimeScope AutofacRoot => Services.GetAutofacRoot();
-        public TestContainerPostgreSQLProvider postgreSQLProvider { get; set; }
+        public TestContainerPostgreSQLProvider? PostgreSQLProvider { get; set; }
         protected override IHostBuilder CreateHostBuilder()
         {
             TestRegistrationManager testRegistration = new TestRegistrationManager();
             testRegistration.RegisterTest = (builder) =>
             {
-                builder.RegisterInstance(postgreSQLProvider).As<IPersistenceProvider>().SingleInstance();
+                builder?.RegisterInstance(PostgreSQLProvider!).As<IPersistenceProvider>().SingleInstance();
             };
 
             Startup.RegistrationManager = testRegistration;
@@ -37,13 +37,13 @@ namespace HootOut.HootOutAPI.IntegrationTests.Common
 
         public new ValueTask DisposeAsync()
         {
-            return postgreSQLProvider.DisposeAsync();
+            return PostgreSQLProvider!.DisposeAsync();
         }
 
         public ValueTask InitializeAsync()
         {
-            postgreSQLProvider = new TestContainerPostgreSQLProvider();
-            return postgreSQLProvider.InitializeAsync();
+            PostgreSQLProvider = new TestContainerPostgreSQLProvider();
+            return PostgreSQLProvider.InitializeAsync();
         }
     }
 }

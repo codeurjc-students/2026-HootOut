@@ -15,8 +15,8 @@ namespace HootOut.PostgreSQL.Savers.Users
         }
 
         private const string addOrReplaceUserInfo = """
-            INSERT INTO "HootOut"."UserInfo" ("Uid", "Username", "Email", "Password", "ModifiedDate", "CreatedDate") 
-            VALUES (@Uid, @Username, @Email, @Password, @ModifiedDate, @CreatedDate)
+            INSERT INTO "HootOut"."UserInfo" ("Id", "Username", "Email", "Password", "ModifiedDate", "CreatedDate") 
+            VALUES (@Id, @Username, @Email, @Password, @ModifiedDate, @CreatedDate)
         """;
 
         public void Save(UserInfo item)
@@ -33,7 +33,7 @@ namespace HootOut.PostgreSQL.Savers.Users
 
                     conn.Execute(addOrReplaceUserInfo, new
                     {
-                        Uid = item.Uid,
+                        Id = item.Uid,
                         Username = item.Username,
                         Email = item.Email,
                         Password = item.Password,
