@@ -25,7 +25,7 @@ namespace HootOut.HootOutWebsockets.Services
 
             string userId = "Usuario Test";
 
-            logger.LogInformation("WebSocket connected: {ConnectionId} for user: {UserId}", connectionId, userId);
+            logger.LogInformation("WebSocket connected: {ConnectionId} for user: {UserId}. Connections count {ConnectionCount}", connectionId, userId, connections.Count);
 
             return connectionId;
         }
@@ -77,6 +77,7 @@ namespace HootOut.HootOutWebsockets.Services
         public async Task RemoveConnectionAsync(string connectionId)
         {
             connections.TryRemove(connectionId, out _);
+            logger.LogInformation("WebSocket disconnected: {ConnectionId}. Connections count {ConnectionCount}", connectionId, connections.Count);
         }
     }
 }

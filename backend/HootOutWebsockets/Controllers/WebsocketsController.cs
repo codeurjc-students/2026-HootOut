@@ -1,4 +1,6 @@
-﻿using HootOut.HootOutWebsockets.Services;
+﻿using HootOut.Contracts.Common.Messages.Services;
+using HootOut.Contracts.WebSockets.Services;
+using HootOut.HootOutWebsockets.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HootOut.HootOutWebsockets.Controllers
@@ -10,14 +12,18 @@ namespace HootOut.HootOutWebsockets.Controllers
 
         private IWSConnectionHandler connectionHandler;
 
+        private IWSPubSubService pubSubService;
+
         public WebSocketController(
             ILogger<WebSocketController> logger,
             IWSConnectionManager connectionManager,
-            IWSConnectionHandler connectionHandler)
+            IWSConnectionHandler connectionHandler,
+            IWSPubSubService pubSubService)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
             this.connectionHandler = connectionHandler ?? throw new ArgumentNullException(nameof(connectionHandler));
+            this.pubSubService = pubSubService ?? throw new ArgumentNullException(nameof(pubSubService));
         }
 
         [Route("/ws")]
@@ -39,6 +45,7 @@ namespace HootOut.HootOutWebsockets.Controllers
                 finally
                 {
                     await connectionManager.RemoveConnectionAsync(connectionId);
+                    await pubSubService.RemoveAllConnectionSubscriptions(connectionId);
                 }
             }
             else

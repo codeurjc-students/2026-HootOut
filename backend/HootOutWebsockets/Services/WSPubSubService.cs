@@ -11,6 +11,8 @@ namespace HootOut.WebSockets.Service
         private readonly IWSConnectionManager wsConnectionManager;
         private readonly ConcurrentDictionary<string, HashSet<string>> channelSubscribers = new();
 
+        private readonly ConcurrentDictionary<string, HashSet<string>> connectionSubscriptions = new();
+
         public WSPubSubService(ILogger<WSPubSubService> logger, IWSConnectionManager wsConnectionManager)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -25,9 +27,19 @@ namespace HootOut.WebSockets.Service
                 lock (existing)
                 {
                     existing.Add(connectionId);
+                    logger.LogInformation("Added connection {ConnectionId} to channel {ChannelId}. Channel count {ConnectionCount}", connectionId, channel, existing.Count);
                 }
                 return existing;
             });
+
+            connectionSubscriptions.AddOrUpdate(connectionId, new HashSet<string> { channel }, (_, existing) =>
+            {
+                lock (existing)
+                {
+                    existing.Add(channel); 
+                }
+                return existing;
+            }); 
         }
 
         public async Task HandleUnsubscribeAsync(string connectionId, string userId, string channel)
@@ -38,12 +50,51 @@ namespace HootOut.WebSockets.Service
                 lock (subscribers)
                 {
                     subscribers.Remove(connectionId);
+                    logger.LogInformation("Removed connection {ConnectionId} from channel {ChannelId}. Channel count {ConnectionCount}", connectionId, channel, subscribers.Count);
                     if (subscribers.Count == 0)
                     {
                         channelSubscribers.TryRemove(channel, out _);
                     }
                 }
             }
+
+            if (connectionSubscriptions.TryGetValue(connectionId, out var channels))
+            {
+                lock (channels)
+                {
+                    channels.Remove(channel);
+                    logger.LogInformation("Removed connection {ConnectionId} from channel {ChannelId}. Channel count {ConnectionCount}", connectionId, channel, subscribers.Count);
+                    if (channels.Count == 0)
+                    {
+                        connectionSubscriptions.TryRemove(connectionId, out _);
+                    }
+                }
+            }
+        }
+
+        public async Task RemoveAllConnectionSubscriptions(string connectionId)
+        {
+            if (connectionSubscriptions.TryGetValue(connectionId, out var channels))
+            {
+                foreach (var channel in channels)
+                {
+                    if (channelSubscribers.TryGetValue(channel, out var subscribers))
+                    {
+                        lock (subscribers)
+                        {
+                            subscribers.Remove(connectionId);
+                            logger.LogInformation("Removed connection {ConnectionId} from channel {ChannelId}. Channel count {ConnectionCount}", connectionId, channel, subscribers.Count);
+                            if (subscribers.Count == 0)
+                            {
+                                channelSubscribers.TryRemove(channel, out _);
+                            }
+                        }
+                    }
+                }
+            }
+
+            connectionSubscriptions.TryRemove(connectionId, out _);
+
         }
 
         public async Task SendMessageToChannel(string channel, WebSocketMessage message)

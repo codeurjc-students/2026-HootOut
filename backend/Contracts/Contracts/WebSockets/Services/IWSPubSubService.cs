@@ -9,5 +9,7 @@ namespace HootOut.Contracts.WebSockets.Services
         Task HandleUnsubscribeAsync(string connectionId, string userId, string channel);
 
         Task SendMessageToChannel(string channel, WebSocketMessage message);
+
+        Task RemoveAllConnectionSubscriptions(string connectionId);
     }
 }
