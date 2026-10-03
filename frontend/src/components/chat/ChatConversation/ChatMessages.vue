@@ -6,17 +6,31 @@ import { computed } from "vue";
 
 const serverInfo = serverInfoStore();
 
-const { channelMessages, currentChatName } = storeToRefs(serverInfo);
+const { channelMessages, currentChatName, pendingMessages } = storeToRefs(serverInfo);
 const { username } = storeToRefs(userInfoStore());
 
 const messages = computed(() => {
     return channelMessages.value[currentChatName.value];
 })
 
+const pendingMessagesList = computed(() => {
+    return pendingMessages?.value[currentChatName.value];
+});
+
 </script>
 
 <template>
     <div id="messages-list">
+        <div class="message-entry pending" v-for='(message, index) in pendingMessagesList' :key='message.id'
+            :class="{ 'message-entry-user': message.author.username == username }">
+            <div>
+                {{ message.author.username }} --- {{ message.createdAt }}
+            </div>
+            <div>
+                {{ message.content }}
+            </div>
+        </div>
+
         <div class="message-entry" v-for='(message, index) in messages' :key='message.id'
             :class="{ 'message-entry-user': message.author.username == username }">
             <div>
@@ -41,5 +55,9 @@ const messages = computed(() => {
 
 .message-entry-user {
     background-color: var(--color-background-soft);
+}
+
+.message-entry.pending {
+    color: rgba(0, 0, 0, .3);
 }
 </style>

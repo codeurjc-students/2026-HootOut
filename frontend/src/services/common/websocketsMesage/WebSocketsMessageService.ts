@@ -10,6 +10,11 @@ type Pending = {
     timer: ReturnType<typeof setTimeout>;
 };
 
+export type AckPromise = {
+    id: string,
+    promise: Promise<WebSocketMessage>
+};
+
 export class WebSocketMessageService {
     private webSocketService: WebSocketService = webSocketService;
     private connected = ref(false);
@@ -65,22 +70,25 @@ export class WebSocketMessageService {
         return false;
     }
 
-    sendWithAck(message: WebSocketMessage, timeoutMs = 5000): Promise<WebSocketMessage> {
+    sendWithAck(message: WebSocketMessage, timeoutMs = 5000): any {
         const id = newId();
         message.id = id;
 
-        return new Promise((resolve, reject) => {
-            const timer = setTimeout(() => {
-                this.pending.delete(id);
-                reject(new Error(`No ack for ${message.type} within ${timeoutMs}ms`));
-            }, timeoutMs);
+        return {
+            id: id,
+            promise: new Promise((resolve, reject) => {
+                const timer = setTimeout(() => {
+                    this.pending.delete(id);
+                    reject(new Error(`No ack for ${message.type} within ${timeoutMs}ms`));
+                }, timeoutMs);
 
-            this.pending.set(id, { resolve, reject, timer });
-            this.webSocketService.send(JSON.stringify(message));
-        });
+                this.pending.set(id, { resolve, reject, timer });
+                this.webSocketService.send(JSON.stringify(message));
+            })
+        };
     }
 
-    sendMessage(channel: string, payload: any, timeoutMs = 1000): Promise<WebSocketMessage> {
+    sendMessage(channel: string, payload: any, timeoutMs = 5000): AckPromise {
         const message: WebSocketMessage = { channel, payload: JSON.stringify(payload), type: WSMessageType.ChatMessage };
         return this.sendWithAck(message, timeoutMs);
     }

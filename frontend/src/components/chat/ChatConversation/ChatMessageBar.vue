@@ -13,13 +13,20 @@ onMounted(() => {
 
 });
 
-function sendMessage() {
+async function sendMessage() {
+    if (!message.value)
+        return;
     const chatMessage = {
         author: userInfo.getUserInfo(),
         content: message.value,
     } as ChatMessage
-    wsMessageService.sendMessage(serverInfo.currentChatName, chatMessage).then(m => console.log(m))
     message.value = "";
+
+    const ackPromise = await wsMessageService.sendMessage(serverInfo.currentChatName, chatMessage);
+    serverInfo.addPendingMessage(ackPromise.id, chatMessage);
+
+    const wsMessage = await ackPromise.promise;
+    serverInfo.confirmMessage(wsMessage)
 }
 
 

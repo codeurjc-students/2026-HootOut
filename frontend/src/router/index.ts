@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import TemporalData from '@/components/temporalData/TemporalData.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,8 +9,13 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
-      meta: {layout: 'MainLayout'}
+      meta: { layout: 'MainLayout' }
     },
+    {
+      path: '/temporalData',
+      name: 'temp',
+      component: TemporalData
+    }
     // {
     //   path: '/about',
     //   name: 'about',
