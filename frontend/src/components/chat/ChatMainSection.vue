@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ChatConversation from './ChatConversation.vue';
+import ChatConversationView from './ChatConversationView.vue';
 import ChatLeftBar from './ChatLeftBar.vue';
 import { serverInfoStore } from "@/stores/serverInfo.ts"
 import { storeToRefs } from 'pinia';
@@ -11,7 +11,7 @@ const { currentChatName } = storeToRefs(serverInfoStore())
 <template>
     <section id="main-section">
         <ChatLeftBar />
-        <ChatConversation v-if="currentChatName" />
+        <ChatConversationView v-if="currentChatName" />
         <div id="empty-chat" v-else>
             Start a new chat
         </div>
