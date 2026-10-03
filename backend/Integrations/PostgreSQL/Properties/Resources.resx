@@ -118,6 +118,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="ChatChannelTable" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\DBScripts\Resources\ChatChannelTable.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="ChatMessageTable" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\DBScripts\Resources\ChatMessageTable.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="ChatServerTable" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\DBScripts\Resources\ChatServerTable.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
   <data name="UserInfoTable" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\DBScripts\Resources\UserInfoTable.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>

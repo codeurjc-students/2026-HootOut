@@ -7,6 +7,15 @@
     <Project Path="Contracts/Contracts/Contracts.csproj" Id="ce02a532-a2ef-4871-87f9-b1f00119f700" />
   </Folder>
   <Folder Name="/Domains/" />
+  <Folder Name="/Domains/ChatChannels/">
+    <Project Path="Domains/ChatChannels/ChatChannels/ChatChannels.csproj" Id="088648f0-6889-4b1b-87b7-26386abb1513" />
+  </Folder>
+  <Folder Name="/Domains/ChatMessages/">
+    <Project Path="Domains/ChatMessages/ChatMessages/ChatMessages.csproj" Id="e62a2fa4-c4d8-4c4e-93f9-86be8b5b576b" />
+  </Folder>
+  <Folder Name="/Domains/ChatServers/">
+    <Project Path="Domains/ChatServers/ChatServers/ChatServers.csproj" Id="75a51ef4-2461-43e1-9e34-e0ed52f128ee" />
+  </Folder>
   <Folder Name="/Domains/UsersDomain/">
     <Project Path="Domains/Users.IntegrationTests/Users.IntegrationTests.csproj" />
     <Project Path="Domains/Users.Tests/Users.UnitTests.csproj" />

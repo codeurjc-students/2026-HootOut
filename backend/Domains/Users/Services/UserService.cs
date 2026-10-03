@@ -24,7 +24,7 @@ namespace HootOut.Users.Services
 
             var newUser = new UserInfo
             {
-                Uid = Guid.CreateVersion7(),
+                Id = Guid.CreateVersion7(),
                 Email = createUserRequest.Email,
                 Username = createUserRequest.Username,
                 Password = "*********" // TO-DO proper security
@@ -32,7 +32,7 @@ namespace HootOut.Users.Services
 
             userSaver.Save(newUser);
 
-            return newUser.Uid;
+            return newUser.Id;
         }
 
         public IEnumerable<UserDto> GetUserDtos()

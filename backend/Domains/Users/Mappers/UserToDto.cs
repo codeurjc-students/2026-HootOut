@@ -9,7 +9,7 @@ namespace HootOut.Users.Mappers
         {
             return new UserDto
             {
-                Id = user.Uid,
+                Id = user.Id,
                 Username = user.Username,
                 Email = user.Email,
                 Password = user.Password

@@ -2,10 +2,12 @@
 {
     public abstract class Persistable
     {
-        public Guid Uid { get; set; }
+        public Guid Id { get; set; }
 
-        public DateTime CreatedDate { get; set; }
+        public DateTime CreatedAt { get; set; }
 
-        public DateTime ModifiedDate { get; set; }
+        public DateTime ModifiedAt { get; set; }
+
+        public bool Deleted { get; set; }
     }
 }

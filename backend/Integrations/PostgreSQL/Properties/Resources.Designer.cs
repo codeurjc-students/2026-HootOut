@@ -74,7 +74,100 @@ namespace HootOut.PostgreSQL.Properties {
         ///
         ///end $$; 
         ///
-        ///-- USER DATA TABLE ---------------------------------------------------------------
+        ///-- CHAT MESSAGE TABLE ---------------------------------------------------------------
+        ///----------------------------------------------------------------------------------
+        ///
+        ///DO $$
+        ///BEGIN
+        ///if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
+        ///				WHERE TABLE_SCHEMA = &apos;HootOut&apos;
+        ///				AND   TABLE_NAME = &apos;ChatChannel&apos;)
+        ///then
+        ///	CREATE TABLE &quot;HootOut&quot;.&quot;ChatCh [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ChatChannelTable {
+            get {
+                return ResourceManager.GetString("ChatChannelTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DO $$
+        ///BEGIN
+        ///
+        ///if NOT EXISTS  (
+        ///SELECT  schema_name
+        ///FROM	information_schema.schemata
+        ///WHERE	schema_name = &apos;HootOut&apos; )
+        ///then 
+        ///	CREATE SCHEMA &quot;HootOut&quot;;
+        ///end if;
+        ///
+        ///end $$; 
+        ///
+        ///-- CHAT MESSAGE TABLE ---------------------------------------------------------------
+        ///----------------------------------------------------------------------------------
+        ///
+        ///DO $$
+        ///BEGIN
+        ///if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
+        ///				WHERE TABLE_SCHEMA = &apos;HootOut&apos;
+        ///				AND   TABLE_NAME = &apos;ChatMessage&apos;)
+        ///then
+        ///	CREATE TABLE &quot;HootOut&quot;.&quot;ChatMe [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ChatMessageTable {
+            get {
+                return ResourceManager.GetString("ChatMessageTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DO $$
+        ///BEGIN
+        ///
+        ///if NOT EXISTS  (
+        ///SELECT  schema_name
+        ///FROM	information_schema.schemata
+        ///WHERE	schema_name = &apos;HootOut&apos; )
+        ///then 
+        ///	CREATE SCHEMA &quot;HootOut&quot;;
+        ///end if;
+        ///
+        ///end $$; 
+        ///
+        ///-- CHAT MESSAGE TABLE ---------------------------------------------------------------
+        ///----------------------------------------------------------------------------------
+        ///
+        ///DO $$
+        ///BEGIN
+        ///if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
+        ///				WHERE TABLE_SCHEMA = &apos;HootOut&apos;
+        ///				AND   TABLE_NAME = &apos;ChatServer&apos;)
+        ///then
+        ///	CREATE TABLE &quot;HootOut&quot;.&quot;ChatSer [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ChatServerTable {
+            get {
+                return ResourceManager.GetString("ChatServerTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DO $$
+        ///BEGIN
+        ///
+        ///if NOT EXISTS  (
+        ///SELECT  schema_name
+        ///FROM	information_schema.schemata
+        ///WHERE	schema_name = &apos;HootOut&apos; )
+        ///then 
+        ///	CREATE SCHEMA &quot;HootOut&quot;;
+        ///end if;
+        ///
+        ///end $$; 
+        ///
+        ///-- USER INFO TABLE ---------------------------------------------------------------
         ///----------------------------------------------------------------------------------
         ///
         ///DO $$
@@ -83,7 +176,8 @@ namespace HootOut.PostgreSQL.Properties {
         ///				WHERE TABLE_SCHEMA = &apos;HootOut&apos;
         ///				AND   TABLE_NAME = &apos;UserInfo&apos;)
         ///then
-        ///	CREATE TABLE H [rest of string was truncated]&quot;;.
+        ///	CREATE TABLE &quot;HootOut&quot;.&quot;UserInfo&quot;(
+        ///	 [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string UserInfoTable {
             get {

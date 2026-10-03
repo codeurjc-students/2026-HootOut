@@ -11,20 +11,20 @@ end if;
 
 end $$; 
 
--- USER INFO TABLE ---------------------------------------------------------------
+-- CHAT MESSAGE TABLE ---------------------------------------------------------------
 ----------------------------------------------------------------------------------
 
 DO $$
 BEGIN
 if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
 				WHERE TABLE_SCHEMA = 'HootOut'
-				AND   TABLE_NAME = 'UserInfo')
+				AND   TABLE_NAME = 'ChatServer')
 then
-	CREATE TABLE "HootOut"."UserInfo"(
-		"Id" UUID NOT NULL PRIMARY KEY ,
-		"Email" VARCHAR (255) NOT NULL UNIQUE,
-		"Username" VARCHAR (255) NOT NULL UNIQUE,
-		"Password" VARCHAR (255) NOT NULL,
+	CREATE TABLE "HootOut"."ChatServer"(
+		"Id" UUID NOT NULL PRIMARY KEY , 
+		"OwnerId" UUID NOT NULL, 
+		"Name" VARCHAR(255) NOT NULL,
+		"Deleted" boolean NOT NULL DEFAULT false,
 		"CreatedAt" timestamptz  NOT NULL,
 		"ModifiedAt" timestamptz NOT NULL
 	);
