@@ -6,5 +6,7 @@
         Subscribe = 1,
         Unsubscribe = 2,
         ChatMessage = 3,
+        Ack = 4,
+        Error = 5
     }
 }

@@ -1,5 +1,4 @@
 ﻿using HootOut.Contracts.ChatMessage.Dtos;
-using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.WebSocket;
 using HootOut.Contracts.WebSockets.Handlers;
 using HootOut.Contracts.WebSockets.Services;
@@ -7,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace HootOut.WebSockets.Actions
-{ 
+{
     public class ChatMessageHandler : IWSMessageHandler
     {
         public WSHandlerType Type => WSHandlerType.ChatMessage;
@@ -23,7 +22,7 @@ namespace HootOut.WebSockets.Actions
             this.pubSubService = pubSubService ?? throw new ArgumentNullException(nameof(pubSubService));
         }
 
-        public async Task HandleMessageAsync(string connectionId, string userId, WebSocketMessage message)
+        public async Task HandleMessageAsync(Guid connectionId, string userId, WebSocketMessage message)
         {
             // Check userId can send to this channel.
             // Store message to DB
@@ -36,7 +35,7 @@ namespace HootOut.WebSockets.Actions
 
             message.Payload = JsonConvert.SerializeObject(chatMessage);
 
-            await pubSubService.SendMessageToChannel(message.Channel!, message);
+            await pubSubService.SendMessageToChannel(connectionId, message.Channel!, message);
         }
     }
 }

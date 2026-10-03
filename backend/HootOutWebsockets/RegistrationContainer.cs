@@ -10,7 +10,7 @@ namespace HootOut.HootOutWebsockets
     {
         public void Register(ContainerBuilder builder)
         {
-            builder.RegisterType<WSConnectionManager>().As<IWSConnectionManager>().SingleInstance();
+            builder.RegisterType<WSConnectionManager>().As<IWSConnectionManager, IWSMessageSender>().SingleInstance();
             builder.RegisterType<WSConnectionHandler>().As<IWSConnectionHandler>().SingleInstance();
             builder.RegisterType<WSPubSubService>().As<IWSPubSubService>().SingleInstance();
         }

@@ -2,6 +2,6 @@
 {
     public interface IWSMessageDeserializer
     {
-        Task HandleMessageAsync(string connectionId, string userId, string rawMessage);
+        Task HandleMessageAsync(Guid connectionId, string userId, string rawMessage);
     }
 }

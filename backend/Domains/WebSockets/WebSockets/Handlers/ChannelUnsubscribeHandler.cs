@@ -20,7 +20,7 @@ namespace HootOut.WebSockets.Handlers
             this.wsPubSubService = wsPubSubService ?? throw new ArgumentNullException(nameof(wsPubSubService));
         }
 
-        public async Task HandleMessageAsync(string connectionId, string userId, WebSocketMessage message)
+        public async Task HandleMessageAsync(Guid connectionId, string userId, WebSocketMessage message)
         {
             if (string.IsNullOrWhiteSpace(message.Channel))
             {

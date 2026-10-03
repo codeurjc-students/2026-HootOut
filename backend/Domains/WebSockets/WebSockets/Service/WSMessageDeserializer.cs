@@ -11,13 +11,17 @@ namespace HootOut.WebSockets.Service
         private ILogger<WSMessageDeserializer> logger;
         private IEnumerable<IWSMessageHandler> wsMessageHandlers;
 
+        private IWSMessageSender wsMessageSender;
+
         public WSMessageDeserializer(ILogger<WSMessageDeserializer> logger,
-            IEnumerable<IWSMessageHandler> wsMessageHandlers)
+            IEnumerable<IWSMessageHandler> wsMessageHandlers,
+            IWSMessageSender wSMessageSender)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.wsMessageHandlers = wsMessageHandlers ?? throw new ArgumentNullException(nameof(wsMessageHandlers));
+            this.wsMessageSender = wSMessageSender ?? throw new ArgumentNullException(nameof(wsMessageSender));
         }
-        public async Task HandleMessageAsync(string connectionId, string userId, string rawMessage)
+        public async Task HandleMessageAsync(Guid connectionId, string userId, string rawMessage)
         {
             WebSocketMessage? message;
             try
@@ -41,7 +45,32 @@ namespace HootOut.WebSockets.Service
                 logger.LogWarning("Missing Message Type for connection {ConnectionId} and user {UserId}", connectionId, userId);
             }
 
-            wsMessageHandlers.Where(x => x.Type == message.Type).ToList().ForEach(async x => await x.HandleMessageAsync(connectionId, userId, message)); // TO-DO Check concurrency
+            try
+            {
+                wsMessageHandlers.Where(x => x.Type == message.Type).ToList().ForEach(async x => await x.HandleMessageAsync(connectionId, userId, message));
+
+                if (message.Id.HasValue) //After processing we Ack the message
+                {
+                    message.Type = WSHandlerType.Ack;
+                    message.ReplyTo = message.Id;
+                    await wsMessageSender.SendMessageAsync(connectionId, message);
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                logger.LogError(ex, "Handler failed for {Type}", message.Type);
+
+                if (message.Id.HasValue)
+                {
+                    await wsMessageSender.SendMessageAsync(connectionId, new WebSocketMessage
+                    {
+                        Type = WSHandlerType.Error,
+                        ReplyTo = message.Id,
+                        Error = "Could not process message"
+                    });
+                }
+
+            }
         }
     }
 }

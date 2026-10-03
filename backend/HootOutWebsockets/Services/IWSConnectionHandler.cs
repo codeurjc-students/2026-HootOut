@@ -4,6 +4,6 @@ namespace HootOut.HootOutWebsockets.Services
 {
     public interface IWSConnectionHandler
     {
-        Task ReadMessagesAsync(WebSocket websocket, string connectionId, string userId); 
+        Task ReadMessagesAsync(WebSocket websocket, Guid connectionId, string userId);
     }
 }

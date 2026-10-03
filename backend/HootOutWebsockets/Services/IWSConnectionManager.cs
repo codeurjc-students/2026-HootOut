@@ -1,18 +1,17 @@
 ﻿using HootOut.Contracts.WebSocket;
+using HootOut.Contracts.WebSockets.Services;
 using System.Net.WebSockets;
 
 namespace HootOut.HootOutWebsockets.Services
 {
-    public interface IWSConnectionManager
+    public interface IWSConnectionManager : IWSMessageSender
     {
-        Task<string> AddConnectionAsync(WebSocket websocket, HttpContext httpContext);
+        Task<Guid> AddConnectionAsync(WebSocket websocket, HttpContext httpContext);
 
-        Task RemoveConnectionAsync(string connectionId);
+        Task RemoveConnectionAsync(Guid connectionId);
 
-        Task<WebSocket?> GetWebSocketByConnectionIdAsync(string connectionId);
+        Task<WebSocket?> GetWebSocketByConnectionIdAsync(Guid connectionId);
 
-        Task SendMessageAsync(string connectionId, WebSocketMessage message);
-
-        Task SendMessageAsync(WebSocket webSocket, string connectionId, WebSocketMessage message);
+        Task SendMessageAsync(WebSocket webSocket, Guid connectionId, WebSocketMessage message);
     }
 }

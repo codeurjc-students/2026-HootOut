@@ -18,7 +18,7 @@ function sendMessage() {
         author: userInfo.getUserInfo(),
         content: message.value,
     } as ChatMessage
-    wsMessageService.sendMessage(serverInfo.currentChatName, chatMessage);
+    wsMessageService.sendMessage(serverInfo.currentChatName, chatMessage).then(m => console.log(m))
     message.value = "";
 }
 
@@ -27,8 +27,8 @@ function sendMessage() {
 
 <template>
     <div id="message-input-bar">
-        <div id="message-box"> 
-            <input v-model="message" type="text" id="message-input" @keyup.enter="sendMessage"  />
+        <div id="message-box">
+            <input v-model="message" type="text" id="message-input" @keyup.enter="sendMessage" />
             <div class="btn" type="button" @click="sendMessage" id="wsmessage-btn">
                 <span class="material-symbols-sharp">
                     send
@@ -60,8 +60,8 @@ function sendMessage() {
     all: unset;
     flex-grow: 1;
     height: 100%;
-    padding-left: 1rem; 
-    
+    padding-left: 1rem;
+
 }
 
 .material-symbols-sharp {

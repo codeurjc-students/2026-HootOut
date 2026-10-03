@@ -1,8 +1,9 @@
 ﻿using HootOut.Contracts.WebSocket;
+using HootOut.Contracts.WebSockets.Handlers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization; 
+using Newtonsoft.Json.Serialization;
 using System.Net.WebSockets;
 using System.Text;
 
@@ -15,7 +16,8 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
 
         public static JsonSerializerSettings JsonSettings { get; set; } = new()
         {
-            ContractResolver = new CamelCasePropertyNamesContractResolver()
+            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            NullValueHandling = NullValueHandling.Ignore
         };
 
         private WSTestClient(WebSocket socket, TimeSpan timeout)
@@ -144,6 +146,19 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
                     return result.CloseStatus;
             }
             return Socket.CloseStatus;
+        }
+
+        public async Task<WebSocketMessage> SendWithAckAsync(WebSocketMessage message, CancellationToken ct = default)
+        {
+            message.Id ??= Guid.NewGuid();
+            await SendAsync(message, ct);
+
+            var reply = await ReceiveUntilAsync(m => m.ReplyTo == message.Id, ct);
+
+            if (reply.Type == WSHandlerType.Error)
+                throw new InvalidOperationException($"Server rejected {message.Type}: {reply.Error}");
+
+            return reply;
         }
 
         // ---------- Close ----------

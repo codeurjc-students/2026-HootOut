@@ -4,12 +4,12 @@ namespace HootOut.Contracts.WebSockets.Services
 {
     public interface IWSPubSubService
     {
-        Task HandleSubscribeAsync(string connectionId, string userId, string channel);
+        Task HandleSubscribeAsync(Guid connectionId, string userId, string channel);
 
-        Task HandleUnsubscribeAsync(string connectionId, string userId, string channel);
+        Task HandleUnsubscribeAsync(Guid connectionId, string userId, string channel);
 
-        Task SendMessageToChannel(string channel, WebSocketMessage message);
+        Task SendMessageToChannel(Guid connectionId, string channel, WebSocketMessage message);
 
-        Task RemoveAllConnectionSubscriptions(string connectionId);
+        Task RemoveAllConnectionSubscriptions(Guid connectionId);
     }
 }

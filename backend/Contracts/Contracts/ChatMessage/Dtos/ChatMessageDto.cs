@@ -1,7 +1,4 @@
 ﻿using HootOut.Contracts.Users.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.Contracts.ChatMessage.Dtos
 {

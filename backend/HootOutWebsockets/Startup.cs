@@ -27,7 +27,8 @@ namespace HootOut.HootOutWebsockets
         {
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                NullValueHandling = NullValueHandling.Ignore
             };
 
             app.UseForwardedHeaders(new ForwardedHeadersOptions

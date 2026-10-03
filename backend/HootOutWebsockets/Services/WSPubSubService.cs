@@ -9,9 +9,9 @@ namespace HootOut.WebSockets.Service
     {
         private readonly ILogger<WSPubSubService> logger;
         private readonly IWSConnectionManager wsConnectionManager;
-        public readonly ConcurrentDictionary<string, HashSet<string>> ChannelSubscribers = new();
+        public readonly ConcurrentDictionary<string, HashSet<Guid>> ChannelSubscribers = new();
 
-        public readonly ConcurrentDictionary<string, HashSet<string>> ConnectionSubscriptions = new();
+        public readonly ConcurrentDictionary<Guid, HashSet<string>> ConnectionSubscriptions = new();
 
         public WSPubSubService(ILogger<WSPubSubService> logger, IWSConnectionManager wsConnectionManager)
         {
@@ -19,10 +19,10 @@ namespace HootOut.WebSockets.Service
             this.wsConnectionManager = wsConnectionManager ?? throw new ArgumentNullException(nameof(wsConnectionManager));
         }
 
-        public async Task HandleSubscribeAsync(string connectionId, string userId, string channel)
+        public async Task HandleSubscribeAsync(Guid connectionId, string userId, string channel)
         {
             //TO-DO Subscribe to rabbit queue
-            ChannelSubscribers.AddOrUpdate(channel, new HashSet<string> { connectionId }, (_, existing) =>
+            ChannelSubscribers.AddOrUpdate(channel, new HashSet<Guid> { connectionId }, (_, existing) =>
             {
                 lock (existing)
                 {
@@ -36,13 +36,13 @@ namespace HootOut.WebSockets.Service
             {
                 lock (existing)
                 {
-                    existing.Add(channel); 
+                    existing.Add(channel);
                 }
                 return existing;
-            }); 
+            });
         }
 
-        public async Task HandleUnsubscribeAsync(string connectionId, string userId, string channel)
+        public async Task HandleUnsubscribeAsync(Guid connectionId, string userId, string channel)
         {
             //TO-DO if no subscribers unsubscribe from rabbitq
             if (ChannelSubscribers.TryGetValue(channel, out var subscribers))
@@ -72,7 +72,7 @@ namespace HootOut.WebSockets.Service
             }
         }
 
-        public async Task RemoveAllConnectionSubscriptions(string connectionId)
+        public async Task RemoveAllConnectionSubscriptions(Guid connectionId)
         {
             if (ConnectionSubscriptions.TryGetValue(connectionId, out var channels))
             {
@@ -97,12 +97,12 @@ namespace HootOut.WebSockets.Service
 
         }
 
-        public async Task SendMessageToChannel(string channel, WebSocketMessage message)
+        public async Task SendMessageToChannel(Guid connectionId, string channel, WebSocketMessage message)
         {
             // TO-DO Send message to rabbit queue
             if (ChannelSubscribers.TryGetValue(channel, out var subscribers))
             {
-                IEnumerable<string> currentSubscribers = subscribers.ToList();
+                IEnumerable<Guid> currentSubscribers = subscribers.Where(x => !connectionId.Equals(x)).ToList();
                 foreach (var subscriber in currentSubscribers)
                 {
                     try

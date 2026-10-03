@@ -1,8 +1,8 @@
 <script setup>
 
-import ChatInfo from './ChatConversation/ChatInfo.vue';
-import ChatMessageBar from './ChatConversation/ChatMessageBar.vue';
-import ChatMessages from './ChatConversation/ChatMessages.vue';
+import ChatInfo from './chatConversation/ChatInfo.vue';
+import ChatMessageBar from './chatConversation/ChatMessageBar.vue';
+import ChatMessages from './chatConversation/ChatMessages.vue';
 
 </script>
 
@@ -20,6 +20,6 @@ import ChatMessages from './ChatConversation/ChatMessages.vue';
       grid-template-rows: auto 1fr auto;
       background-color: var(--color-background);
       border: 1px solid var(--color-border);
-      max-height: inherit; 
+      max-height: inherit;
 }
 </style>

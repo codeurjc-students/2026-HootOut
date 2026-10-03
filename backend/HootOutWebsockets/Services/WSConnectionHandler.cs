@@ -16,7 +16,7 @@ namespace HootOut.HootOutWebsockets.Services
             this.wsMessageDeserializer = wSMessageDeserializer ?? throw new ArgumentNullException(nameof(wsMessageDeserializer));
         }
 
-        public async Task ReadMessagesAsync(WebSocket websocket, string connectionId, string userId)
+        public async Task ReadMessagesAsync(WebSocket websocket, Guid connectionId, string userId)
         {
             var buffer = new byte[1024 * 4];
             var messageBuffer = new StringBuilder();

@@ -4,7 +4,7 @@ using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Hosting; 
+using Microsoft.Extensions.Hosting;
 
 namespace HootOut.HootOutWebsockets.IntegrationTests.Common
 {

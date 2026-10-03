@@ -8,7 +8,9 @@ namespace HootOut.HootOutWebsockets.Services
 {
     public class WSConnectionManager : IWSConnectionManager
     {
-        public readonly ConcurrentDictionary<string, WebSocket> Connections = new();
+        public readonly ConcurrentDictionary<Guid, WebSocket> Connections = new();
+
+        public readonly ConcurrentDictionary<Guid, SemaphoreSlim> ConnectionLock = new();
 
         private readonly ILogger<WSConnectionManager> logger;
 
@@ -17,11 +19,12 @@ namespace HootOut.HootOutWebsockets.Services
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<string> AddConnectionAsync(WebSocket websocket, HttpContext httpContext)
+        public async Task<Guid> AddConnectionAsync(WebSocket websocket, HttpContext httpContext)
         {
-            var connectionId = Guid.CreateVersion7().ToString();
+            var connectionId = Guid.CreateVersion7();
 
             Connections.TryAdd(connectionId, websocket);
+            ConnectionLock.TryAdd(connectionId, new SemaphoreSlim(1, 1));
 
             string userId = "Usuario Test";
 
@@ -30,7 +33,7 @@ namespace HootOut.HootOutWebsockets.Services
             return connectionId;
         }
 
-        public async Task<WebSocket?> GetWebSocketByConnectionIdAsync(string connectionId)
+        public async Task<WebSocket?> GetWebSocketByConnectionIdAsync(Guid connectionId)
         {
             WebSocket? webSocket;
             if (Connections.TryGetValue(connectionId, out webSocket))
@@ -40,7 +43,7 @@ namespace HootOut.HootOutWebsockets.Services
             return webSocket;
         }
 
-        public async Task SendMessageAsync(string connectionId, WebSocketMessage message)
+        public async Task SendMessageAsync(Guid connectionId, WebSocketMessage message)
         {
             var webSocket = await GetWebSocketByConnectionIdAsync(connectionId);
 
@@ -51,7 +54,7 @@ namespace HootOut.HootOutWebsockets.Services
             await SendMessageAsync(webSocket, connectionId, message);
         }
 
-        public async Task SendMessageAsync(WebSocket webSocket, string connectionId, WebSocketMessage message)
+        public async Task SendMessageAsync(WebSocket webSocket, Guid connectionId, WebSocketMessage message)
         {
             try
             {
@@ -59,12 +62,24 @@ namespace HootOut.HootOutWebsockets.Services
                 {
                     var rawMessage = JsonConvert.SerializeObject(message);
                     var bytes = Encoding.UTF8.GetBytes(rawMessage);
-                    await webSocket.SendAsync(
-                        new ArraySegment<byte>(bytes),
-                        WebSocketMessageType.Text,
-                        endOfMessage: true,
-                        CancellationToken.None
-                    );
+
+                    ConnectionLock.TryGetValue(connectionId, out var sendLock);
+
+                    if (sendLock != null)
+                    {
+                        await sendLock.WaitAsync();
+
+                        try
+                        {
+                            await webSocket.SendAsync(
+                                new ArraySegment<byte>(bytes),
+                                WebSocketMessageType.Text,
+                                endOfMessage: true,
+                                CancellationToken.None
+                            );
+                        }
+                        finally { sendLock?.Release(); }
+                    }
                 }
             }
             catch (Exception ex)
@@ -74,8 +89,9 @@ namespace HootOut.HootOutWebsockets.Services
             }
         }
 
-        public async Task RemoveConnectionAsync(string connectionId)
+        public async Task RemoveConnectionAsync(Guid connectionId)
         {
+            Connections.TryRemove(connectionId, out _);
             Connections.TryRemove(connectionId, out _);
             logger.LogInformation("WebSocket disconnected: {ConnectionId}. Connections count {ConnectionCount}", connectionId, Connections.Count);
         }

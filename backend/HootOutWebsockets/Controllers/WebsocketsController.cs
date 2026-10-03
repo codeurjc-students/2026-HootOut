@@ -1,5 +1,4 @@
-﻿using HootOut.Contracts.Common.Messages.Services;
-using HootOut.Contracts.WebSockets.Services;
+﻿using HootOut.Contracts.WebSockets.Services;
 using HootOut.HootOutWebsockets.Services;
 using Microsoft.AspNetCore.Mvc;
 

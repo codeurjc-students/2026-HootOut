@@ -10,19 +10,14 @@ using HootOut.HootOutWebsockets.IntegrationTests.Common;
 using HootOut.HootOutWebsockets.Services;
 using HootOut.WebSockets.Service;
 using Newtonsoft.Json;
-using NLog.Config;
-using System;
-using System.Collections.Generic;
 using System.Net.WebSockets;
-using System.Text;
 
 namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 {
-    public  class WSChatMessagesTests: IClassFixture<WebSocketServerFixture>
+    public class WSChatMessagesTests : IClassFixture<WebSocketServerFixture>
     {
         private readonly WebSocketServerFixture server;
         private readonly ILifetimeScope container;
-
 
         public WSChatMessagesTests(WebSocketServerFixture server)
         {
@@ -49,13 +44,13 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 
             connectionManager!.Connections.Count.Should().Be(0);
 
-            await using var socket1 = await WSTestClient.ConnectAsync(server, ct:ct);
+            await using var socket1 = await WSTestClient.ConnectAsync(server, ct: ct);
             await Task.Delay(100, ct); //TO-DO Replace with ACK from Server
 
             socket1.Socket.State.Should().Be(WebSocketState.Open);
             connectionManager!.Connections.Count.Should().Be(1);
 
-            await using var socket2 = await WSTestClient.ConnectAsync(server, ct:ct);
+            await using var socket2 = await WSTestClient.ConnectAsync(server, ct: ct);
             await Task.Delay(100, ct); //TO-DO Replace with ACK from Server
 
             socket2.Socket.State.Should().Be(WebSocketState.Open);
@@ -63,13 +58,12 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 
             string channel = "testChannel";
 
-            await socket1.SendAsync(new WebSocketMessage
+            var id1 = Guid.NewGuid();
+            await socket1.SendWithAckAsync(new WebSocketMessage
             {
                 Type = WSHandlerType.Subscribe,
                 Channel = channel
             }, ct);
-
-            await Task.Delay(100, ct); //TO-DO Replace with ACK from Server
 
             IWSPubSubService IpubSubService = container.Resolve<IWSPubSubService>();
             WSPubSubService? pubSubService = null;
@@ -79,31 +73,27 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
                 pubSubService = (IpubSubService as WSPubSubService)!;
             }
 
-            pubSubService!.ChannelSubscribers.TryGetValue(channel, out var subscribers).Should().BeTrue(); 
+            pubSubService!.ChannelSubscribers.TryGetValue(channel, out var subscribers).Should().BeTrue();
             subscribers!.Count.Should().Be(1);
 
-            pubSubService!.ConnectionSubscriptions.Count.Should().Be(1); 
+            pubSubService!.ConnectionSubscriptions.Count.Should().Be(1);
 
-            await socket2.SendAsync(new WebSocketMessage
+            await socket2.SendWithAckAsync(new WebSocketMessage
             {
                 Type = WSHandlerType.Subscribe,
                 Channel = channel
             }, ct);
-
-            await Task.Delay(100, ct); //TO-DO Replace with ACK from Server
 
             pubSubService!.ChannelSubscribers.TryGetValue(channel, out subscribers).Should().BeTrue();
             subscribers!.Count.Should().Be(2);
             pubSubService!.ConnectionSubscriptions.Count.Should().Be(2);
 
             string otherChannel = "Other Channel";
-            await socket2.SendAsync(new WebSocketMessage
+            await socket2.SendWithAckAsync(new WebSocketMessage
             {
                 Type = WSHandlerType.Subscribe,
                 Channel = otherChannel
             }, ct);
-
-            await Task.Delay(100, ct); //TO-DO Replace with ACK from Server
 
             pubSubService!.ChannelSubscribers.TryGetValue(otherChannel, out subscribers).Should().BeTrue();
             subscribers!.Count.Should().Be(1);
@@ -116,18 +106,16 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
                 Content = messageContent,
                 Author = new UserDto
                 {
-                    Username = username, 
+                    Username = username,
                 }
             };
 
-            await socket1.SendAsync(new WebSocketMessage
+            await socket1.SendWithAckAsync(new WebSocketMessage
             {
                 Type = WSHandlerType.ChatMessage,
                 Channel = channel,
                 Payload = JsonConvert.SerializeObject(chatMessage)
             }, ct);
-
-            await Task.Delay(100, ct); //TO-DO Replace with ACK from Server
 
             // Check DB persistance, etc
 
@@ -143,8 +131,8 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
             receivedChatMessage.Author.Should().NotBeNull();
             receivedChatMessage.Author.Username.Should().Be(username);
 
-            await socket1.DisposeAsync(); 
-            await Task.Delay(100, ct); //TO-DO Replace with ACK from Server
+            await socket1.DisposeAsync();
+            await Task.Delay(100, ct);
 
             connectionManager!.Connections.Count.Should().Be(1);
 
@@ -153,7 +141,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
             pubSubService!.ConnectionSubscriptions.Count.Should().Be(1);
 
             await socket2.DisposeAsync();
-            await Task.Delay(100, ct); //TO-DO Replace with ACK from Server
+            await Task.Delay(100, ct);
 
             connectionManager!.Connections.Count.Should().Be(0);
 
