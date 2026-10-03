@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { serverInfoStore } from '@/stores/serverInfo';
 import { storeToRefs } from 'pinia';
 

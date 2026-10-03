@@ -1,6 +1,6 @@
-<script setup>
+<script setup lang="ts">
 
-import ChatInfo from './chatConversation/ChatInfo.vue';
+import ChatInfo from '@/components/chatConversation/ChatInfo.vue';
 import ChatMessageBar from './chatConversation/ChatMessageBar.vue';
 import ChatMessages from './chatConversation/ChatMessages.vue';
 
