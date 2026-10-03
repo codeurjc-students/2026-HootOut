@@ -53,7 +53,7 @@ namespace HootOut.Users.UnitTests.Services
 
             UserDto user = users.Single();
 
-            user.Uid.Should().NotBeEmpty();
+            user.Id.Should().NotBeEmpty();
             user.Username.Should().Be(username);
             user.Email.Should().Be(email);
             user.Password.Should().NotBe(password);

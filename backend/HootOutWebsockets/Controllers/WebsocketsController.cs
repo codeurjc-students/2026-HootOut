@@ -1,15 +1,28 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Net.WebSockets;
+﻿using HootOut.Contracts.WebSockets.Services;
+using HootOut.HootOutWebsockets.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HootOut.HootOutWebsockets.Controllers
 {
     public class WebSocketController : ControllerBase
     {
         private ILogger logger { get; set; }
+        private IWSConnectionManager connectionManager;
 
-        public WebSocketController(ILogger<WebSocketController> logger)
+        private IWSConnectionHandler connectionHandler;
+
+        private IWSPubSubService pubSubService;
+
+        public WebSocketController(
+            ILogger<WebSocketController> logger,
+            IWSConnectionManager connectionManager,
+            IWSConnectionHandler connectionHandler,
+            IWSPubSubService pubSubService)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
+            this.connectionHandler = connectionHandler ?? throw new ArgumentNullException(nameof(connectionHandler));
+            this.pubSubService = pubSubService ?? throw new ArgumentNullException(nameof(pubSubService));
         }
 
         [Route("/ws")]
@@ -17,50 +30,27 @@ namespace HootOut.HootOutWebsockets.Controllers
         {
             if (HttpContext.WebSockets.IsWebSocketRequest)
             {
-                using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                var connectionId = await connectionManager.AddConnectionAsync(webSocket, HttpContext);
                 try
                 {
-                    await Echo(webSocket);
+                    await connectionHandler.ReadMessagesAsync(webSocket, connectionId, "");
                 }
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "Exception during Websockets communication");
-                    throw ex;
+                    throw;
+                }
+                finally
+                {
+                    await connectionManager.RemoveConnectionAsync(connectionId);
+                    await pubSubService.RemoveAllConnectionSubscriptions(connectionId);
                 }
             }
             else
             {
                 HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             }
-        }
-
-        private static async Task Echo(WebSocket webSocket)
-        {
-            var buffer = new byte[1024 * 4];
-            var receiveResult = await webSocket.ReceiveAsync(
-                new ArraySegment<byte>(buffer), CancellationToken.None);
-
-            while (!receiveResult.CloseStatus.HasValue)
-            {
-                var str = System.Text.Encoding.Default.GetString(buffer, 0, receiveResult.Count);
-                str = "Hello from the Server " + str;
-                str = str.ToUpperInvariant();
-                var msg = System.Text.Encoding.Default.GetBytes(str);
-
-                await webSocket.SendAsync(
-                    new ArraySegment<byte>(msg, 0, msg.Length),
-                    receiveResult.MessageType,
-                    receiveResult.EndOfMessage,
-                    CancellationToken.None);
-
-                receiveResult = await webSocket.ReceiveAsync(
-                    new ArraySegment<byte>(buffer), CancellationToken.None);
-            }
-
-            await webSocket.CloseAsync(
-                receiveResult.CloseStatus.Value,
-                receiveResult.CloseStatusDescription,
-                CancellationToken.None);
         }
     }
 }

@@ -35,8 +35,6 @@ namespace HootOut.HootOutAPI.IntegrationTests.Common
             return base.CreateHost(builder);
         }
 
-
-
         public new ValueTask DisposeAsync()
         {
             return postgreSQLProvider.DisposeAsync();

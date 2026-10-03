@@ -11,12 +11,12 @@ namespace HootOut.PostgreSQL.Searchs.Users
 
         public UserSearch(IPersistenceProvider persistenceProvider)
         {
-            this.persistenceProvider = persistenceProvider ?? throw new ArgumentException(nameof(persistenceProvider));
+            this.persistenceProvider = persistenceProvider ?? throw new ArgumentNullException(nameof(persistenceProvider));
         }
 
         private const string getUsersQuery = """
             SELECT 
-                "Uid",
+                "Id",
                 "Email",
                 "Username"
             FROM "HootOut"."UserInfo"

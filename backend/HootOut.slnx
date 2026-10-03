@@ -12,6 +12,9 @@
     <Project Path="Domains/Users.Tests/Users.UnitTests.csproj" />
     <Project Path="Domains/Users/Users.csproj" />
   </Folder>
+  <Folder Name="/Domains/WebSocketsDomain/">
+    <Project Path="Domains/WebSockets/WebSockets/WebSockets.csproj" Id="ef895e6c-035c-423d-bc4e-eb8b3f85d8bc" />
+  </Folder>
   <Folder Name="/Infraestructure/">
     <Project Path="Infraestructure/Infraestructure/Infraestructure.csproj" Id="102a6654-bafd-47be-bb54-09d81ad070e0" />
   </Folder>
@@ -24,5 +27,6 @@
     <Project Path="HootOutAPI/HootOutAPI.csproj" />
     <Project Path="HootOutWebsockets/HootOutWebsockets.csproj" Id="085350e5-a31a-4564-acde-5a85189d1aed" />
     <Project Path="Sites/HootOutAPI.IntegrationTests/HootOutAPI.IntegrationTests.csproj" />
+    <Project Path="Sites/HootOutWebsockets.IntegrationTests/HootOutWebsockets.IntegrationTests.csproj" Id="42215fc4-8d4d-4bb3-8625-bc41128e9269" />
   </Folder>
 </Solution>

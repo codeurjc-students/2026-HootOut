@@ -75,7 +75,7 @@ namespace HootOut.Users.IntegrationTests.UserService
 
             UserDto user = users.Single();
 
-            user.Uid.Should().NotBeEmpty();
+            user.Id.Should().NotBeEmpty();
             user.Username.Should().Be(username);
             user.Email.Should().Be(email);
             user.Password.Should().NotBe(password);
@@ -88,7 +88,7 @@ namespace HootOut.Users.IntegrationTests.UserService
             userService.CreateUser(new CreateUserRequest { Email = "2", Password = "2", Username = "2" });
             userService.CreateUser(new CreateUserRequest { Email = "3", Password = "3", Username = "3" });
 
-            userService.GetUserDtos().Should().HaveCount(3); 
+            userService.GetUserDtos().Should().HaveCount(3);
         }
     }
 }

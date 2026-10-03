@@ -1,6 +1,8 @@
 using Autofac;
 using HootOut.Infraestructure.DI;
 using Microsoft.AspNetCore.HttpOverrides;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace HootOut.HootOutWebsockets
 {
@@ -23,6 +25,12 @@ namespace HootOut.HootOutWebsockets
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                NullValueHandling = NullValueHandling.Ignore
+            };
+
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
@@ -30,7 +38,8 @@ namespace HootOut.HootOutWebsockets
 
             var websocketsOptions = new WebSocketOptions
             {
-                KeepAliveTimeout = TimeSpan.FromSeconds(15)
+                KeepAliveInterval = TimeSpan.FromSeconds(30),
+                KeepAliveTimeout = TimeSpan.FromSeconds(15),
             };
 
             app.UseWebSockets(websocketsOptions);

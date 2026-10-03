@@ -20,11 +20,23 @@ Conversation with Claude about how to setup fuzzy text search on the content of 
 
 ## Phase 2:
 #### Objective: Setup Frontend Unit and Integration Testing with Websockets.
-##### Date
+##### Date:
 21/09/2026
-##### Tool;
+##### Tool:
 Claude Chat, Sonnet 5 Medium
 ##### Problem to solve:
 We have a Frontend application with Vue 3. We have set up testing with Vitest and @vue/test-utils. There are some tests for testing a js component and a vue component. We want to setup some tests for testing Websocket functionality and 
 ##### Usage:
 Chat with Claude. We establish the tests that already exists, and how to write the WebsocketService and tests so it can be used on a component that uses Websockets. With the tests and changes to be prepared for future usage/tests around websockets, [commit bb1795c](https://github.com/codeurjc-students/2026-HootOut/commit/bb1795c3ff40c2254ba0ec964460b43eccfccb03) was made
+
+## Phase 3:
+#### Objective: Get helper functions to write WebSocket backend integration tests.
+##### Date:
+02/10/2026
+##### Tool:
+Claude Chat, Sonnet 5.5 Medium
+##### Problem to solve:
+We want to test the WebSocket server itself, with multiple client connections opened on the same server and interacting. WebSockets operates on byte arrays, so we want some helper functions to convert objects to json and send/receive them with WebSockets.
+##### Usage:
+Chat with Claude where I present the testing and working environment (ASP.NET Core 10 with Xunit, we want to test Websockets), and iterate on writing a helper class to ease sending/receiving Json objects.
+The result is on [/backend/Sites/HootOutWebsockets.IntegrationTests/Common/WSTestClient.cs](/backend/Sites/HootOutWebsockets.IntegrationTests/Common/WSTestClient.cs)

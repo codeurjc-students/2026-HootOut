@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Autofac;
+﻿using Autofac;
 using HootOut.Infraestructure.DI;
 using Microsoft.AspNetCore.HttpOverrides;
 
@@ -22,7 +21,7 @@ namespace HootOut.HootOutAPI
 
             services.AddControllers();
 
-            services.AddOpenApi(); 
+            services.AddOpenApi();
 
             services.AddSwaggerGen();
         }
@@ -48,14 +47,12 @@ namespace HootOut.HootOutAPI
 
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapOpenApi(); 
+                    endpoints.MapOpenApi();
                     endpoints.MapSwagger();
                     endpoints.MapSwaggerUI();
                 });
 
             }
-
-
 
             app.UseHttpsRedirection();
 
@@ -79,7 +76,7 @@ namespace HootOut.HootOutAPI
 
             /// Check for OpenAPI build time generation
             if (Environment.GetEnvironmentVariable("GENERATING_OPENAPI_DOC") != "true")
-{
+            {
                 RegistrationManager.RegisterAllAssemblies(builder);
             }
         }

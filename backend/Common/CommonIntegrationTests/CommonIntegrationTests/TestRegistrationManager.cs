@@ -1,7 +1,7 @@
 ﻿using Autofac;
 using HootOut.Infraestructure.DI;
 
-namespace HootOut.HootOutAPI.IntegrationTests.Common
+namespace HootOut.CommonIntegrationTests
 {
     public class TestRegistrationManager : RegistrationManager, IRegistrationManager
     {
