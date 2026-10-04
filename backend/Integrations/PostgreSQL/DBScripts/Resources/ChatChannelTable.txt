@@ -26,9 +26,7 @@ then
 		"Name" VARCHAR(255) NOT NULL, 
 		"Deleted" boolean NOT NULL DEFAULT false,
 		"CreatedAt" timestamptz  NOT NULL,
-		"ModifiedAt" timestamptz NOT NULL,
-		
-		CONSTRAINT fK_ChatServerId FOREIGN_KEY ("ChatServerId") REFERENCES "ChatServer"("Id")
+		"ModifiedAt" timestamptz NOT NULL 
 	);
 
 end if;

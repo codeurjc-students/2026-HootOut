@@ -8,7 +8,7 @@ using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.Contracts.Users.Services;
 using HootOut.Infraestructure.DI;
 
-namespace HootOut.Users.IntegrationTests.UserService
+namespace HootOut.Users.IntegrationTests.Services
 {
 
     public class UserServiceTests : IClassFixture<PostgresTestContainer>, IAsyncLifetime

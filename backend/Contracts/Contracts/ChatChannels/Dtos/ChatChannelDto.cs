@@ -8,6 +8,8 @@ namespace HootOut.Contracts.ChatChannels.Dtos
     {
         public Guid Id { get; set; }
 
+        public Guid ChatServerId { get; set; }
+
         public string Name { get; set; } = String.Empty;
 
         public DateTime CreatedAt { get; set; }

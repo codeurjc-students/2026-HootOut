@@ -4,6 +4,7 @@ using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.Contracts.Users.Search;
 using HootOut.Contracts.Users.Services;
 using HootOut.Users.Entities;
+using HootOut.Users.Mappers;
 
 namespace HootOut.Users.Services
 {
@@ -37,7 +38,9 @@ namespace HootOut.Users.Services
 
         public IEnumerable<UserDto> GetUserDtos()
         {
-            return userSearch.GetUserDtos();
+            return userSearch.GetAllUsers()
+                .Select(x => x.ToDto())
+                .ToList();
         }
     }
 }

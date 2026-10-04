@@ -1,25 +1,29 @@
 ﻿using Dapper;
+using HootOut.ChatChannels.ChatChannels;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Users.Entities;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace HootOut.PostgreSQL.Savers.Users
+namespace HootOut.PostgreSQL.Savers.ChatChannels
 {
-    public class UserSaver : ISaver<UserInfo>
+    internal class ChatChannelsSaver: ISaver<ChatChannel>
     {
         private IPersistenceProvider provider;
 
-        public UserSaver(IPersistenceProvider provider)
+        public ChatChannelsSaver(IPersistenceProvider provider)
         {
             this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
         }
 
-        private const string addOrReplaceUserInfo = """
-            INSERT INTO "HootOut"."UserInfo" ("Id", "Username", "Email", "Password", "CreatedAt", "ModifiedAt") 
-            VALUES (@Id, @Username, @Email, @Password, @CreatedAt, @ModifiedAt)
+        private const string addOrReplaceChatChannel = """
+            INSERT INTO "HootOut"."ChatChannel" ("Id", "ChatServerId", "Name", "CreatedAt", "ModifiedAt") 
+            VALUES (@Id, @ChatServerId, @Name, @CreatedAt, @ModifiedAt)
         """;
 
-        public UserInfo Save(UserInfo item)
+        public ChatChannel Save(ChatChannel item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
 
@@ -31,23 +35,22 @@ namespace HootOut.PostgreSQL.Savers.Users
 
                     var now = DateTime.UtcNow;
 
-                    conn.Execute(addOrReplaceUserInfo, new
+                    conn.Execute(addOrReplaceChatChannel, new
                     {
-                        Id = item.Id,
-                        Username = item.Username,
-                        Email = item.Email,
-                        Password = item.Password,
+                        item.Id,
+                        item.ChatServerId,
+                        item.Name,
                         CreatedAt = now,
                         ModifiedAt = now
                     }, transaction);
                     transaction.Commit();
-                }
 
-                return item;
+                    return item;
+                }
             }
             catch (Exception ex)
             {
-                var msg = $"Error while trying to save user with uid {item.Id}";
+                var msg = $"Error while trying to save Chat Channel with uid {item.Id}";
                 throw new Exception(msg, ex);
             }
         }

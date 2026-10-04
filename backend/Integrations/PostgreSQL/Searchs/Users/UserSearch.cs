@@ -2,6 +2,7 @@
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.Users.Search;
+using HootOut.Users.Entities;
 
 namespace HootOut.PostgreSQL.Searchs.Users
 {
@@ -22,11 +23,11 @@ namespace HootOut.PostgreSQL.Searchs.Users
             FROM "HootOut"."UserInfo"
         """;
 
-        public IEnumerable<UserDto> GetUserDtos()
+        public IEnumerable<UserInfo> GetAllUsers()
         {
             using (var conn = persistenceProvider.GetNewConnection())
             {
-                return conn.Query<UserDto>(getUsersQuery);
+                return conn.Query<UserInfo>(getUsersQuery);
             }
         }
     }

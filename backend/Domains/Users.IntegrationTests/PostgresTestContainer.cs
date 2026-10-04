@@ -1,4 +1,8 @@
-﻿using HootOut.CommonIntegrationTests.Services;
+﻿
+using Autofac;
+using HootOut.CommonDomain.Persistence;
+using HootOut.CommonIntegrationTests.Services;
+using HootOut.Infraestructure.DI;
 
 namespace HootOut.Users.IntegrationTests
 {
@@ -15,6 +19,14 @@ namespace HootOut.Users.IntegrationTests
         {
             postgreSQLProvider = new TestContainerPostgreSQLProvider();
             return postgreSQLProvider.InitializeAsync();
+        }
+
+        public ContainerBuilder RegisterTestPersistenceProvider()
+        {
+            var builder = new ContainerBuilder();
+            new RegistrationManager().RegisterAllAssemblies(builder);
+            builder.RegisterInstance(this.postgreSQLProvider).As<IPersistenceProvider>().SingleInstance();
+            return builder;
         }
     }
 }

@@ -8,6 +8,7 @@
   </Folder>
   <Folder Name="/Domains/" />
   <Folder Name="/Domains/ChatChannels/">
+    <Project Path="Domains/ChatChannels/ChatChannels.IntegrationTests/ChatChannels.IntegrationTests.csproj" Id="37148724-38fd-4817-b6b0-70208edb4f63" />
     <Project Path="Domains/ChatChannels/ChatChannels/ChatChannels.csproj" Id="088648f0-6889-4b1b-87b7-26386abb1513" />
   </Folder>
   <Folder Name="/Domains/ChatMessages/">

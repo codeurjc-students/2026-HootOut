@@ -29,7 +29,7 @@ then
 		"CreatedAt" timestamptz  NOT NULL,
 		"ModifiedAt" timestamptz NOT NULL,
 		
-		CONSTRAINT fK_ChatChannelId FOREIGN_KEY ("ChatChannelId") REFERENCES "ChatChannel"("Id")
+		CONSTRAINT fK_ChatChannelId FOREIGN KEY ("ChatChannelId") REFERENCES "HootOut"."ChatChannel"("Id")
 	);
 
 end if;
