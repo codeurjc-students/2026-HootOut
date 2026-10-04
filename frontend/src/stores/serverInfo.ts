@@ -1,24 +1,24 @@
 import { ref, type Ref } from 'vue'
 import { defineStore } from 'pinia'
-import type { ChatMessage, WebSocketMessage } from '@/types'
+import type { ChatChannelDto, ChatMessage, WebSocketMessage } from '@/types'
 
 export const serverInfoStore = defineStore('serverInfo', () => {
-  const currentChatName = ref("")
-  const channels = ref([] as string[])
-  const channelMessages: Ref<Record<string, ChatMessage[]>> = ref({})
-  const pendingMessages: Ref<Record<string, Record<string, ChatMessage>>> = ref({})
+  const currentChatChannel = ref<ChatChannelDto>()
+  const channels = ref<ChatChannelDto[]>([])
+  const channelMessages = ref<Record<string, ChatMessage[]>>({})
+  const pendingMessages = ref<Record<string, Record<string, ChatMessage>>>({})
 
-  function setCurrentChatName(name: string) {
-    currentChatName.value = name
+  function setCurrentChatChannel(channel: ChatChannelDto) {
+    currentChatChannel.value = channel
   }
 
-  function addNewChannel(channel: string) {
+  function addNewChannel(channel: ChatChannelDto) {
     if (channels.value.includes(channel))
       return false;
 
     channels.value.push(channel)
-    channelMessages.value[channel] = [];
-    pendingMessages.value[channel] = {};
+    channelMessages.value[channel.id] = [];
+    pendingMessages.value[channel.id] = {};
     return true;
   }
 
@@ -28,18 +28,22 @@ export const serverInfoStore = defineStore('serverInfo', () => {
   }
 
   function addPendingMessage(id: string, chatMessage: ChatMessage) {
-    const channel = currentChatName.value;
-    pendingMessages.value[channel]![id] = chatMessage
+    const channel = currentChatChannel.value;
+    pendingMessages.value[channel!.id]![id] = chatMessage
   }
 
   function confirmMessage(message: WebSocketMessage) {
-    const channel = currentChatName.value
-    const chatMessage = pendingMessages.value[channel]![message.id!];
+    const channel = currentChatChannel.value
+    const chatMessage = pendingMessages.value[channel!.id]![message.id!];
     if (chatMessage) {
-      delete pendingMessages.value[channel]![message.id!];
+      delete pendingMessages.value[channel!.id]![message.id!];
       newMessage(message);
     }
   }
 
-  return { currentChatName, channels, addPendingMessage, confirmMessage, channelMessages, pendingMessages, setCurrentChatName, addNewChannel, newMessage }
+  function setServerChannels(newChannels: ChatChannelDto[]) {
+    newChannels.forEach(c => addNewChannel(c));
+  }
+
+  return { currentChatChannel, channels, addPendingMessage, confirmMessage, channelMessages, pendingMessages, setCurrentChatChannel, addNewChannel, newMessage, setServerChannels }
 })

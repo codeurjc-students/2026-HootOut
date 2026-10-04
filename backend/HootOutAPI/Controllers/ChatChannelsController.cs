@@ -11,14 +11,14 @@ namespace HootOut.HootOutAPI.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class ChatChannelsControler: ControllerBase
+    public class ChatChannelsController: ControllerBase
     {
-        private ILogger<ChatChannelsControler> logger;
+        private ILogger<ChatChannelsController> logger;
 
         private IChatChannelsService chatChannelsService;
 
-        public ChatChannelsControler(
-            ILogger<ChatChannelsControler> logger,
+        public ChatChannelsController(
+            ILogger<ChatChannelsController> logger,
             IChatChannelsService chatChannelsService)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));

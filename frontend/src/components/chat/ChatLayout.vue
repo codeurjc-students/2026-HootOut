@@ -10,7 +10,7 @@ provide('wsMessageService', wsMessageService)
 const userInfo = userInfoStore();
 
 onMounted(() => {
-    wsMessageService.connect(() => {}); 
+    wsMessageService.connect(() => { });
     userInfo.setUsername(`User${Math.floor(Math.random() * 100000)}`);
 })
 

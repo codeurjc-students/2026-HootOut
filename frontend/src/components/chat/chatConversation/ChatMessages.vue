@@ -6,15 +6,15 @@ import { computed } from "vue";
 
 const serverInfo = serverInfoStore();
 
-const { channelMessages, currentChatName, pendingMessages } = storeToRefs(serverInfo);
+const { channelMessages, currentChatChannel, pendingMessages } = storeToRefs(serverInfo);
 const { username } = storeToRefs(userInfoStore());
 
 const messages = computed(() => {
-    return channelMessages.value[currentChatName.value];
+    return channelMessages.value[currentChatChannel.value!.id];
 })
 
 const pendingMessagesList = computed(() => {
-    return pendingMessages?.value[currentChatName.value];
+    return pendingMessages?.value[currentChatChannel.value!.id];
 });
 
 </script>

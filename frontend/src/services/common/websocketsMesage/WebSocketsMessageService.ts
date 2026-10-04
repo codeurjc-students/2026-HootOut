@@ -1,6 +1,6 @@
 import type { WebSocketService } from "@/services/common/websockets/WebSocketService";
 import webSocketService from '@/services/common/websockets/WebSocketService';
-import { WSMessageType, type WebSocketMessage } from "@/types";
+import { WSMessageType, type ChatChannelDto, type WebSocketMessage } from "@/types";
 import { ref } from "vue";
 import { newId } from "../utils";
 
@@ -88,8 +88,8 @@ export class WebSocketMessageService {
         };
     }
 
-    sendMessage(channel: string, payload: any, timeoutMs = 5000): AckPromise {
-        const message: WebSocketMessage = { channel, payload: JSON.stringify(payload), type: WSMessageType.ChatMessage };
+    sendMessage(chatChannel: ChatChannelDto, payload: any, timeoutMs = 5000): AckPromise {
+        const message: WebSocketMessage = { channel: chatChannel.id, payload: JSON.stringify(payload), type: WSMessageType.ChatMessage };
         return this.sendWithAck(message, timeoutMs);
     }
 

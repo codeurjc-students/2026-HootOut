@@ -4,14 +4,14 @@ import ChatLeftBar from './ChatLeftBar.vue';
 import { serverInfoStore } from "@/stores/serverInfo.ts"
 import { storeToRefs } from 'pinia';
 
-const { currentChatName } = storeToRefs(serverInfoStore())
+const { currentChatChannel } = storeToRefs(serverInfoStore())
 
 </script>
 
 <template>
     <section id="main-section">
         <ChatLeftBar />
-        <ChatConversationView v-if="currentChatName" />
+        <ChatConversationView v-if="currentChatChannel" />
         <div id="empty-chat" v-else>
             Start a new chat
         </div>
