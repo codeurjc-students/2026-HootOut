@@ -1,15 +1,8 @@
 ﻿using Autofac;
-using FluentAssertions;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
-using HootOut.Contracts.Users.Dtos;
 using HootOut.HootOutAPI.IntegrationTests.Common;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http.Json;
-using System.Text;
 
 namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 {
@@ -47,7 +40,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
         {
             clearTables?.ClearTables();
             return ValueTask.CompletedTask;
-        } 
+        }
         public void Dispose()
         {
             container.Dispose();

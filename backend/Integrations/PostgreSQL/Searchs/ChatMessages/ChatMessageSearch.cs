@@ -1,9 +1,7 @@
 ﻿using Dapper;
-using HootOut.ChatChannels.ChatChannels;
 using HootOut.ChatMessages.ChatMessages;
 using HootOut.ChatMessages.Searchs;
 using HootOut.CommonDomain.Persistence;
-using HootOut.Contracts.ChatMessage.Dtos;
 
 namespace HootOut.PostgreSQL.Searchs.ChatMessages
 {

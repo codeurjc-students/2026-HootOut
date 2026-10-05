@@ -6,13 +6,9 @@ using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
-using HootOut.Contracts.Users.Dtos;
 using HootOut.HootOutAPI.IntegrationTests.Common;
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Json;
-using System.Text;
 
 namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 {
@@ -74,10 +70,12 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 
             IChatMessageService chatMessageService = container.Resolve<IChatMessageService>();
             chatMessageService.CreateChatMessage(
-                new CreateChatMessageRequest { 
+                new CreateChatMessageRequest
+                {
                     ChatChannelId = channelId,
                     AuthorId = authorId,
-                    Content = content}
+                    Content = content
+                }
                 );
 
             // store another message so there are more messages

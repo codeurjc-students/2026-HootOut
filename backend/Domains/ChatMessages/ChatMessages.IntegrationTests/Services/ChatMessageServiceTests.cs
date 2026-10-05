@@ -1,18 +1,11 @@
 ﻿using Autofac;
 using FluentAssertions;
-using HootOut.ChatChannels.Services;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
-using HootOut.Contracts.ChatChannels.Dtos;
-using HootOut.Contracts.ChatChannels.Requests;
-using HootOut.Contracts.ChatChannels.Services;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.ChatMessages.IntegrationTests.Services
 {
@@ -62,13 +55,13 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
 
         [Fact]
         public async Task GetChatMessages_One()
-        { 
-            Guid channelId = Guid.NewGuid(); 
+        {
+            Guid channelId = Guid.NewGuid();
             Guid authorId = Guid.NewGuid();
             string content = "This is a test message for a test case";
             chatMessageService.CreateChatMessage(new CreateChatMessageRequest
             {
-                ChatChannelId = channelId, 
+                ChatChannelId = channelId,
                 AuthorId = authorId,
                 Content = content
             });
@@ -91,9 +84,9 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
         [Fact]
         public async Task GetChannels_Many()
         {
-            Guid channelId = Guid.NewGuid(); 
+            Guid channelId = Guid.NewGuid();
             Guid senderId = Guid.NewGuid();
-            chatMessageService.CreateChatMessage(new CreateChatMessageRequest { ChatChannelId = channelId, AuthorId = senderId ,Content = "test"});
+            chatMessageService.CreateChatMessage(new CreateChatMessageRequest { ChatChannelId = channelId, AuthorId = senderId, Content = "test" });
             chatMessageService.CreateChatMessage(new CreateChatMessageRequest { ChatChannelId = channelId, AuthorId = senderId, Content = "test" });
             chatMessageService.CreateChatMessage(new CreateChatMessageRequest { ChatChannelId = channelId, AuthorId = Guid.NewGuid(), Content = "test" });
             chatMessageService.CreateChatMessage(new CreateChatMessageRequest { ChatChannelId = channelId, AuthorId = Guid.NewGuid(), Content = "test" });

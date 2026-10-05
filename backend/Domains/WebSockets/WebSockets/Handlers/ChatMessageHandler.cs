@@ -1,7 +1,6 @@
 ﻿using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
-using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.WebSocket;
 using HootOut.Contracts.WebSockets.Handlers;
 using HootOut.Contracts.WebSockets.Services;

@@ -5,7 +5,7 @@ using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.Contracts.ChatChannels.Dtos;
 using HootOut.Contracts.ChatChannels.Requests;
-using HootOut.Contracts.ChatChannels.Services; 
+using HootOut.Contracts.ChatChannels.Services;
 
 namespace HootOut.ChatChannels.IntegrationTests.Services
 {

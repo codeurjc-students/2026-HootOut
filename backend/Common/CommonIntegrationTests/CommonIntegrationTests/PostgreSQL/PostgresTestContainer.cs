@@ -20,8 +20,8 @@ namespace HootOut.CommonIntegrationTests.PostgreSQL
         {
             if (postgreSQLProvider == null)
             {
-            postgreSQLProvider = new TestContainerPostgreSQLProvider();
-            return postgreSQLProvider.InitializeAsync(); 
+                postgreSQLProvider = new TestContainerPostgreSQLProvider();
+                return postgreSQLProvider.InitializeAsync();
             }
             return ValueTask.CompletedTask;
         }
