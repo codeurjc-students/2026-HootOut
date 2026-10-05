@@ -15,8 +15,8 @@ namespace HootOut.PostgreSQL.Savers.Users
         }
 
         private const string addOrReplaceUserInfo = """
-            INSERT INTO "HootOut"."UserInfo" ("Id", "Username", "Email", "Password", "ModifiedDate", "CreatedDate") 
-            VALUES (@Id, @Username, @Email, @Password, @ModifiedDate, @CreatedDate)
+            INSERT INTO "HootOut"."UserInfo" ("Id", "Username", "Email", "Password", "CreatedAt", "ModifiedAt") 
+            VALUES (@Id, @Username, @Email, @Password, @CreatedAt, @ModifiedAt)
         """;
 
         public void Save(UserInfo item)
@@ -33,19 +33,19 @@ namespace HootOut.PostgreSQL.Savers.Users
 
                     conn.Execute(addOrReplaceUserInfo, new
                     {
-                        Id = item.Uid,
-                        Username = item.Username,
-                        Email = item.Email,
-                        Password = item.Password,
-                        CreatedDate = now,
-                        ModifiedDate = now
+                        item.Id,
+                        item.Username,
+                        item.Email,
+                        item.Password,
+                        item.CreatedAt,
+                        item.ModifiedAt
                     }, transaction);
                     transaction.Commit();
                 }
             }
             catch (Exception ex)
             {
-                var msg = $"Error while trying to save user with uid {item.Uid}";
+                var msg = $"Error while trying to save user with uid {item.Id}";
                 throw new Exception(msg, ex);
             }
         }

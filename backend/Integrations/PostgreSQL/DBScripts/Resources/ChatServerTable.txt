@@ -1,0 +1,35 @@
+DO $$
+BEGIN
+
+if NOT EXISTS  (
+SELECT  schema_name
+FROM	information_schema.schemata
+WHERE	schema_name = 'HootOut' )
+then 
+	CREATE SCHEMA "HootOut";
+end if;
+
+end $$; 
+
+-- CHAT MESSAGE TABLE ---------------------------------------------------------------
+----------------------------------------------------------------------------------
+
+DO $$
+BEGIN
+if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
+				WHERE TABLE_SCHEMA = 'HootOut'
+				AND   TABLE_NAME = 'ChatServer')
+then
+	CREATE TABLE "HootOut"."ChatServer"(
+		"Id" UUID NOT NULL PRIMARY KEY , 
+		"OwnerId" UUID NOT NULL, 
+		"Name" VARCHAR(255) NOT NULL,
+		"Deleted" boolean NOT NULL DEFAULT false,
+		"CreatedAt" timestamptz  NOT NULL,
+		"ModifiedAt" timestamptz NOT NULL
+	);
+
+end if;
+ 
+
+end $$;

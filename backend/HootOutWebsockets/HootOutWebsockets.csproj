@@ -19,8 +19,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\CommonDomain\CommonDomain.csproj" />
     <ProjectReference Include="..\Contracts\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\Domains\ChatChannels\ChatChannels\ChatChannels.csproj" />
+    <ProjectReference Include="..\Domains\ChatMessages\ChatMessages\ChatMessages.csproj" />
+    <ProjectReference Include="..\Domains\ChatServers\ChatServers\ChatServers.csproj" />
     <ProjectReference Include="..\Domains\WebSockets\WebSockets\WebSockets.csproj" />
     <ProjectReference Include="..\Infraestructure\Infraestructure\Infraestructure.csproj" />
+    <ProjectReference Include="..\Integrations\PostgreSQL\PostgreSQL.csproj" />
   </ItemGroup>
 
 </Project>

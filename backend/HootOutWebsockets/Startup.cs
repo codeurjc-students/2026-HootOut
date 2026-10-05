@@ -8,7 +8,7 @@ namespace HootOut.HootOutWebsockets
 {
     public class Startup
     {
-        public static IRegistrationManager RegistrationManager { get; set; } = new RegistrationManager();
+        public IRegistrationManager RegistrationManager { get; set; } = new RegistrationManager();
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;

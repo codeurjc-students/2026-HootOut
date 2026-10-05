@@ -4,6 +4,7 @@ using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.Contracts.Users.Search;
 using HootOut.Contracts.Users.Services;
 using HootOut.Users.Entities;
+using HootOut.Users.Mappers;
 
 namespace HootOut.Users.Services
 {
@@ -22,22 +23,21 @@ namespace HootOut.Users.Services
         {
             if (createUserRequest == null) throw new ArgumentNullException(nameof(createUserRequest));
 
-            var newUser = new UserInfo
-            {
-                Uid = Guid.CreateVersion7(),
-                Email = createUserRequest.Email,
-                Username = createUserRequest.Username,
-                Password = "*********" // TO-DO proper security
-            };
+            var newUser = Persistable.CreateNew<UserInfo>();
+            newUser.Email = createUserRequest.Email;
+            newUser.Username = createUserRequest.Username;
+            newUser.Password = "*********"; // TO-DO proper security;
 
             userSaver.Save(newUser);
 
-            return newUser.Uid;
+            return newUser.Id;
         }
 
         public IEnumerable<UserDto> GetUserDtos()
         {
-            return userSearch.GetUserDtos();
+            return userSearch.GetAllUsers()
+                .Select(x => x.ToDto())
+                .ToList();
         }
     }
 }

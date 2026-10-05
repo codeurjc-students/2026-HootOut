@@ -14,6 +14,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Common\CommonDomain\CommonDomain.csproj" />
     <ProjectReference Include="..\..\Contracts\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\..\Domains\ChatChannels\ChatChannels\ChatChannels.csproj" />
+    <ProjectReference Include="..\..\Domains\ChatMessages\ChatMessages\ChatMessages.csproj" />
     <ProjectReference Include="..\..\Domains\Users\Users.csproj" />
     <ProjectReference Include="..\..\Infraestructure\Infraestructure\Infraestructure.csproj" />
   </ItemGroup>

@@ -24,7 +24,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             container = apiFixture.AutofacRoot.BeginLifetimeScope();
 
             var testPersistenceProvider = container.Resolve<IPersistenceProvider>();
-            Assert.Same(apiFixture.postgreSQLProvider, testPersistenceProvider);
+            Assert.Same(apiFixture.PostgreSQLProvider, testPersistenceProvider);
 
             clearTables = container.Resolve<ClearAllTables>();
             var defaultValues = container.Resolve<IEnumerable<IDefaultValues>>().OrderBy(x => x.Priority);

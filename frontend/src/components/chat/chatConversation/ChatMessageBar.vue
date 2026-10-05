@@ -9,9 +9,6 @@ const serverInfo = serverInfoStore();
 const userInfo = userInfoStore();
 const message = ref("");
 
-onMounted(() => {
-
-});
 
 async function sendMessage() {
     if (!message.value)
@@ -22,7 +19,7 @@ async function sendMessage() {
     } as ChatMessage
     message.value = "";
 
-    const ackPromise = await wsMessageService.sendMessage(serverInfo.currentChatName, chatMessage);
+    const ackPromise = await wsMessageService.sendMessage(serverInfo.currentChatChannel!, chatMessage);
     serverInfo.addPendingMessage(ackPromise.id, chatMessage);
 
     const wsMessage = await ackPromise.promise;

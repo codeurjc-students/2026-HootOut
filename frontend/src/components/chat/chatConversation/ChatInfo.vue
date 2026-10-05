@@ -3,11 +3,11 @@ import { serverInfoStore } from '@/stores/serverInfo';
 import { storeToRefs } from 'pinia';
 
 
-const { currentChatName } = storeToRefs(serverInfoStore())
+const { currentChatChannel } = storeToRefs(serverInfoStore())
 </script>
 
 <template>
-    <div id="chat-info"> {{ currentChatName }}</div>
+    <div id="chat-info"> {{ currentChatChannel!.name }}</div>
 </template>
 
 <style>

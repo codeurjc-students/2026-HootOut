@@ -22,7 +22,10 @@ namespace HootOut.CommonIntegrationTests.PostgreSQL
 
             using (var conn = persistenceProvider.GetNewConnection())
             {
-                conn.Execute("""TRUNCATE TABLE "HootOut"."UserInfo";""");
+                conn.Execute("""TRUNCATE TABLE "HootOut"."UserInfo" CASCADE;""");
+                conn.Execute("""TRUNCATE TABLE "HootOut"."ChatServer" CASCADE;""");
+                conn.Execute("""TRUNCATE TABLE "HootOut"."ChatChannel" CASCADE;""");
+                conn.Execute("""TRUNCATE TABLE "HootOut"."ChatMessage" CASCADE;""");
             }
         }
     }

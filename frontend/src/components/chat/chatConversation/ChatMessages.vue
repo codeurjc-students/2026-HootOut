@@ -6,15 +6,15 @@ import { computed } from "vue";
 
 const serverInfo = serverInfoStore();
 
-const { channelMessages, currentChatName, pendingMessages } = storeToRefs(serverInfo);
+const { channelMessages, currentChatChannel, pendingMessages } = storeToRefs(serverInfo);
 const { username } = storeToRefs(userInfoStore());
 
 const messages = computed(() => {
-    return channelMessages.value[currentChatName.value];
+    return channelMessages.value[currentChatChannel.value!.id];
 })
 
 const pendingMessagesList = computed(() => {
-    return pendingMessages?.value[currentChatName.value];
+    return pendingMessages?.value[currentChatChannel.value!.id];
 });
 
 </script>
@@ -24,7 +24,7 @@ const pendingMessagesList = computed(() => {
         <div class="message-entry pending" v-for='(message, index) in pendingMessagesList' :key='message.id'
             :class="{ 'message-entry-user': message.author.username == username }">
             <div>
-                {{ message.author.username }} --- {{ message.createdAt }}
+                {{ message.author.id }} --- {{ message.createdAt }}
             </div>
             <div>
                 {{ message.content }}

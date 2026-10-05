@@ -5,7 +5,6 @@ using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.Contracts.Users.Search;
 using HootOut.Contracts.Users.Services;
 using HootOut.Users.Entities;
-using HootOut.Users.Mappers;
 using HootOut.Users.Services;
 using Moq;
 
@@ -23,7 +22,7 @@ namespace HootOut.Users.UnitTests.Services
 
             List<UserInfo> users = new List<UserInfo>();
 
-            m_UserSearch.Setup(x => x.GetUserDtos()).Returns(users.Select(x => x.ToDto()));
+            m_UserSearch.Setup(x => x.GetAllUsers()).Returns(users);
             m_UserSaver.Setup(x => x.Save(It.IsAny<UserInfo>())).Callback<UserInfo>(x => users.Add(x));
         }
 
@@ -59,7 +58,7 @@ namespace HootOut.Users.UnitTests.Services
             user.Password.Should().NotBe(password);
 
             m_UserSaver.Verify(x => x.Save(It.IsAny<UserInfo>()), Times.Once());
-            m_UserSearch.Verify(x => x.GetUserDtos(), Times.Once());
+            m_UserSearch.Verify(x => x.GetAllUsers(), Times.Once());
         }
 
         [Fact]
@@ -74,7 +73,7 @@ namespace HootOut.Users.UnitTests.Services
             userService.GetUserDtos().Should().HaveCount(3);
 
             m_UserSaver.Verify(x => x.Save(It.IsAny<UserInfo>()), Times.Exactly(3));
-            m_UserSearch.Verify(x => x.GetUserDtos(), Times.Once());
+            m_UserSearch.Verify(x => x.GetAllUsers(), Times.Once());
         }
     }
 }
