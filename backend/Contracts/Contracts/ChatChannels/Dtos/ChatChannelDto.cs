@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace HootOut.Contracts.ChatChannels.Dtos
+﻿namespace HootOut.Contracts.ChatChannels.Dtos
 {
     public class ChatChannelDto
     {

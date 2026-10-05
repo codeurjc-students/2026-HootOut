@@ -22,14 +22,12 @@ if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
 then
 	CREATE TABLE "HootOut"."ChatMessage"(
 		"Id" UUID NOT NULL PRIMARY KEY ,
-		"SenderId" UUID NOT NULL,
+		"AuthorId" UUID NOT NULL,
 		"ChatChannelId" UUID NOT NULL,
 		"Content" TEXT NOT NULL,
 		"Deleted" boolean NOT NULL DEFAULT false,
 		"CreatedAt" timestamptz  NOT NULL,
-		"ModifiedAt" timestamptz NOT NULL,
-		
-		CONSTRAINT fK_ChatChannelId FOREIGN KEY ("ChatChannelId") REFERENCES "HootOut"."ChatChannel"("Id")
+		"ModifiedAt" timestamptz NOT NULL
 	);
 
 end if;

@@ -1,17 +1,14 @@
 ﻿using HootOut.Contracts.ChatChannels.Dtos;
 using HootOut.Contracts.ChatChannels.Requests;
 using HootOut.Contracts.ChatChannels.Services;
-using HootOut.Contracts.Users.Dtos;
 using HootOut.HootOutAPI.Helpers;
-using HootOut.Users.Services;
 using Microsoft.AspNetCore.Mvc;
-using NLog;
 
 namespace HootOut.HootOutAPI.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class ChatChannelsController: ControllerBase
+    public class ChatChannelsController : ControllerBase
     {
         private ILogger<ChatChannelsController> logger;
 

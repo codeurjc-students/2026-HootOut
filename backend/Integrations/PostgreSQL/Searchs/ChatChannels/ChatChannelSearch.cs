@@ -2,11 +2,6 @@
 using HootOut.ChatChannels.ChatChannels;
 using HootOut.ChatChannels.Search;
 using HootOut.CommonDomain.Persistence;
-using HootOut.Contracts.ChatChannels.Dtos; 
-using HootOut.Contracts.Users.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.PostgreSQL.Searchs.ChatChannels
 {
@@ -29,7 +24,7 @@ namespace HootOut.PostgreSQL.Searchs.ChatChannels
 
         public IEnumerable<ChatChannel> getAllChannels()
         {
-            using(var conn = persistenceProvider.GetNewConnection())
+            using (var conn = persistenceProvider.GetNewConnection())
             {
                 return conn.Query<ChatChannel>(getAllChannelsQuery);
             }

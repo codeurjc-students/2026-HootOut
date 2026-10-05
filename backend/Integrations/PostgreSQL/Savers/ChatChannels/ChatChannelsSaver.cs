@@ -2,14 +2,10 @@
 using HootOut.ChatChannels.ChatChannels;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common.Saver;
-using HootOut.Users.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.PostgreSQL.Savers.ChatChannels
 {
-    internal class ChatChannelsSaver: ISaver<ChatChannel>
+    internal class ChatChannelsSaver : ISaver<ChatChannel>
     {
         private IPersistenceProvider provider;
 
@@ -23,7 +19,7 @@ namespace HootOut.PostgreSQL.Savers.ChatChannels
             VALUES (@Id, @ChatServerId, @Name, @CreatedAt, @ModifiedAt)
         """;
 
-        public ChatChannel Save(ChatChannel item)
+        public void Save(ChatChannel item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
 
@@ -40,12 +36,10 @@ namespace HootOut.PostgreSQL.Savers.ChatChannels
                         item.Id,
                         item.ChatServerId,
                         item.Name,
-                        CreatedAt = now,
-                        ModifiedAt = now
+                        item.CreatedAt,
+                        item.ModifiedAt
                     }, transaction);
                     transaction.Commit();
-
-                    return item;
                 }
             }
             catch (Exception ex)

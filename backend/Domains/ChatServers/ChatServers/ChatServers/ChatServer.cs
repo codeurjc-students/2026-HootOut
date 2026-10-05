@@ -1,7 +1,4 @@
 ﻿using HootOut.Contracts.Common.Saver;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.ChatServers.ChatServers
 {
@@ -13,6 +10,6 @@ namespace HootOut.ChatServers.ChatServers
 
         public Guid ProfilePicture { get; set; }
 
-        public Guid OwnerId { get; set; } 
+        public Guid OwnerId { get; set; }
     }
 }

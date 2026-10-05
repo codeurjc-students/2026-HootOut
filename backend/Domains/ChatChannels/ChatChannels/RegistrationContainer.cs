@@ -2,9 +2,6 @@
 using HootOut.ChatChannels.Services;
 using HootOut.Contracts.ChatChannels.Services;
 using HootOut.Infraestructure.DI;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.ChatChannels
 {

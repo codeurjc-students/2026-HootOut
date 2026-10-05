@@ -6,11 +6,10 @@ using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.Contracts.ChatChannels.Dtos;
 using HootOut.Contracts.ChatChannels.Requests;
 using HootOut.Contracts.ChatChannels.Services; 
-using HootOut.Users.IntegrationTests;  
 
 namespace HootOut.ChatChannels.IntegrationTests.Services
 {
-    public class ChatChannelsServiceTests: IClassFixture<PostgresTestContainer>, IAsyncLifetime
+    public class ChatChannelsServiceTests : IClassFixture<PostgresTestContainer>, IAsyncLifetime
     {
         private IContainer container;
         private ClearAllTables clearTables;
@@ -86,6 +85,6 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
             chatChannelsService.CreateChatChannel(new CreateChatChannelRequest { Name = "1", ServerId = Guid.NewGuid() });
 
             chatChannelsService.GetAllChatChannelsDtos().Should().HaveCount(4);
-        } 
+        }
     }
 }

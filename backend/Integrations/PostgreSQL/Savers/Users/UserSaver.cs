@@ -19,7 +19,7 @@ namespace HootOut.PostgreSQL.Savers.Users
             VALUES (@Id, @Username, @Email, @Password, @CreatedAt, @ModifiedAt)
         """;
 
-        public UserInfo Save(UserInfo item)
+        public void Save(UserInfo item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
 
@@ -33,17 +33,15 @@ namespace HootOut.PostgreSQL.Savers.Users
 
                     conn.Execute(addOrReplaceUserInfo, new
                     {
-                        Id = item.Id,
-                        Username = item.Username,
-                        Email = item.Email,
-                        Password = item.Password,
-                        CreatedAt = now,
-                        ModifiedAt = now
+                        item.Id,
+                        item.Username,
+                        item.Email,
+                        item.Password,
+                        item.CreatedAt,
+                        item.ModifiedAt
                     }, transaction);
                     transaction.Commit();
                 }
-
-                return item;
             }
             catch (Exception ex)
             {

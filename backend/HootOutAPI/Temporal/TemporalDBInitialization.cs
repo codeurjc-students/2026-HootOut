@@ -7,8 +7,7 @@ namespace HootOut.HootOutAPI.Temporal
 {
     public class TemporalDBInitialization : IDefaultValues
     {
-        private IUserService userService;
-        private IChatChannelsService chatChannelsService;
+        private IUserService userService; 
         public TemporalDBInitialization(IUserService userService)
         {
             this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
@@ -23,16 +22,7 @@ namespace HootOut.HootOutAPI.Temporal
                     Email = $"email{tempId}.email.com",
                     Password = "password",
                     Username = $"username-{tempId}",
-                });
-
-                tempId = Guid.NewGuid().ToString();
-                userService.CreateUser(new CreateUserRequest
-                {
-                    Email = $"email{tempId}.email.com",
-                    Password = "password",
-                    Username = $"username-{tempId}",
-                });
-
+                });  
             }
         }
     }

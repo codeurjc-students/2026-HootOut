@@ -23,7 +23,11 @@
 </ItemGroup> 
 
 <ItemGroup>
-  <ProjectReference Include="..\..\Users.IntegrationTests\Users.IntegrationTests.csproj" />
+  <ProjectReference Include="..\..\..\Common\CommonDomain\CommonDomain.csproj" />
+  <ProjectReference Include="..\..\..\Common\CommonIntegrationTests\CommonIntegrationTests\CommonIntegrationTests.csproj" />
+  <ProjectReference Include="..\..\..\Contracts\Contracts\Contracts.csproj" />
+  <ProjectReference Include="..\..\..\Integrations\PostgreSQL\PostgreSQL.csproj" />
+  <ProjectReference Include="..\ChatChannels\ChatChannels.csproj" />
 </ItemGroup>
 
 </Project>

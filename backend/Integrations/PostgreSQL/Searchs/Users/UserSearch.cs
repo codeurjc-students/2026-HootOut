@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using HootOut.CommonDomain.Persistence;
-using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.Users.Search;
 using HootOut.Users.Entities;
 

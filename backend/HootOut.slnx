@@ -12,6 +12,7 @@
     <Project Path="Domains/ChatChannels/ChatChannels/ChatChannels.csproj" Id="088648f0-6889-4b1b-87b7-26386abb1513" />
   </Folder>
   <Folder Name="/Domains/ChatMessages/">
+    <Project Path="Domains/ChatMessages/ChatMessages.IntegrationTests/ChatMessages.IntegrationTests.csproj" Id="e225c46c-2306-4440-aac8-3048a7512b39" />
     <Project Path="Domains/ChatMessages/ChatMessages/ChatMessages.csproj" Id="e62a2fa4-c4d8-4c4e-93f9-86be8b5b576b" />
   </Folder>
   <Folder Name="/Domains/ChatServers/">

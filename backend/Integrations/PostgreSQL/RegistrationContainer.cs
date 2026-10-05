@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using HootOut.ChatChannels.Search;
+using HootOut.ChatMessages.Searchs;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common.Saver;
@@ -8,6 +9,7 @@ using HootOut.Infraestructure.DI;
 using HootOut.PostgreSQL.Dapper;
 using HootOut.PostgreSQL.DBScripts;
 using HootOut.PostgreSQL.Searchs.ChatChannels;
+using HootOut.PostgreSQL.Searchs.ChatMessages;
 using HootOut.PostgreSQL.Searchs.Users;
 using HootOut.PostgreSQL.Services;
 using System.Reflection;
@@ -35,6 +37,7 @@ namespace HootOut.PostgreSQL
         {
             builder.RegisterType<UserSearch>().As<IUserSearch>().SingleInstance();
             builder.RegisterType<ChatChannelSearch>().As<IChatChannelSearch>().SingleInstance();
+            builder.RegisterType<ChatMessageSearch>().As<IChatMessageSearch>().SingleInstance();
         }
     }
 }

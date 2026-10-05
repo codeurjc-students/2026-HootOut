@@ -2,7 +2,7 @@
 
 namespace HootOut.Users.Entities
 {
-    public class UserInfo : Persistable             
+    public class UserInfo : Persistable
     {
         public string Username { get; set; } = string.Empty;
 

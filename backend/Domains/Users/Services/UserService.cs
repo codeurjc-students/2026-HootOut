@@ -23,13 +23,10 @@ namespace HootOut.Users.Services
         {
             if (createUserRequest == null) throw new ArgumentNullException(nameof(createUserRequest));
 
-            var newUser = new UserInfo
-            {
-                Id = Guid.CreateVersion7(),
-                Email = createUserRequest.Email,
-                Username = createUserRequest.Username,
-                Password = "*********" // TO-DO proper security
-            };
+            var newUser = Persistable.CreateNew<UserInfo>();
+            newUser.Email = createUserRequest.Email;
+            newUser.Username = createUserRequest.Username;
+            newUser.Password = "*********"; // TO-DO proper security;
 
             userSaver.Save(newUser);
 

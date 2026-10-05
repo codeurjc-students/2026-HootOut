@@ -5,7 +5,6 @@ using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.Contracts.Users.Search;
 using HootOut.Contracts.Users.Services;
 using HootOut.Users.Entities;
-using HootOut.Users.Mappers;
 using HootOut.Users.Services;
 using Moq;
 

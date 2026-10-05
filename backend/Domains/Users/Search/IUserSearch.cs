@@ -1,5 +1,4 @@
-﻿using HootOut.Contracts.Users.Dtos;
-using HootOut.Users.Entities;
+﻿using HootOut.Users.Entities;
 
 namespace HootOut.Contracts.Users.Search
 {
