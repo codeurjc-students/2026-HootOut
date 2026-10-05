@@ -24,7 +24,7 @@ const pendingMessagesList = computed(() => {
         <div class="message-entry pending" v-for='(message, index) in pendingMessagesList' :key='message.id'
             :class="{ 'message-entry-user': message.author.username == username }">
             <div>
-                {{ message.author.username }} --- {{ message.createdAt }}
+                {{ message.author.id }} --- {{ message.createdAt }}
             </div>
             <div>
                 {{ message.content }}

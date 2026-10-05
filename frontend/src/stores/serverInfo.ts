@@ -45,5 +45,10 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     newChannels.forEach(c => addNewChannel(c));
   }
 
-  return { currentChatChannel, channels, addPendingMessage, confirmMessage, channelMessages, pendingMessages, setCurrentChatChannel, addNewChannel, newMessage, setServerChannels }
+  function setChannelMessages(channel: ChatChannelDto, messages: ChatMessage[]) {
+    channelMessages.value[channel.id] = messages;
+    pendingMessages.value[channel.id] = {};
+  }
+
+  return { currentChatChannel, channels, addPendingMessage, confirmMessage, channelMessages, pendingMessages, setCurrentChatChannel, addNewChannel, newMessage, setServerChannels, setChannelMessages }
 })

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import ChatChannelService from "@/services/chatChannel/ChatChannelService";
+import ChatMessageService from "@/services/chatMessage/ChatMessageService";
 import wsMessageService, { WebSocketMessageService } from "@/services/common/websocketsMesage/WebSocketsMessageService";
 import { serverInfoStore } from "@/stores/serverInfo"
 import type { ChatChannelDto, WebSocketMessage } from "@/types";
@@ -9,7 +10,7 @@ import { server } from "typescript";
 import { onMounted, ref } from "vue";
 
 const serverInfo = serverInfoStore();
-const { channels, currentChatName } = storeToRefs(serverInfo) as any
+const { channels, currentChatChannel } = storeToRefs(serverInfo) as any
 const newChannelName = ref("")
 
 onMounted(async () => {
@@ -40,7 +41,9 @@ async function addNewChannel() {
     }
 }
 
-function selectChannel(channel: ChatChannelDto) {
+async function selectChannel(channel: ChatChannelDto) {
+    const messages = await ChatMessageService.getMessagesByChannelId(channel.id);
+    serverInfo.setChannelMessages(channel, messages)
     serverInfo.setCurrentChatChannel(channel);
 }
 
@@ -58,7 +61,7 @@ function selectChannel(channel: ChatChannelDto) {
         <div style="margin: 1rem 0;">
             Channel list
         </div>
-        <div v-for="channel in channels" class="channel-name" :class="{ active: channel == currentChatName }"
+        <div v-for="channel in channels" class="channel-name" :class="{ active: channel.id == currentChatChannel?.id }"
             @click="selectChannel(channel)">
             {{ channel.name }}
         </div>

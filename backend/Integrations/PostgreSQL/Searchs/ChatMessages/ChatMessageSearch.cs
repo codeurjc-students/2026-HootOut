@@ -24,6 +24,7 @@ namespace HootOut.PostgreSQL.Searchs.ChatMessages
                 "ModifiedAt"
             FROM "HootOut"."ChatMessage" chatMessage
             WHERE chatMessage."ChatChannelId" = @chatChannelId
+            ORDER BY chatMessage."CreatedAt" DESC
         """;
 
         public IEnumerable<ChatMessage> GetMessagesByChannelId(Guid channelId)

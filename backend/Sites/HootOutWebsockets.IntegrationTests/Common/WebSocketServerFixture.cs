@@ -23,20 +23,20 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
             };
 
             return Host.CreateDefaultBuilder()
-            .UseServiceProviderFactory(new AutofacServiceProviderFactory())
-            .ConfigureServices(services =>
-            {
-                services.AddControllers().AddApplicationPart(typeof(Startup).Assembly);
-            })
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder.UseStartup<Startup>((webHostBuilder) =>
+                .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+                .ConfigureServices(services =>
                 {
-                    var startup = new Startup(webHostBuilder.Configuration);
-                    startup.RegistrationManager = testRegistrationManager;
-                    return startup;
+                    services.AddControllers().AddApplicationPart(typeof(Startup).Assembly);
+                })
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>((webHostBuilder) =>
+                    {
+                        var startup = new Startup(webHostBuilder.Configuration);
+                        startup.RegistrationManager = testRegistrationManager;
+                        return startup;
+                    });
                 });
-            });
 
         }
 
