@@ -15,7 +15,6 @@ namespace HootOut.HootOutAPI.IntegrationTests.Common
         protected const string DefaultUsername = "Test1";
         protected const string DefaultEmail = "email@email.com";
         protected const string DefaultPassword = "test1";
-
         protected readonly JsonWebTokenHandler jtwHandler = new();
 
         protected async Task<AuthResponse> RegisterAsync(

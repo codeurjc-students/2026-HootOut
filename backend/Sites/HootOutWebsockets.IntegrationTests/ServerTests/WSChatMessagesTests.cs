@@ -1,8 +1,11 @@
 ﻿using Autofac;
 using FluentAssertions;
+using HootOut.Authentication.Services;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
+using HootOut.Contracts.Authentication.Requests;
+using HootOut.Contracts.Authentication.Services;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
@@ -12,8 +15,11 @@ using HootOut.Contracts.WebSockets.Services;
 using HootOut.HootOutWebsockets.IntegrationTests.Common;
 using HootOut.HootOutWebsockets.Services;
 using HootOut.WebSockets.Service;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System.Net.WebSockets;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 {
@@ -21,13 +27,19 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
     public class WSChatMessagesTests : IClassFixture<WebSocketServerFixture>, IDisposable
     {
         private readonly WebSocketServerFixture server;
-        private readonly ILifetimeScope container;
-
+        private readonly ILifetimeScope container; 
         private ClearAllTables clearTables;
+        protected readonly JsonWebTokenHandler jtwHandler = new();
 
         public WSChatMessagesTests(WebSocketServerFixture server)
         {
             this.server = server;
+            var rsaKeyProvider = new RsaKeyProvider(jwt.PrivateKeysPath);
+            this.server.RegisterDependencies = (ContainerBuilder? builder) =>
+            {
+                builder?.RegisterInstance(rsaKeyProvider).As<IRsaKeyProvider>().SingleInstance(); //Used for creating the account
+            };
+
             container = server.AutofacRoot.BeginLifetimeScope();
 
             var testPersistenceProvider = container.Resolve<IPersistenceProvider>();
@@ -63,6 +75,31 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
         {
             var ct = TestContext.Current.CancellationToken; 
             IWSConnectionManager IconnectionManager = container.Resolve<IWSConnectionManager>();
+            IAuthenticationService authService = container.Resolve<IAuthenticationService>();
+
+            var username1 = "test1";
+            var auth1 = await authService.RegisterUserAsync(new AuthRegistrationRequest
+            {
+                Username = username1,
+                Email = "test@test.com",
+                Password = "test123"
+            }, ct);
+            auth1.AccessToken.Should().NotBeNullOrEmpty();
+
+            var userId1 = Guid.Parse(jtwHandler.ReadJsonWebToken(auth1.AccessToken!).GetClaim("sub").Value);
+            var ticket1 = await authService.CreateWebSocketTicketAsync(userId1, username1, ct);
+
+            var username2 = "test2";
+            var auth2 = await authService.RegisterUserAsync(new AuthRegistrationRequest
+            {
+                Username = username2,
+                Email = "test2@test.com",
+                Password = "test123"
+            }, ct);
+            auth2.AccessToken.Should().NotBeNullOrEmpty();
+
+            var userId2 = Guid.Parse(jtwHandler.ReadJsonWebToken(auth2.AccessToken!).GetClaim("sub").Value);
+            var ticket2 = await authService.CreateWebSocketTicketAsync(userId2, username2, ct);
 
             WSConnectionManager? connectionManager = null; 
             if (IconnectionManager is WSConnectionManager)
@@ -72,13 +109,13 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 
             connectionManager!.Connections.Count.Should().Be(0);
 
-            await using var socket1 = await WSTestClient.ConnectAsync(server, ct: ct);
+            await using var socket1 = await WSTestClient.ConnectAsync(server, wsTicket: ticket1.Ticket, ct: ct);
             await Task.Delay(100, ct); //TO-DO Replace with ACK from Server
 
             socket1.Socket.State.Should().Be(WebSocketState.Open);
             connectionManager!.Connections.Count.Should().Be(1);
 
-            await using var socket2 = await WSTestClient.ConnectAsync(server, ct: ct);
+            await using var socket2 = await WSTestClient.ConnectAsync(server, wsTicket: ticket2.Ticket, ct: ct);
             await Task.Delay(100, ct); //TO-DO Replace with ACK from Server
 
             socket2.Socket.State.Should().Be(WebSocketState.Open);
@@ -128,7 +165,6 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
             pubSubService!.ConnectionSubscriptions.Count.Should().Be(2);
 
             string messageContent = "Test Chat";
-            Guid userId1 = Guid.CreateVersion7();
             var chatMessage = new CreateChatMessageRequest
             {
                 Content = messageContent,

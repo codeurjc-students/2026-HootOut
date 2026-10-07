@@ -441,6 +441,9 @@ FodyWeavers.xsd
 
 backend/.sonarqube/
 
+keys/
+*.pem
+
 ## Frontend gitignore
 
 # Logs

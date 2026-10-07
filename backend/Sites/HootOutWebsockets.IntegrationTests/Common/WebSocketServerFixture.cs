@@ -14,12 +14,19 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
     {
         public ILifetimeScope AutofacRoot => Services.GetAutofacRoot();
         public TestContainerPostgreSQLProvider? PostgreSQLProvider { get; set; }
+
+        public Action<ContainerBuilder?>? RegisterDependencies;
         protected override IHostBuilder CreateHostBuilder()
         {
             TestRegistrationManager testRegistrationManager = new TestRegistrationManager();
             testRegistrationManager.RegisterTest = (builder) =>
             {
                 builder?.RegisterInstance(PostgreSQLProvider!).As<IPersistenceProvider>().SingleInstance();
+
+                if (RegisterDependencies != null)
+                {
+                    RegisterDependencies(builder);
+                }
             };
 
             return Host.CreateDefaultBuilder()
