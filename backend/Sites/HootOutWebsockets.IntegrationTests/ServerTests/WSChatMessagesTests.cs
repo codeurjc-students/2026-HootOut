@@ -17,6 +17,7 @@ using System.Net.WebSockets;
 
 namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 {
+    [Collection("IntegrationTests")]
     public class WSChatMessagesTests : IClassFixture<WebSocketServerFixture>, IDisposable
     {
         private readonly WebSocketServerFixture server;

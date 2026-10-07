@@ -24,6 +24,13 @@ namespace HootOut.CommonIntegrationTests.Services
             return connection;
         }
 
+        public async Task<DbConnection> GetConnectionAsync(CancellationToken ct)
+        {
+            var connection = new NpgsqlConnection(Container.GetConnectionString());
+            await connection.OpenAsync(ct);
+            return connection;
+        }
+
         public ValueTask DisposeAsync()
         {
             return Container.DisposeAsync();

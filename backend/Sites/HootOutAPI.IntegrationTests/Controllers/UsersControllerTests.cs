@@ -3,19 +3,18 @@ using FluentAssertions;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
+using HootOut.Contracts.Authentication.Responses;
 using HootOut.Contracts.Users.Dtos;
-using HootOut.Contracts.Users.Dtos.Request;
-using HootOut.Contracts.Users.Services;
 using HootOut.HootOutAPI.IntegrationTests.Common;
 using System.Net;
 using System.Net.Http.Json;
 
 namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 {
-    public class UsersControllerTests : IClassFixture<APIFixture>, IDisposable, IAsyncLifetime
+    [Collection("IntegrationTests")]
+    public class UsersControllerTests : TestControllerBase, IClassFixture<APIFixture>, IDisposable, IAsyncLifetime
     {
         private readonly ILifetimeScope container;
-        private readonly HttpClient httpClient;
         private ClearAllTables clearTables;
 
         public UsersControllerTests(APIFixture apiFixture)
@@ -48,52 +47,85 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
         }
 
         [Fact]
-        public async Task GetUsersAll_ReturnsOk_Empty()
+        public async Task GetUsersAll_ReturnsUnAuthorized_Empty()
         {
-            var response = await httpClient.GetAsync("/api/v1/users/all", CancellationToken.None);
+            var ct = TestContext.Current.CancellationToken;
+            var response = await httpClient.GetAsync("/api/v1/users/me", ct);
 
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-            var messages = await response.Content.ReadFromJsonAsync<IEnumerable<UserDto>>(CancellationToken.None);
-            messages.Should().NotBeNull();
-            messages.Should().BeEmpty();
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Fact]
-        public async Task GetUsersAll_ReturnsOk_OneUser()
+        public async Task GetUsersUserInfo_ReturnsOk_OneUser()
         {
-            var userService = container.Resolve<IUserService>();
+            var ct = TestContext.Current.CancellationToken;
 
-            userService.CreateUser(new CreateUserRequest { Username = "Test1", Email = "email@email.com", Password = "test1" });
+            var response = await httpClient.GetAsync("/api/v1/users/all", ct);
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
-            var response = await httpClient.GetAsync("/api/v1/users/all", CancellationToken.None);
+            await RegisterAsync(ct);
+            var loginResponse = await LoginAsync(DefaultEmail, DefaultPassword, ct);
+            var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);
+            auth.Should().NotBeNull();
+
+            response = await SendAuthorizeHttpRequest(
+                HttpMethod.Get,
+                $"/api/v1/users/me",
+                auth?.AccessToken!,
+                CancellationToken.None
+            );
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var users = await response.Content.ReadFromJsonAsync<IEnumerable<UserDto>>(CancellationToken.None);
-            users.Should().NotBeNull();
-            users.Should().HaveCount(1);
-
-            UserDto user = users.First();
-            user.Username.Should().Be("Test1");
+            var userDto = await response.Content.ReadFromJsonAsync<UserDto>(ct);
+            userDto.Should().NotBeNull();
+            userDto.Id.Should().Be(GetUserIdFromAccessToken(auth?.AccessToken));
+            userDto.Email.Should().Be(DefaultEmail);
+            userDto.Username.Should().Be(DefaultUsername);
         }
 
         [Fact]
-        public async Task GetUsersAll_ReturnsOk_MultipleUsers()
+        public async Task GetUserInfo_ReturnsOk_UserFromAuthHeaders()
         {
-            var userService = container.Resolve<IUserService>();
+            var ct = TestContext.Current.CancellationToken;
 
-            userService.CreateUser(new CreateUserRequest { Username = "1", Email = "1", Password = "1" });
-            userService.CreateUser(new CreateUserRequest { Username = "2", Email = "2", Password = "2" });
-            userService.CreateUser(new CreateUserRequest { Username = "3", Email = "3", Password = "3" });
+            await RegisterAsync(ct);
+            var loginResponse = await LoginAsync(DefaultEmail, DefaultPassword, ct);
+            var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);
+            auth.Should().NotBeNull();
 
-            var response = await httpClient.GetAsync("/api/v1/users/all", CancellationToken.None);
+            await RegisterAsync(ct, "DifferentUser", "Different Email", "DifferentPassword");
+
+            var response = await SendAuthorizeHttpRequest(
+                HttpMethod.Get,
+                $"/api/v1/users/me",
+                auth?.AccessToken!,
+                ct
+            );
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var users = await response.Content.ReadFromJsonAsync<IEnumerable<UserDto>>(CancellationToken.None);
-            users.Should().NotBeNull();
-            users.Should().HaveCount(3);
+            var userDto = await response.Content.ReadFromJsonAsync<UserDto>(ct);
+            userDto.Should().NotBeNull();
+            userDto.Id.Should().Be(GetUserIdFromAccessToken(auth?.AccessToken));
+            userDto.Email.Should().Be(DefaultEmail);
+            userDto.Username.Should().Be(DefaultUsername);
+        }
+
+        [Fact]
+        public async Task GetUserInfo_ReturnsUnAuthorized_randomToken()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            await RegisterAsync(ct);
+
+            var response = await SendAuthorizeHttpRequest(
+                HttpMethod.Get,
+                $"/api/v1/users/me",
+                "12345",
+                ct
+            );
+
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         public void Dispose()

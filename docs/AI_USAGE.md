@@ -40,3 +40,14 @@ We want to test the WebSocket server itself, with multiple client connections op
 ##### Usage:
 Chat with Claude where I present the testing and working environment (ASP.NET Core 10 with Xunit, we want to test Websockets), and iterate on writing a helper class to ease sending/receiving Json objects.
 The result is on [/backend/Sites/HootOutWebsockets.IntegrationTests/Common/WSTestClient.cs](/backend/Sites/HootOutWebsockets.IntegrationTests/Common/WSTestClient.cs)
+
+#### Objective: Setup User Authentication with JWT, with the WebSocket service in mind.
+##### Date:
+06/10/2026
+##### Tool:
+Claude Chat, Sonnet 5.5 Medium
+##### Problem to solve:
+We want to authenticate Users in the application using JWT. Since the backend is composed of a REST API and a WebSocket Server, we need the user to be able to authenticate in both applications, first in the API Rest and with the JWT in the WebSocket server. 
+##### Usage:
+Chat with Claude to see what options there are to authenticate on a WebSocket server with the JWT generated on the Rest API. We discussed some alternatives (like sending the jwt on the ws connection request, or having a ticket-based system).After some research on my own of the topic, I went with the proposed solution of having a "ticket"-based authentication system, as it is also recommended by Heroku: https://devcenter.heroku.com/articles/websocket-security. Basically, after the User successfully authenticates on the Rest API, it makes a request to it and the Rest API stores a short lived "ticket" to the DB and returns it to the client. Then the client connects to the WebSocket Server with that ticket, and the WebSocket Server validates it.
+We iterated on User registration and Authentication classes and tests on the Backend so it can compatible with JWT and the ticket-based system.

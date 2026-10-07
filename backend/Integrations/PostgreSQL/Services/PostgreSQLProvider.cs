@@ -12,5 +12,12 @@ namespace HootOut.PostgreSQL.Services
             connection.Open();
             return connection;
         }
+
+        public async Task<DbConnection> GetConnectionAsync(CancellationToken ct)
+        {
+            var connection = new NpgsqlConnection(Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection"));
+            await connection.OpenAsync(ct);
+            return connection;
+        }
     }
 }

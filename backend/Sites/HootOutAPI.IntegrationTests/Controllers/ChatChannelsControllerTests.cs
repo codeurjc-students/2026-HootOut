@@ -6,7 +6,7 @@ using HootOut.HootOutAPI.IntegrationTests.Common;
 
 namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 {
-
+    [Collection("API")]
     public class ChatChannelsControllerTests : IClassFixture<APIFixture>, IDisposable, IAsyncLifetime
     {
         private readonly ILifetimeScope container;

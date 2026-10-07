@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" /> 
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.24.2-preview.1" />
@@ -26,6 +27,7 @@
     <ProjectReference Include="..\Contracts\Contracts\Contracts.csproj" />
     <ProjectReference Include="..\Domains\Users\Users.csproj" />
     <ProjectReference Include="..\Infraestructure\Infraestructure\Infraestructure.csproj" />
+    <ProjectReference Include="..\Integrations\Authentication\Authentication.csproj" />
     <ProjectReference Include="..\Integrations\PostgreSQL\PostgreSQL.csproj" />
   </ItemGroup>
 
@@ -34,8 +36,7 @@
 </Target>
 
   <Target Name="GenerateSwaggerYaml" AfterTargets="Build">
-  <Exec Command="dotnet tool run swagger tofile --yaml --output &quot;$(MSBuildProjectDirectory)/api-docs.yaml&quot; &quot;$(TargetPath)&quot; v1"
-        EnvironmentVariables="GENERATING_OPENAPI_DOC=true" />
+  <Exec Command="dotnet tool run swagger tofile --yaml --output &quot;$(MSBuildProjectDirectory)/api-docs.yaml&quot; &quot;$(TargetPath)&quot; v1" EnvironmentVariables="GENERATING_OPENAPI_DOC=true" />
   </Target>
 
 </Project>

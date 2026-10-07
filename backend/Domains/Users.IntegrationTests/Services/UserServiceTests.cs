@@ -10,7 +10,7 @@ using HootOut.Infraestructure.DI;
 
 namespace HootOut.Users.IntegrationTests.Services
 {
-
+    [Collection("IntegrationTests")]
     public class UserServiceTests : IClassFixture<PostgresTestContainer>, IAsyncLifetime
     {
         private IContainer container;
@@ -53,42 +53,36 @@ namespace HootOut.Users.IntegrationTests.Services
             return ValueTask.CompletedTask;
         }
 
-        [Fact]
-        public async Task GetUserDtos_Emtpy()
-        {
-            userService.GetUserDtos().Should().BeEmpty();
-        }
-
         [Theory]
         [InlineData("email@test.com", "username1", "password12345")]
-        public async Task GetUserDtos_One(string username, string email, string password)
+        public async Task GetUserDtoById_One(string username, string email, string password)
         {
-            userService.CreateUser(new CreateUserRequest
+            var dto = userService.CreateUser(new CreateUserRequest
             {
                 Username = username,
                 Email = email,
                 Password = password
             });
 
-            IEnumerable<UserDto> users = userService.GetUserDtos();
-            users.Should().HaveCount(1);
-
-            UserDto user = users.Single();
+            UserDto? user = userService.GetUserDtoById(dto.Id);
+            user.Should().NotBeNull();
 
             user.Id.Should().NotBeEmpty();
+            user.Id.Should().Be(dto.Id);
             user.Username.Should().Be(username);
             user.Email.Should().Be(email);
-            user.Password.Should().NotBe(password);
         }
 
         [Fact]
         public async Task GetUserDtos_Many()
         {
             userService.CreateUser(new CreateUserRequest { Email = "1", Password = "1", Username = "1" });
-            userService.CreateUser(new CreateUserRequest { Email = "2", Password = "2", Username = "2" });
+            var dto = userService.CreateUser(new CreateUserRequest { Email = "2", Password = "2", Username = "2" });
             userService.CreateUser(new CreateUserRequest { Email = "3", Password = "3", Username = "3" });
 
-            userService.GetUserDtos().Should().HaveCount(3);
+            UserDto? user = userService.GetUserDtoById(dto.Id);
+            user.Should().NotBeNull();
+            user.Id.Should().Be(dto.Id);
         }
     }
 }

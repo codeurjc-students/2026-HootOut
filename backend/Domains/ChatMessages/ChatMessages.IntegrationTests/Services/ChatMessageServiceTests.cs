@@ -9,6 +9,7 @@ using HootOut.Contracts.ChatMessage.Services;
 
 namespace HootOut.ChatMessages.IntegrationTests.Services
 {
+    [Collection("IntegrationTests")]
     public class ChatMessageServiceTests : IClassFixture<PostgresTestContainer>, IAsyncLifetime
     {
         private IContainer container;
