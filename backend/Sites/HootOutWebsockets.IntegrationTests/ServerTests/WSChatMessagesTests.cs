@@ -34,7 +34,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
         public WSChatMessagesTests(WebSocketServerFixture server)
         {
             this.server = server;
-            var rsaKeyProvider = new RsaKeyProvider(jwt.PrivateKeysPath);
+            var rsaKeyProvider = new RsaKeyProvider("keys/jwt-private.pem");
             this.server.RegisterDependencies = (ContainerBuilder? builder) =>
             {
                 builder?.RegisterInstance(rsaKeyProvider).As<IRsaKeyProvider>().SingleInstance(); //Used for creating the account
