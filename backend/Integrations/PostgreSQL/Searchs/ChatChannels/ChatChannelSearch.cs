@@ -24,7 +24,7 @@ namespace HootOut.PostgreSQL.Searchs.ChatChannels
 
         public IEnumerable<ChatChannel> getAllChannels()
         {
-            using (var conn = persistenceProvider.GetNewConnection())
+            using (var conn = persistenceProvider.OpenConnection())
             {
                 return conn.Query<ChatChannel>(getAllChannelsQuery);
             }

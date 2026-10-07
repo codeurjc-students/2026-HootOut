@@ -219,6 +219,62 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
         }
 
         // ------------------------------------------------------------------
+        // WSTickets
+        // ------------------------------------------------------------------ 
+
+        [Fact]
+        public async Task WsTicket_ReturnsUnauthorized_WithoutToken()
+        {
+            var ct = TestContext.Current.CancellationToken;
+
+            var response = await httpClient.PostAsync("/api/v1/auth/ws-ticket", null, ct);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+
+        [Fact]
+        public async Task WsTicket_ReturnsUnauthorized_WithInvalidToken()
+        {
+            var ct = TestContext.Current.CancellationToken;
+
+            var response = await SendAuthorizeHttpRequest(
+                HttpMethod.Post, "/api/v1/auth/ws-ticket", "not-a-real-token", ct);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+
+        [Fact]
+        public async Task WsTicket_ReturnsOk_WithTicket()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var auth = await RegisterAsync(ct);
+
+            var response = await SendAuthorizeHttpRequest(
+                HttpMethod.Post, "/api/v1/auth/ws-ticket", auth.AccessToken, ct);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var ticket = await response.Content.ReadFromJsonAsync<WSTicketResponse>(ct);
+            ticket.Should().NotBeNull();
+            ticket!.Ticket.Should().NotBeNullOrWhiteSpace();
+            ticket.ExpiresIn.Should().Be(30);
+        }
+
+        [Fact]
+        public async Task WsTicket_ReturnsDifferentTicketEachTime()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var auth = await RegisterAsync(ct);
+
+            var first = await (await SendAuthorizeHttpRequest(HttpMethod.Post, "/api/v1/auth/ws-ticket", auth.AccessToken, ct))
+                .Content.ReadFromJsonAsync<WSTicketResponse>(ct);
+            var second = await (await SendAuthorizeHttpRequest(HttpMethod.Post, "/api/v1/auth/ws-ticket", auth.AccessToken, ct))
+                .Content.ReadFromJsonAsync<WSTicketResponse>(ct);
+
+            second!.Ticket.Should().NotBe(first!.Ticket);
+        }
+
+        // ------------------------------------------------------------------
         // Helpers
         // ------------------------------------------------------------------ 
 

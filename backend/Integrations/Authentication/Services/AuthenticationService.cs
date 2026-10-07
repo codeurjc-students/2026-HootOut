@@ -12,18 +12,20 @@ namespace HootOut.Authentication.Services
 {
     public class AuthenticationService : IAuthenticationService
     {
-        private IUserService userService;
-        private IUserSearch userSearch;
-        private IPasswordHasherService passwordHasherService;
-        private IAuthTokenService authTokenService;
-        private IRefreshTokenService refreshTokenService;
+        private readonly IUserService userService;
+        private readonly IUserSearch userSearch;
+        private readonly IPasswordHasherService passwordHasherService;
+        private readonly IAuthTokenService authTokenService;
+        private readonly IRefreshTokenService refreshTokenService;
+        private readonly IWSTicketService ticketService;
 
         public AuthenticationService(
             IUserService userService,
             IUserSearch userSearch,
             IPasswordHasherService passwordHasherService,
             IAuthTokenService authTokenService,
-            IRefreshTokenService refreshTokenService
+            IRefreshTokenService refreshTokenService,
+            IWSTicketService ticketService
         )
         {
             this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
@@ -31,6 +33,7 @@ namespace HootOut.Authentication.Services
             this.passwordHasherService = passwordHasherService ?? throw new ArgumentNullException(nameof(passwordHasherService));
             this.authTokenService = authTokenService ?? throw new ArgumentNullException(nameof(authTokenService));
             this.refreshTokenService = refreshTokenService ?? throw new ArgumentNullException(nameof(refreshTokenService));
+            this.ticketService = ticketService ?? throw new ArgumentNullException(nameof(ticketService));
         }
 
 
@@ -67,7 +70,7 @@ namespace HootOut.Authentication.Services
         public async Task<AuthResponse> RegisterUserAsync(AuthRegistrationRequest request, CancellationToken ct = default)
         {
             //TO-DO proper user validation
-            var userName = request.UserName?.Trim() ?? string.Empty;
+            var userName = request.Username?.Trim() ?? string.Empty;
 
             if (string.IsNullOrEmpty(userName) || userName.Length < 3 || userName.Length > 50)
                 throw new ValidationException("Invalid Username");
@@ -132,6 +135,15 @@ namespace HootOut.Authentication.Services
             }
 
             await refreshTokenService.RevokeAsync(request.RefreshToken, ct);
+        }
+
+        public async Task<WSTicketResponse> CreateWebSocketTicketAsync(Guid userId, string username, CancellationToken ct)
+        {
+            var ticket = await ticketService.IssueAsync(userId, username, IWSTicketService.DefaultLifetime, ct);
+            return new WSTicketResponse { 
+                Ticket = ticket,
+                ExpiresIn = (int)IWSTicketService.DefaultLifetime.TotalSeconds 
+            };
         }
     }
 }

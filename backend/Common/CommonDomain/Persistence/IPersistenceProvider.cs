@@ -4,8 +4,8 @@ namespace HootOut.CommonDomain.Persistence
 {
     public interface IPersistenceProvider
     {
-        DbConnection GetNewConnection();
+        DbConnection OpenConnection();
 
-        Task<DbConnection> GetConnectionAsync(CancellationToken ct);
+        Task<DbConnection> OpenConnectionAsync(CancellationToken ct);
     }
 }

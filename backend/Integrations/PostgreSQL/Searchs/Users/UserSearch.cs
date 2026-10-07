@@ -15,10 +15,10 @@ namespace HootOut.PostgreSQL.Searchs.Users
         }
 
         private const string UserColumns =
-        """ "Id" as Id, "Username" as UserName, "PasswordHash" as Password, "Email" as Email""";
+        """ "Id" as Id, "Username" as Username, "PasswordHash" as Password, "Email" as Email""";
         public IEnumerable<UserInfo> GetAllUsers()
         {
-            using (var conn = persistenceProvider.GetNewConnection())
+            using (var conn = persistenceProvider.OpenConnection())
             {
                 return conn.Query<UserInfo>($"""SELECT {UserColumns} FROM "HootOut"."UserInfo" """);
             }
@@ -26,7 +26,7 @@ namespace HootOut.PostgreSQL.Searchs.Users
 
         public UserInfo? GetUserByEmail(string email)
         {
-            using (var conn = persistenceProvider.GetNewConnection())
+            using (var conn = persistenceProvider.OpenConnection())
             {
                 return conn.QuerySingleOrDefault<UserInfo>(new CommandDefinition(
                     $"""SELECT {UserColumns} FROM "HootOut"."UserInfo" where lower("Email") = lower(@Email)""",
@@ -36,7 +36,7 @@ namespace HootOut.PostgreSQL.Searchs.Users
 
         public UserInfo? GetUserById(Guid id)
         {
-            using (var conn = persistenceProvider.GetNewConnection())
+            using (var conn = persistenceProvider.OpenConnection())
             {
                 return conn.QuerySingleOrDefault<UserInfo>(new CommandDefinition(
                     $"""SELECT {UserColumns} FROM "HootOut"."UserInfo" where "Id" = @Id""",

@@ -25,7 +25,7 @@ namespace HootOut.PostgreSQL.Savers.Users
 
             try
             {
-                using (var conn = provider.GetNewConnection())
+                using (var conn = provider.OpenConnection())
                 {
                     var transaction = conn.BeginTransaction();
 

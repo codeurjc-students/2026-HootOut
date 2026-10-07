@@ -16,7 +16,7 @@ namespace HootOut.PostgreSQL.DBScripts
 
         public void Init()
         {
-            using (var conn = sqlProvider.GetNewConnection())
+            using (var conn = sqlProvider.OpenConnection())
             {
                 conn.Execute(Resources.UserInfoTable);
                 conn.Execute(Resources.ChatServerTable);

@@ -31,7 +31,7 @@ namespace HootOut.Authentication.Services
 
         public async Task<string> IssueAsync(Guid userId, CancellationToken ct)
         {
-            await using var conn = await persistenceProvider.GetConnectionAsync(ct);
+            await using var conn = await persistenceProvider.OpenConnectionAsync(ct);
             return await InsertAsync(conn, null, userId, Guid.NewGuid(), ct);
         }
 
@@ -39,7 +39,7 @@ namespace HootOut.Authentication.Services
         {
             var hash = Hash(token);
 
-            await using var conn = await persistenceProvider.GetConnectionAsync(ct);
+            await using var conn = await persistenceProvider.OpenConnectionAsync(ct);
             await using var tx = await conn.BeginTransactionAsync(ct);
 
             // Atomic "use once": the WHERE clause is re-checked under the row lock, so if two requests
@@ -85,7 +85,7 @@ namespace HootOut.Authentication.Services
         /// <summary>Logout: revokes the whole session the token belongs to.</summary>
         public async Task RevokeAsync(string token, CancellationToken ct = default)
         {
-            await using var conn = await persistenceProvider.GetConnectionAsync(ct);
+            await using var conn = await persistenceProvider.OpenConnectionAsync(ct);
             await conn.ExecuteAsync(new CommandDefinition(
                 """
             update "HootOut"."RefreshTokens"
@@ -99,7 +99,7 @@ namespace HootOut.Authentication.Services
         /// <summary>Deletes tokens that expired more than a day ago. Called by the cleanup job.</summary>
         public async Task<int> DeleteExpiredAsync(CancellationToken ct = default)
         {
-            await using var conn = await persistenceProvider.GetConnectionAsync(ct);
+            await using var conn = await persistenceProvider.OpenConnectionAsync(ct);
             return await conn.ExecuteAsync(new CommandDefinition(
                 """delete from "HootOut"."RefreshTokens" where "ExpiresAt" < now() - interval '1 day'""",
                 cancellationToken: ct));

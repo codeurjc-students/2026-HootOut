@@ -4,6 +4,7 @@ using HootOut.Contracts.Authentication.Services;
 using HootOut.HootOutAPI.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HootOut.HootOutAPI.Controllers
 {
@@ -70,16 +71,21 @@ namespace HootOut.HootOutAPI.Controllers
             );
         }
 
-        //[HttpPost("ws-ticket")]
-        //[AllowAnonymous]
-        //public ActionResult<AuthResponse> WSTicket(AuthRefreshRequest request)
-        //{
-        //    return CommandLaunchHelper.Launch(
-        //        logger,
-        //        () => authService.RefreshToken(request),
-        //        BadRequest,
-        //        (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
-        //    );
-        //}
+        [HttpPost("ws-ticket")]
+        [Authorize]
+        public async Task<ActionResult<WSTicketResponse>> CreateWebSocketTicket(CancellationToken ct)
+        {
+            var userId = User.FindFirstValue("sub");
+            var userName = User.FindFirstValue("name");
+            if (userId is null || userName is null)
+                return Unauthorized(); 
+
+            return await CommandLaunchHelper.LaunchAsync(
+                logger,
+                async () => await authService.CreateWebSocketTicketAsync(Guid.Parse(userId), userName, ct),
+                BadRequest,
+                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
+            );
+        }
     }
 }

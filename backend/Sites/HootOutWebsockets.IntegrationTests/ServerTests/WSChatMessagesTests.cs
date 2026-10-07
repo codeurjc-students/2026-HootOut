@@ -61,12 +61,10 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
         [Fact]
         public async Task Websocket_PubSubChatMessage_HappyPath()
         {
-            var ct = TestContext.Current.CancellationToken;
-
+            var ct = TestContext.Current.CancellationToken; 
             IWSConnectionManager IconnectionManager = container.Resolve<IWSConnectionManager>();
 
-            WSConnectionManager? connectionManager = null;
-
+            WSConnectionManager? connectionManager = null; 
             if (IconnectionManager is WSConnectionManager)
             {
                 connectionManager = IconnectionManager as WSConnectionManager;

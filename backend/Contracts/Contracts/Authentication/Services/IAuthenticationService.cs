@@ -9,5 +9,7 @@ namespace HootOut.Contracts.Authentication.Services
         Task<AuthResponse> RefreshTokenAsync(AuthRefreshRequest request, CancellationToken ct);
         Task<AuthResponse> RegisterUserAsync(AuthRegistrationRequest request, CancellationToken ct);
         Task RevokeAsync(AuthRefreshRequest request, CancellationToken ct);
+
+        Task<WSTicketResponse> CreateWebSocketTicketAsync(Guid userId, string username, CancellationToken ct);
     }
 }

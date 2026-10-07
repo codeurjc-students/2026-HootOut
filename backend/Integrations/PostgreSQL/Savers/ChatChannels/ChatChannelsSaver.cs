@@ -25,7 +25,7 @@ namespace HootOut.PostgreSQL.Savers.ChatChannels
 
             try
             {
-                using (var conn = provider.GetNewConnection())
+                using (var conn = provider.OpenConnection())
                 {
                     var transaction = conn.BeginTransaction();
 

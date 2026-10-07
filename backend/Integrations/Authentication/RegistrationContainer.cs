@@ -13,6 +13,7 @@ namespace HootOut.Authentication
             builder.RegisterType<AuthTokenService>().As<IAuthTokenService>().SingleInstance();
             builder.RegisterType<RefreshTokenService>().As<IRefreshTokenService>().SingleInstance();
             builder.RegisterType<PasswordHasherService>().As<IPasswordHasherService>().SingleInstance();
+            builder.RegisterType<WSTicketService>().As<IWSTicketService>().SingleInstance();
         }
     }
 }

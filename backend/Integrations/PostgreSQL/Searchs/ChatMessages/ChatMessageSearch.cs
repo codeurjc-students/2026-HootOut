@@ -29,7 +29,7 @@ namespace HootOut.PostgreSQL.Searchs.ChatMessages
 
         public IEnumerable<ChatMessage> GetMessagesByChannelId(Guid channelId)
         {
-            using (var conn = persistenceProvider.GetNewConnection())
+            using (var conn = persistenceProvider.OpenConnection())
             {
                 return conn.Query<ChatMessage>(getChatMessagesByChannelIdQuery, new
                 {
