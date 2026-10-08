@@ -5,7 +5,7 @@ class FakeWebSocket {
     static instances: FakeWebSocket[] = [];
     static readonly OPEN = 1;
 
-    url: string;
+    url: URL;
     readyState = FakeWebSocket.OPEN;
     onopen: ((event: Event) => void) | null = null;
     onclose: ((event: Event) => void) | null = null;
@@ -14,7 +14,7 @@ class FakeWebSocket {
     send = vi.fn();
     close = vi.fn();
 
-    constructor(url: string) {
+    constructor(url: URL) {
         this.url = url;
         FakeWebSocket.instances.push(this);
     }
@@ -32,13 +32,13 @@ describe('WebSocketService', () => {
     it('connect creates a new coket and calls onOpen', () => {
         const onOpen = vi.fn();
 
-        service.connect('ws://test', { onOpen });
+        service.connect(new URL('wss://test'), { onOpen });
 
         const instance = FakeWebSocket.instances[0];
 
         expect(instance).not.toBeNullable();
 
-        expect(instance?.url).toBe('ws://test');
+        expect(instance?.url.href).toBe('wss://test/');
 
         instance?.onopen?.(new Event('open'));
         expect(onOpen).toHaveBeenCalledTimes(1);
@@ -46,7 +46,7 @@ describe('WebSocketService', () => {
 
     it('on message when receives an event', () => {
         const onMessage = vi.fn();
-        service.connect('ws://test', { onMessage });
+        service.connect(new URL('wss://test'), { onMessage });
 
         const instance = FakeWebSocket.instances[0];
         expect(instance).not.toBeNullable();
@@ -58,7 +58,7 @@ describe('WebSocketService', () => {
     });
 
     it('send message when connected', () => {
-        service.connect('ws://test');
+        service.connect(new URL('wss://test'));
         const instance = FakeWebSocket.instances[0];
 
         service.send('hello');
@@ -71,7 +71,7 @@ describe('WebSocketService', () => {
     });
 
     it('close the socket', () => {
-        service.connect('ws://test');
+        service.connect(new URL('wss://test'));
         const instance = FakeWebSocket.instances[0];
 
         service.close();
