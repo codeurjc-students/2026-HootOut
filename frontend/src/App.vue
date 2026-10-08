@@ -2,11 +2,13 @@
 import { RouterView, useRoute } from 'vue-router'
 import MainLayout from './components/layouts/MainLayout.vue';
 import NoLayout from './components/layouts/NoLayout.vue';
+import HomeLayout from './components/layouts/HomeLayout.vue';
 import { computed } from 'vue';
 
 const layouts = {
     MainLayout,
-    NoLayout
+    NoLayout,
+    HomeLayout
 }
 
 const route = useRoute()
