@@ -22,6 +22,7 @@ namespace HootOut.HootOutAPI.Schedulers
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             using var timer = new PeriodicTimer(TimeSpan.FromHours(1));
             do
             {

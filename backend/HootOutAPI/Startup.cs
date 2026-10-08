@@ -25,7 +25,7 @@ namespace HootOut.HootOutAPI
         public void ConfigureServices(IServiceCollection services)
         {
             var jwt = Configuration.GetSection("Jwt").Get<JwtSettings>() ?? throw new InvalidOperationException("Missing 'Jwt' configuration section.");
-            var rsaKeyProvider = new RsaKeyProvider(jwt.PrivateKeysPath);
+            var rsaKeyProvider = new DevelopmentRsaKeyProvider(jwt.PrivateKeysPath);
 
             services.Configure<JwtSettings>(Configuration.GetSection("Jwt"));
             services.AddSingleton<IRsaKeyProvider>(rsaKeyProvider);
