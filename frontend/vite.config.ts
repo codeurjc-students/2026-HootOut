@@ -35,6 +35,7 @@ export default defineConfig(({ mode, command }) => {
       },
     },
     server: { https, proxy, port: 5173, strictPort: true },
+    preview: { https, proxy, port: 5173, strictPort: true },
     test: {
       coverage: {
         provider: 'v8', // or 'istanbul'

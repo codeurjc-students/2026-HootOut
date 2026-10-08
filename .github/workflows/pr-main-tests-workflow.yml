@@ -93,6 +93,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Create self signed certificate for https connections
+        working-directory: .
         run: |
           mkdir -p certs
             openssl req -x509 -newkey rsa:2048 -nodes -days 7 \
