@@ -3,6 +3,7 @@ using FluentAssertions;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
+using HootOut.Contracts.Authentication.Responses;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
@@ -12,15 +13,15 @@ using System.Net.Http.Json;
 
 namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 {
-    public class ChatMessagesControllerTests : IClassFixture<APIFixture>, IDisposable, IAsyncLifetime
+    [Collection("IntegrationTests")]
+    public class ChatMessagesControllerTests : TestControllerBase, IClassFixture<APIFixture>, IDisposable, IAsyncLifetime
     {
         private readonly ILifetimeScope container;
-        private readonly HttpClient httpClient;
         private ClearAllTables clearTables;
 
         public ChatMessagesControllerTests(APIFixture apiFixture)
         {
-            httpClient = apiFixture.CreateClient();
+            httpClient = apiFixture.CreateHttpsClient();
             container = apiFixture.AutofacRoot.BeginLifetimeScope();
 
             var testPersistenceProvider = container.Resolve<IPersistenceProvider>();
@@ -50,13 +51,23 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
         [Fact]
         public async Task GetMessagesById_ReturnsOk_Empty()
         {
-            Guid channelId = Guid.NewGuid();
+            var ct = TestContext.Current.CancellationToken;
+            await RegisterAsync(ct);
 
-            var response = await httpClient.GetAsync($"/api/v1/chatMessages/getByChannelId?channelId={channelId.ToString()}", CancellationToken.None);
+            var loginResponse = await LoginAsync(DefaultEmail, DefaultPassword, ct);
+            var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);
+
+            Guid channelId = Guid.NewGuid();
+            var response = await SendAuthorizeHttpRequest(
+                HttpMethod.Get,
+                $"/api/v1/chatMessages/getByChannelId?channelId={channelId.ToString()}",
+                auth?.AccessToken!,
+                ct
+            );
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var messages = await response.Content.ReadFromJsonAsync<IEnumerable<ChatMessageDto>>(CancellationToken.None);
+            var messages = await response.Content.ReadFromJsonAsync<IEnumerable<ChatMessageDto>>(ct);
             messages.Should().NotBeNull();
             messages.Should().BeEmpty();
         }
@@ -64,8 +75,15 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
         [Fact]
         public async Task GetMessagesById_ReturnsOk_One()
         {
+            var ct = TestContext.Current.CancellationToken;
+            await RegisterAsync(ct);
+
+            var loginResponse = await LoginAsync(DefaultEmail, DefaultPassword, ct);
+            var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);
+
+            Guid authorId = GetUserIdFromAccessToken(auth?.AccessToken);
+
             Guid channelId = Guid.NewGuid();
-            Guid authorId = Guid.NewGuid();
             string content = "test1";
 
             IChatMessageService chatMessageService = container.Resolve<IChatMessageService>();
@@ -75,8 +93,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
                     ChatChannelId = channelId,
                     AuthorId = authorId,
                     Content = content
-                }
-                );
+                });
 
             // store another message so there are more messages
             chatMessageService.CreateChatMessage(
@@ -85,14 +102,18 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
                     ChatChannelId = Guid.NewGuid(),
                     AuthorId = authorId,
                     Content = content
-                }
-                );
+                });
 
-            var response = await httpClient.GetAsync($"/api/v1/chatMessages/getByChannelId?channelId={channelId.ToString()}", CancellationToken.None);
+            var response = await SendAuthorizeHttpRequest(
+                HttpMethod.Get,
+                $"/api/v1/chatMessages/getByChannelId?channelId={channelId.ToString()}",
+                auth?.AccessToken!,
+                ct
+            );
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var messages = await response.Content.ReadFromJsonAsync<IEnumerable<ChatMessageDto>>(CancellationToken.None);
+            var messages = await response.Content.ReadFromJsonAsync<IEnumerable<ChatMessageDto>>(ct);
             messages.Should().NotBeNullOrEmpty();
             messages.Count().Should().Be(1);
 
@@ -103,16 +124,19 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             message.ChatChannelId.Should().Be(channelId);
             message.Content.Should().Be(content);
 
-            // Only receives channel messages
-            response = await httpClient.GetAsync($"/api/v1/chatMessages/getByChannelId?channelId={Guid.NewGuid().ToString()}", CancellationToken.None);
+            response = await SendAuthorizeHttpRequest(
+                HttpMethod.Get,
+                $"/api/v1/chatMessages/getByChannelId?channelId={Guid.NewGuid().ToString()}",
+                auth?.AccessToken!,
+                ct
+            );
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            messages = await response.Content.ReadFromJsonAsync<IEnumerable<ChatMessageDto>>(CancellationToken.None);
+            messages = await response.Content.ReadFromJsonAsync<IEnumerable<ChatMessageDto>>(ct);
             messages.Should().NotBeNull();
             messages.Should().BeEmpty();
         }
-
 
 
         public void Dispose()

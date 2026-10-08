@@ -1,28 +1,31 @@
-﻿using HootOut.Contracts.WebSockets.Services;
-using HootOut.HootOutWebsockets.Services;
+﻿using HootOut.Contracts.Authentication.Services;
+using HootOut.Contracts.WebSockets.Services;
+using HootOut.HootOutWebsockets.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HootOut.HootOutWebsockets.Controllers
 {
     public class WebSocketController : ControllerBase
     {
-        private ILogger logger { get; set; }
-        private IWSConnectionManager connectionManager;
+        private readonly ILogger logger;
+        private readonly IWSConnectionManager connectionManager;
+        private readonly IWSConnectionHandler connectionHandler;
+        private readonly IWSPubSubService pubSubService;
 
-        private IWSConnectionHandler connectionHandler;
-
-        private IWSPubSubService pubSubService;
+        private readonly IWSTicketService ticketService;
 
         public WebSocketController(
             ILogger<WebSocketController> logger,
             IWSConnectionManager connectionManager,
             IWSConnectionHandler connectionHandler,
-            IWSPubSubService pubSubService)
+            IWSPubSubService pubSubService,
+            IWSTicketService ticketService)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
             this.connectionHandler = connectionHandler ?? throw new ArgumentNullException(nameof(connectionHandler));
             this.pubSubService = pubSubService ?? throw new ArgumentNullException(nameof(pubSubService));
+            this.ticketService = ticketService ?? throw new ArgumentNullException(nameof(ticketService));
         }
 
         [Route("/ws")]
@@ -30,11 +33,22 @@ namespace HootOut.HootOutWebsockets.Controllers
         {
             if (HttpContext.WebSockets.IsWebSocketRequest)
             {
+                var ticket = HttpContext.Request.Query["ticket"].ToString();
+                var user = string.IsNullOrEmpty(ticket)
+                    ? null
+                    : await ticketService.ConsumeAsync(ticket, HttpContext.RequestAborted);
+
+                if (user == null)
+                {
+                    HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    return;
+                }
+
                 var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-                var connectionId = await connectionManager.AddConnectionAsync(webSocket, HttpContext);
+                var connectionId = await connectionManager.AddConnectionAsync(webSocket, user);
                 try
                 {
-                    await connectionHandler.ReadMessagesAsync(webSocket, connectionId, "");
+                    await connectionHandler.ReadMessagesAsync(webSocket, connectionId, user);
                 }
                 catch (Exception ex)
                 {

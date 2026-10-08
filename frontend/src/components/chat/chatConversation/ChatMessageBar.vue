@@ -14,8 +14,7 @@ async function sendMessage() {
     if (!message.value)
         return;
     const chatMessage = {
-        author: userInfo.getUserInfo(),
-        content: message.value,
+        content: message.value
     } as ChatMessage
     message.value = "";
 

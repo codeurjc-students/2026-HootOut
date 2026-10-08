@@ -17,10 +17,17 @@ namespace HootOut.CommonIntegrationTests.Services
 
         public string ConnectionString => Container.GetConnectionString();
 
-        public DbConnection GetNewConnection()
+        public DbConnection OpenConnection()
         {
             var connection = new NpgsqlConnection(Container.GetConnectionString());
             connection.Open();
+            return connection;
+        }
+
+        public async Task<DbConnection> OpenConnectionAsync(CancellationToken ct)
+        {
+            var connection = new NpgsqlConnection(Container.GetConnectionString());
+            await connection.OpenAsync(ct);
             return connection;
         }
 

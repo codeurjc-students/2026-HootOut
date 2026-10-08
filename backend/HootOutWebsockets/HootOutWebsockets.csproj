@@ -24,6 +24,7 @@
     <ProjectReference Include="..\Domains\ChatServers\ChatServers\ChatServers.csproj" />
     <ProjectReference Include="..\Domains\WebSockets\WebSockets\WebSockets.csproj" />
     <ProjectReference Include="..\Infraestructure\Infraestructure\Infraestructure.csproj" />
+    <ProjectReference Include="..\Integrations\Authentication\Authentication.csproj" />
     <ProjectReference Include="..\Integrations\PostgreSQL\PostgreSQL.csproj" />
   </ItemGroup>
 

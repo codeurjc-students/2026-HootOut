@@ -5,7 +5,7 @@ import { storeToRefs } from 'pinia';
 
 const userInfo = userInfoStore();
 
-const {username} = storeToRefs(userInfo)
+const { user } = storeToRefs(userInfo)
 
 </script>
 
@@ -15,7 +15,7 @@ const {username} = storeToRefs(userInfo)
             <img id="navbar-logo" :src="navbarLogo" alt="HootOutLogo" />
 
             <div id="navbar-user">
-                {{username}}
+                {{ user.username }}
             </div>
         </nav>
         <section id="content">

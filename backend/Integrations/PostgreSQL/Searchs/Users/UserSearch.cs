@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using HootOut.CommonDomain.Persistence;
-using HootOut.Contracts.Users.Search;
 using HootOut.Users.Entities;
+using HootOut.Users.Search;
 
 namespace HootOut.PostgreSQL.Searchs.Users
 {
@@ -14,19 +14,33 @@ namespace HootOut.PostgreSQL.Searchs.Users
             this.persistenceProvider = persistenceProvider ?? throw new ArgumentNullException(nameof(persistenceProvider));
         }
 
-        private const string getUsersQuery = """
-            SELECT 
-                "Id",
-                "Email",
-                "Username"
-            FROM "HootOut"."UserInfo"
-        """;
-
+        private const string UserColumns =
+        """ "Id" as Id, "Username" as Username, "PasswordHash" as Password, "Email" as Email""";
         public IEnumerable<UserInfo> GetAllUsers()
         {
-            using (var conn = persistenceProvider.GetNewConnection())
+            using (var conn = persistenceProvider.OpenConnection())
             {
-                return conn.Query<UserInfo>(getUsersQuery);
+                return conn.Query<UserInfo>($"""SELECT {UserColumns} FROM "HootOut"."UserInfo" """);
+            }
+        }
+
+        public UserInfo? GetUserByEmail(string email)
+        {
+            using (var conn = persistenceProvider.OpenConnection())
+            {
+                return conn.QuerySingleOrDefault<UserInfo>(new CommandDefinition(
+                    $"""SELECT {UserColumns} FROM "HootOut"."UserInfo" where lower("Email") = lower(@Email)""",
+                     new { Email = email }));
+            }
+        }
+
+        public UserInfo? GetUserById(Guid id)
+        {
+            using (var conn = persistenceProvider.OpenConnection())
+            {
+                return conn.QuerySingleOrDefault<UserInfo>(new CommandDefinition(
+                    $"""SELECT {UserColumns} FROM "HootOut"."UserInfo" where "Id" = @Id""",
+                     new { Id = id }));
             }
         }
     }

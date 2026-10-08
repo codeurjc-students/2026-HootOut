@@ -1,7 +1,8 @@
 ﻿using Dapper;
-using HootOut.ChatMessages.ChatMessages;
 using HootOut.ChatMessages.Searchs;
 using HootOut.CommonDomain.Persistence;
+using HootOut.Contracts.ChatMessage.Dtos;
+using HootOut.Contracts.Users.Dtos;
 
 namespace HootOut.PostgreSQL.Searchs.ChatMessages
 {
@@ -16,26 +17,49 @@ namespace HootOut.PostgreSQL.Searchs.ChatMessages
 
         private const string getChatMessagesByChannelIdQuery = """
             SELECT 
-                "Id",
-                "AuthorId",
-                "ChatChannelId",
-                "Content",
-                "CreatedAt",
-                "ModifiedAt"
-            FROM "HootOut"."ChatMessage" chatMessage
+                chatMessage."Id",
+                chatMessage."AuthorId",
+                chatMessage."ChatChannelId",
+                chatMessage."Content",
+                chatMessage."CreatedAt",
+                userInfo."Username" as Username
+            FROM "HootOut"."ChatMessage" AS chatMessage
+            LEFT JOIN "HootOut"."UserInfo" AS userInfo
+                ON (chatMessage."AuthorId" = userInfo."Id")
             WHERE chatMessage."ChatChannelId" = @chatChannelId
             ORDER BY chatMessage."CreatedAt" DESC
         """;
 
-        public IEnumerable<ChatMessage> GetMessagesByChannelId(Guid channelId)
+        public IEnumerable<ChatMessageDto> GetMessagesByChannelId(Guid channelId)
         {
-            using (var conn = persistenceProvider.GetNewConnection())
+            using (var conn = persistenceProvider.OpenConnection())
             {
-                return conn.Query<ChatMessage>(getChatMessagesByChannelIdQuery, new
+                return conn.Query<ChatMessageSearchDto>(getChatMessagesByChannelIdQuery, new
                 {
                     chatChannelId = channelId
-                });
+                }).Select(x => new ChatMessageDto
+                {
+                    Id = x.Id,
+                    Author = new UserDto
+                    {
+                        Id = x.AuthorId,
+                        Username = x.Username
+                    },
+                    ChatChannelId = x.ChatChannelId,
+                    Content = x.Content,
+                    CreatedAt = x.CreatedAt
+                }).ToList();
             }
         }
+    }
+
+    public sealed record ChatMessageSearchDto
+    {
+        public Guid Id { get; init; }
+        public Guid AuthorId { get; init; }
+        public Guid ChatChannelId { get; init; }
+        public string? Content { get; init; }
+        public string? Username { get; init; }
+        public DateTime CreatedAt { get; init; }
     }
 }

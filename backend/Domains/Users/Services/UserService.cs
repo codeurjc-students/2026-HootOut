@@ -1,10 +1,11 @@
 ﻿using HootOut.Contracts.Common.Saver;
 using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.Users.Dtos.Request;
-using HootOut.Contracts.Users.Search;
 using HootOut.Contracts.Users.Services;
 using HootOut.Users.Entities;
 using HootOut.Users.Mappers;
+using HootOut.Users.Search;
+using System.ComponentModel.DataAnnotations;
 
 namespace HootOut.Users.Services
 {
@@ -19,25 +20,28 @@ namespace HootOut.Users.Services
             this.userSearch = userSearch ?? throw new ArgumentNullException(nameof(userSearch));
         }
 
-        public Guid CreateUser(CreateUserRequest createUserRequest)
+        public UserDto CreateUser(CreateUserRequest createUserRequest)
         {
             if (createUserRequest == null) throw new ArgumentNullException(nameof(createUserRequest));
 
             var newUser = Persistable.CreateNew<UserInfo>();
             newUser.Email = createUserRequest.Email;
             newUser.Username = createUserRequest.Username;
-            newUser.Password = "*********"; // TO-DO proper security;
+            newUser.Password = createUserRequest.Password;
 
             userSaver.Save(newUser);
 
-            return newUser.Id;
+            return newUser.ToDto();
         }
 
-        public IEnumerable<UserDto> GetUserDtos()
+        public UserDto? GetUserDtoById(Guid id)
         {
-            return userSearch.GetAllUsers()
-                .Select(x => x.ToDto())
-                .ToList();
+            if (Guid.Empty == id)
+            {
+                throw new ValidationException("Invalid Request");
+            }
+
+            return userSearch.GetUserById(id)?.ToDto();
         }
     }
 }

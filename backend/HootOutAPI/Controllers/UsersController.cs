@@ -2,6 +2,7 @@
 using HootOut.Contracts.Users.Services;
 using HootOut.HootOutAPI.Helpers;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HootOut.HootOutAPI.Controllers
 {
@@ -20,12 +21,20 @@ namespace HootOut.HootOutAPI.Controllers
             this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
-        [HttpGet("all")]
-        public ActionResult<IEnumerable<UserDto>> GetUserList()
+        [HttpGet("me")]
+        public ActionResult<UserDto> GetAuthorizedUserInfo()
         {
+            ClaimsPrincipal principal = HttpContext.User;
+            var userIdString = principal.FindFirstValue("sub");
+
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return StatusCode(StatusCodes.Status401Unauthorized);
+            }
+
             return CommandLaunchHelper.Launch(
                logger,
-               () => userService.GetUserDtos(),
+               () => userService.GetUserDtoById(Guid.Parse(userIdString)),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );

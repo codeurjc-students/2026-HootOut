@@ -1,4 +1,6 @@
-﻿using HootOut.Contracts.WebSockets.Services;
+﻿using HootOut.Contracts.WebSockets.Dtos;
+using HootOut.Contracts.WebSockets.Services;
+using HootOut.HootOutWebsockets.Contracts;
 using System.Net.WebSockets;
 using System.Text;
 
@@ -16,7 +18,7 @@ namespace HootOut.HootOutWebsockets.Services
             this.wsMessageDeserializer = wSMessageDeserializer ?? throw new ArgumentNullException(nameof(wsMessageDeserializer));
         }
 
-        public async Task ReadMessagesAsync(WebSocket websocket, Guid connectionId, string userId)
+        public async Task ReadMessagesAsync(WebSocket websocket, Guid connectionId, WSUserInfo user)
         {
             var buffer = new byte[1024 * 4];
             var messageBuffer = new StringBuilder();
@@ -34,7 +36,7 @@ namespace HootOut.HootOutWebsockets.Services
                 }
                 catch (WebSocketException ex)
                 {
-                    logger.LogWarning(ex, "WebSocket error for connection {ConnectionId} and user {UserId}", connectionId, userId);
+                    logger.LogWarning(ex, "WebSocket error for connection {ConnectionId} and user {UserId}", connectionId, user.UserId);
                     break;
                 }
 
@@ -57,7 +59,7 @@ namespace HootOut.HootOutWebsockets.Services
                 {
                     var message = messageBuffer.ToString();
                     messageBuffer.Clear();
-                    await wsMessageDeserializer.HandleMessageAsync(connectionId, userId, message);
+                    await wsMessageDeserializer.HandleMessageAsync(connectionId, user, message);
                 }
             }
         }

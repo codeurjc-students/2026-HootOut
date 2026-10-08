@@ -23,7 +23,7 @@ namespace HootOut.PostgreSQL.Savers.ChatMessages
         {
             try
             {
-                using (var conn = provider.GetNewConnection())
+                using (var conn = provider.OpenConnection())
                 {
                     var transaction = conn.BeginTransaction();
 

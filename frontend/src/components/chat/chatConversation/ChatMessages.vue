@@ -7,7 +7,7 @@ import { computed } from "vue";
 const serverInfo = serverInfoStore();
 
 const { channelMessages, currentChatChannel, pendingMessages } = storeToRefs(serverInfo);
-const { username } = storeToRefs(userInfoStore());
+const { user } = storeToRefs(userInfoStore());
 
 const messages = computed(() => {
     return channelMessages.value[currentChatChannel.value!.id];
@@ -17,14 +17,21 @@ const pendingMessagesList = computed(() => {
     return pendingMessages?.value[currentChatChannel.value!.id];
 });
 
+function convertDate(date_string: string) {
+    return new Intl.DateTimeFormat(undefined, {
+        dateStyle: 'short',
+        timeStyle: 'short'
+    }).format(new Date(date_string))
+}
+
 </script>
 
 <template>
     <div id="messages-list">
         <div class="message-entry pending" v-for='(message, index) in pendingMessagesList' :key='message.id'
-            :class="{ 'message-entry-user': message.author.username == username }">
+            :class="{ 'message-entry-user': message.author.username == user.username }">
             <div>
-                {{ message.author.id }} --- {{ message.createdAt }}
+                {{ message.author.id }} --- {{ convertDate(message.createdAt!) }}
             </div>
             <div>
                 {{ message.content }}
@@ -32,9 +39,9 @@ const pendingMessagesList = computed(() => {
         </div>
 
         <div class="message-entry" v-for='(message, index) in messages' :key='message.id'
-            :class="{ 'message-entry-user': message.author.username == username }">
+            :class="{ 'message-entry-user': message.author.username == user.username }">
             <div>
-                {{ message.author.username }} --- {{ message.createdAt }}
+                {{ message.author.username }} --- {{ convertDate(message.createdAt!) }}
             </div>
             <div>
                 {{ message.content }}

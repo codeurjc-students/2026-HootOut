@@ -31,17 +31,19 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
         public static async Task<WSTestClient> ConnectAsync(
         WebApplicationFactory<Program> factory,
         string path = "/ws",
+        string wsTicket = "",
         TimeSpan? timeout = null,
         Action<WebSocketClient>? configure = null,
         CancellationToken ct = default)
         {
             var effectiveTimeout = timeout ?? TimeSpan.FromSeconds(5);
 
+            factory.Server.BaseAddress = new Uri("https://localhost");
             var wsClient = factory.Server.CreateWebSocketClient();
             configure?.Invoke(wsClient); // e.g. add headers / subprotocols for auth
 
             using var cts = CreateCts(effectiveTimeout, ct);
-            var Socket = await wsClient.ConnectAsync(new Uri($"ws://localhost{path}"), cts.Token);
+            var Socket = await wsClient.ConnectAsync(new Uri($"wss://localhost{path}?ticket={wsTicket}"), cts.Token);
 
             return new WSTestClient(Socket, effectiveTimeout);
         }

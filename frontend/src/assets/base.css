@@ -19,6 +19,10 @@
   --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
   --vt-c-text-dark-1: rgb(255, 252, 242);
   --vt-c-text-dark-2: rgb(204, 197, 185);
+
+  --vt-c-dark-input: rgb(30, 30, 30);
+
+  --border-radius: 0.2rem;
 }
 
 /* semantic color variables for this project */
@@ -33,21 +37,31 @@
   --color-heading: var(--vt-c-text-light-1);
   --color-text: var(--vt-c-text-light-1);
 
+  --color-inverse: var(--vt-c-dark);
+  --color-inverse-soft: var(--vt-c-dark-soft);
+  --color-inverse-light: var(--vt-c-dark-light);
+
   --section-gap: 160px;
 }
 
 /* @media (prefers-color-scheme: dark) { */
-  :root {
-    --color-background: var(--vt-c-dark);
-    --color-background-soft: var(--vt-c-dark-soft);
-    --color-background-light: var(--vt-c-dark-light);
+:root {
+  --color-background: var(--vt-c-dark);
+  --color-background-soft: var(--vt-c-dark-soft);
+  --color-background-light: var(--vt-c-dark-light);
+  --color-background-input: var(--vt-c-dark-input);
 
-    --color-border: var(--vt-c-divider-dark-2);
-    --color-border-hover: var(--vt-c-divider-dark-1);
+  --color-border: var(--vt-c-divider-dark-2);
+  --color-border-hover: var(--vt-c-divider-dark-1);
 
-    --color-heading: var(--vt-c-text-dark-1);
-    --color-text: var(--vt-c-text-dark-2);
-  }
+  --color-heading: var(--vt-c-text-dark-1);
+  --color-text: var(--vt-c-text-dark-2);
+
+  --color-inverse: var(--vt-c-text-dark-2);
+  --color-inverse-soft: var(--vt-c-text-dark-2);
+  --color-inverse-light: var(--vt-c-white-mute);
+}
+
 /* } */
 
 *,
@@ -55,7 +69,7 @@
 *::after {
   box-sizing: border-box;
   margin: 0;
-  font-weight: normal; 
+  font-weight: normal;
 }
 
 body {
@@ -83,4 +97,119 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Button */
+
+.button-home {
+  background-color: var(--color-);
+  border: 0;
+  border-radius: var(--border-radius);
+  box-sizing: border-box;
+  background-color: var(--color-inverse);
+  color: #111827;
+  font-size: .95rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  padding: .5rem 1rem;
+  text-decoration: none var(--color-inverse-light) solid;
+  text-decoration-thickness: auto;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+@media(max-width: 520px) {
+  .button-home {
+    padding: 0.4em .8rem;
+  }
+}
+
+.button-home:hover {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  box-shadow: inset 0 0 0 1px var(--color-inverse);
+  cursor: pointer;
+}
+
+.button-home:focus:active {
+  outline: 2px solid var(--color-text);
+  background-color: var(--color-b);
+  outline-offset: 2px;
+}
+
+.button-home:focus-visible {
+  box-shadow: none;
+}
+
+.pointer:hover {
+  cursor: pointer;
+}
+
+/* Custom Form */
+
+.custom-form-wrapper {
+  max-width: 30rem;
+  margin: 0 auto;
+  background-color: var(--color-background);
+  padding: 2rem 3rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0px 0px 20px 3px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+@media(max-width: 520px) {
+  .custom-form-wrapper {
+    box-shadow: none;
+    border-radius: 0;
+    height: 100%;
+    max-width: 100%;
+  }
+}
+
+.custom-form-row {
+  margin-top: 1.5rem;
+  text-align: start;
+}
+
+.custom-form-label-wrapper {
+  font-weight: 600;
+  margin-bottom: .5rem;
+}
+
+.custom-form-input-wrapper {
+  background-color: var(--color-background-input);
+  display: flex;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  align-items: center;
+  height: 2.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+}
+
+.custom-form-text-input {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: inherit;
+  min-width: 30%;
+  padding-inline: 0.8rem;
+  flex: 1;
+  height: 100%;
+}
+
+.custom-form>.button-home {
+  margin-top: 2rem;
+  width: 100%;
+}
+
+.custom-form-link {
+  text-align: left;
+  margin-top: .5rem;
+}
+
+.custom-form-link>a {
+  color: var(--color-text);
 }

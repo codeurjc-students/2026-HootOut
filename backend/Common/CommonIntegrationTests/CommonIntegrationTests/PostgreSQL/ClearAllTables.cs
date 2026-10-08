@@ -20,7 +20,7 @@ namespace HootOut.CommonIntegrationTests.PostgreSQL
                 throw new InvalidOperationException("The persistence provider is not the Testing persistence provider.");
             }
 
-            using (var conn = persistenceProvider.GetNewConnection())
+            using (var conn = persistenceProvider.OpenConnection())
             {
                 conn.Execute("""TRUNCATE TABLE "HootOut"."UserInfo" CASCADE;""");
                 conn.Execute("""TRUNCATE TABLE "HootOut"."ChatServer" CASCADE;""");

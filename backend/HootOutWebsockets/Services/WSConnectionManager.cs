@@ -1,4 +1,6 @@
 ﻿using HootOut.Contracts.WebSocket;
+using HootOut.Contracts.WebSockets.Dtos;
+using HootOut.HootOutWebsockets.Contracts;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
@@ -6,9 +8,10 @@ using System.Text;
 
 namespace HootOut.HootOutWebsockets.Services
 {
+
     public class WSConnectionManager : IWSConnectionManager
     {
-        public readonly ConcurrentDictionary<Guid, WebSocket> Connections = new();
+        public readonly ConcurrentDictionary<Guid, WSSession> Connections = new();
 
         public readonly ConcurrentDictionary<Guid, SemaphoreSlim> ConnectionLock = new();
 
@@ -19,46 +22,48 @@ namespace HootOut.HootOutWebsockets.Services
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<Guid> AddConnectionAsync(WebSocket websocket, HttpContext httpContext)
+        public async Task<Guid> AddConnectionAsync(WebSocket websocket, WSUserInfo user)
         {
             var connectionId = Guid.CreateVersion7();
 
-            Connections.TryAdd(connectionId, websocket);
+            Connections.TryAdd(connectionId, new WSSession
+            {
+                User = user, 
+                Socket = websocket,
+            });
             ConnectionLock.TryAdd(connectionId, new SemaphoreSlim(1, 1));
 
-            string userId = "Usuario Test";
-
-            logger.LogInformation("WebSocket connected: {ConnectionId} for user: {UserId}. Connections count {ConnectionCount}", connectionId, userId, Connections.Count);
+            logger.LogInformation("WebSocket connected: {ConnectionId} for user: {UserId}. Connections count {ConnectionCount}", connectionId, user.UserId, Connections.Count);
 
             return connectionId;
         }
 
-        public async Task<WebSocket?> GetWebSocketByConnectionIdAsync(Guid connectionId)
+        public async Task<WSSession?> GetWebSocketSessionByConnectionIdAsync(Guid connectionId)
         {
-            WebSocket? webSocket;
-            if (Connections.TryGetValue(connectionId, out webSocket))
+            WSSession? wsSession;
+            if (Connections.TryGetValue(connectionId, out wsSession))
             {
-                return webSocket;
+                return wsSession;
             }
-            return webSocket;
+            return wsSession;
         }
 
         public async Task SendMessageAsync(Guid connectionId, WebSocketMessage message)
         {
-            var webSocket = await GetWebSocketByConnectionIdAsync(connectionId);
+            var wsSession = await GetWebSocketSessionByConnectionIdAsync(connectionId);
 
-            if (webSocket == null)
+            if (wsSession == null)
             {
                 return;
             }
-            await SendMessageAsync(webSocket, connectionId, message);
+            await SendMessageAsync(wsSession, connectionId, message);
         }
 
-        public async Task SendMessageAsync(WebSocket webSocket, Guid connectionId, WebSocketMessage message)
+        public async Task SendMessageAsync(WSSession wsSession, Guid connectionId, WebSocketMessage message)
         {
             try
             {
-                if (webSocket.State == WebSocketState.Open)
+                if (wsSession.Socket.State == WebSocketState.Open)
                 {
                     var rawMessage = JsonConvert.SerializeObject(message);
                     var bytes = Encoding.UTF8.GetBytes(rawMessage);
@@ -71,7 +76,7 @@ namespace HootOut.HootOutWebsockets.Services
 
                         try
                         {
-                            await webSocket.SendAsync(
+                            await wsSession.Socket.SendAsync(
                                 new ArraySegment<byte>(bytes),
                                 WebSocketMessageType.Text,
                                 endOfMessage: true,

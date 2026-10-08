@@ -28,7 +28,7 @@ namespace HootOut.ChatMessages.Services
             {
                 throw new ArgumentNullException(nameof(channelId)); //TO-DO proper parameter validation
             }
-            return search.GetMessagesByChannelId(channelId).Select(x => x.ToDto());
+            return search.GetMessagesByChannelId(channelId);
         }
 
         public ChatMessageDto CreateChatMessage(CreateChatMessageRequest request)

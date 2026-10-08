@@ -1,4 +1,4 @@
-import { ref, type Ref } from 'vue'
+import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import type { ChatChannelDto, ChatMessage, WebSocketMessage } from '@/types'
 

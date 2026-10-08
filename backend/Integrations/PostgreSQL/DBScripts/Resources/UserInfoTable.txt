@@ -22,14 +22,54 @@ if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
 then
 	CREATE TABLE "HootOut"."UserInfo"(
 		"Id" UUID NOT NULL PRIMARY KEY ,
-		"Email" VARCHAR (255) NOT NULL UNIQUE,
-		"Username" VARCHAR (255) NOT NULL UNIQUE,
-		"Password" VARCHAR (255) NOT NULL,
+		"Email" TEXT NOT NULL,
+		"Username" TEXT NOT NULL,
+		"PasswordHash" TEXT NOT NULL,
 		"CreatedAt" timestamptz  NOT NULL,
 		"ModifiedAt" timestamptz NOT NULL
 	);
 
 end if;
- 
+
+create unique index if not exists ix_users_username_lower on "HootOut"."UserInfo" (lower("Username"));
+create unique index if not exists ix_users_email_lower on "HootOut"."UserInfo" (lower("Email"));
+
+
+
+if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
+		WHERE TABLE_SCHEMA = 'HootOut'
+		AND   TABLE_NAME = 'RefreshTokens')
+then
+	CREATE TABLE "HootOut"."RefreshTokens"(
+		"TokenHash" TEXT PRIMARY KEY ,
+		"UserId" UUID NOT NULL REFERENCES "HootOut"."UserInfo" ("Id") ON DELETE CASCADE,
+		"FamilyId" UUID NOT NULL,
+		"ExpiresAt" timestamptz,
+		"UsedAt" timestamptz,
+		"RevokedAt" timestamptz,
+		"CreatedAt" timestamptz  NOT NULL default now()
+	);
+end if;
+
+create index if not exists ix_refresh_tokens_family  on "HootOut"."RefreshTokens"("FamilyId");
+create index if not exists ix_refresh_tokens_user    on "HootOut"."RefreshTokens"("UserId");
+create index if not exists ix_refresh_tokens_expires on "HootOut"."RefreshTokens"("ExpiresAt");
+
+
+
+if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
+		WHERE TABLE_SCHEMA = 'HootOut'
+		AND   TABLE_NAME = 'WSTickets')
+then
+	CREATE TABLE "HootOut"."WSTickets" (
+		"TicketHash" TEXT PRIMARY KEY,          
+		"UserId" UUID NOT NULL REFERENCES "HootOut"."UserInfo" ("Id") ON DELETE CASCADE,
+		"Username" TEXT NOT NULL,              
+		"ExpiresAt" timestamptz NOT NULL,
+		"CreatedAt" timestamptz NOT NULL DEFAULT now()
+	);
+end if;
+
+create index if not exists ix_ws_tickets_expires on "HootOut"."WSTickets" ("ExpiresAt");
 
 end $$;

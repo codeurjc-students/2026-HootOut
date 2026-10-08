@@ -2,11 +2,10 @@
 
 import ChatChannelService from "@/services/chatChannel/ChatChannelService";
 import ChatMessageService from "@/services/chatMessage/ChatMessageService";
-import wsMessageService, { WebSocketMessageService } from "@/services/common/websocketsMesage/WebSocketsMessageService";
+import wsMessageService from "@/services/common/websocketsMesage/WebSocketsMessageService";
 import { serverInfoStore } from "@/stores/serverInfo"
 import type { ChatChannelDto, WebSocketMessage } from "@/types";
 import { storeToRefs } from "pinia";
-import { server } from "typescript";
 import { onMounted, ref } from "vue";
 
 const serverInfo = serverInfoStore();
@@ -14,13 +13,16 @@ const { channels, currentChatChannel } = storeToRefs(serverInfo) as any
 const newChannelName = ref("")
 
 onMounted(async () => {
-    const channels = await ChatChannelService.getAllChannels();
-    serverInfo.setServerChannels(channels)
-    channels.forEach(channel => {
-        wsMessageService.subscribe(channel.id, (message: WebSocketMessage) => {
-            serverInfo.newMessage(message)
-        });
-    })
+    wsMessageService.connect(async () => {
+        const channels = await ChatChannelService.getAllChannels();
+        serverInfo.setServerChannels(channels)
+        channels.forEach(channel => {
+            wsMessageService.connect(() => { });
+            wsMessageService.subscribe(channel.id, (message: WebSocketMessage) => {
+                serverInfo.newMessage(message)
+            });
+        })
+    });
 });
 
 async function addNewChannel() {

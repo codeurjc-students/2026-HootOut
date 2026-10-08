@@ -6,9 +6,12 @@ using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
+using HootOut.Contracts.Users.Dtos.Request;
+using HootOut.Contracts.Users.Services;
 
 namespace HootOut.ChatMessages.IntegrationTests.Services
 {
+    [Collection("IntegrationTests")]
     public class ChatMessageServiceTests : IClassFixture<PostgresTestContainer>, IAsyncLifetime
     {
         private IContainer container;
@@ -56,13 +59,21 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
         [Fact]
         public async Task GetChatMessages_One()
         {
-            Guid channelId = Guid.NewGuid();
-            Guid authorId = Guid.NewGuid();
+            Guid channelId = Guid.NewGuid(); 
             string content = "This is a test message for a test case";
+
+            var userService = container.Resolve<IUserService>();
+            var user = userService.CreateUser(new CreateUserRequest
+            {
+                Email = "test@test.com",
+                Username = "test123",
+                Password = "123"
+            });
+
             chatMessageService.CreateChatMessage(new CreateChatMessageRequest
             {
                 ChatChannelId = channelId,
-                AuthorId = authorId,
+                AuthorId = user.Id,
                 Content = content
             });
 
@@ -72,10 +83,10 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
 
             chatMessage.Id.Should().NotBeEmpty();
             chatMessage.ChatChannelId.Should().Be(channelId);
-            chatMessage.Author?.Id.Should().Be(authorId);
+            chatMessage.Author?.Id.Should().Be(user.Id);
+            chatMessage.Author?.Username.Should().Be(user.Username);
             chatMessage.Content.Should().Be(content);
-            chatMessage.CreatedAt.Should().NotBe(default);
-            chatMessage.ModifiedAt.Should().NotBe(default);
+            chatMessage.CreatedAt.Should().NotBe(default); 
 
             result = chatMessageService.GetMessagesByChannel(Guid.NewGuid());
             result.Should().BeEmpty();

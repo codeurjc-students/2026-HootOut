@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import TemporalData from '@/components/temporalData/TemporalData.vue'
+import { useAuthStore } from '@/stores/auth.ts'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,23 +7,40 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
-      meta: { layout: 'MainLayout' }
+      component: () => import('@/views/HomeView.vue'),
+      meta: { layout: 'HomeLayout', public: true, guestOnly: false }
     },
     {
-      path: '/temporalData',
-      name: 'temp',
-      component: TemporalData
-    }
-    // {
-    //   path: '/about',
-    //   name: 'about',
-    //   // route level code-splitting
-    //   // this generates a separate chunk (About.[hash].js) for this route
-    //   // which is lazy-loaded when the route is visited.
-    //   component: () => import('../views/AboutView.vue'),
-    // },
+      path: '/login',
+      name: 'login',
+      component: () => import('@/views/LoginView.vue'),
+      meta: { layout: 'HomeLayout', public: true, guestOnly: false }
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import('@/views/RegisterView.vue'),
+      meta: { layout: 'HomeLayout', public: true, guestOnly: false }
+    },
+    {
+      path: '/chat',
+      name: 'chat',
+      component: () => import('@/views/ChatView.vue'),
+      meta: { layout: 'MainLayout' }
+    },
   ],
+})
+
+router.beforeEach(async (to) => {
+  const auth = useAuthStore()
+
+  if (!auth.ready) await auth.init()
+
+  if (to.meta.guestOnly && auth.isAuthenticated) return { name: 'home' }
+
+  if (!to.meta.public && !auth.isAuthenticated && to.name !== 'home') {
+    return { name: 'home', query: { redirect: to.fullPath } }
+  }
 })
 
 export default router
