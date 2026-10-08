@@ -39,12 +39,18 @@ namespace HootOut.Authentication.Services
             var tempPath = $"{fullPath}.{Guid.NewGuid():N}.tmp";
             try
             {
-                using (var stream = new FileStream(tempPath, new FileStreamOptions
+                var options = new FileStreamOptions
                 {
                     Mode = FileMode.CreateNew,
                     Access = FileAccess.Write,
-                    UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite // owner only (ignored on Windows)
-                }))
+                };
+
+                // Owner-only permissions on Linux/macOS. Windows has no Unix modes (setting them throws an exception),
+                // the file inherits the ACL of the folder instead.
+                if (!OperatingSystem.IsWindows())
+                    options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+
+                using (var stream = new FileStream(tempPath, options))
                 using (var writer = new StreamWriter(stream))
                 using (var newKey = RSA.Create(2048))
                 {
