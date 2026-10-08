@@ -1,7 +1,4 @@
-﻿using HootOut.Contracts.Authentication.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using HootOut.Contracts.WebSockets.Dtos;
 
 namespace HootOut.Contracts.Authentication.Services
 {
@@ -9,7 +6,7 @@ namespace HootOut.Contracts.Authentication.Services
     {
         Task<string> IssueAsync(Guid userId, string userName, TimeSpan lifetime, CancellationToken ct = default);
 
-        Task<WsTicketIdentityDto?> ConsumeAsync(string ticket, CancellationToken ct = default);
+        Task<WSUserInfo?> ConsumeAsync(string ticket, CancellationToken ct = default);
 
         Task<int> DeleteExpiredAsync(CancellationToken ct = default);
         public static readonly TimeSpan DefaultLifetime = TimeSpan.FromSeconds(30);

@@ -23,7 +23,7 @@ namespace HootOut.Users.IntegrationTests.Services
         {
             var builder = new ContainerBuilder();
             new RegistrationManager().RegisterAllAssemblies(builder);
-            builder.RegisterInstance(postgressContainer.postgreSQLProvider).As<IPersistenceProvider>().SingleInstance();
+            builder.RegisterInstance(postgressContainer.postgreSQLProvider!).As<IPersistenceProvider>().SingleInstance();
             container = builder.Build();
 
             var testPersistenceProvider = container.Resolve<IPersistenceProvider>();

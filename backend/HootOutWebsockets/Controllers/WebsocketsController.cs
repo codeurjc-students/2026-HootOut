@@ -1,6 +1,6 @@
 ﻿using HootOut.Contracts.Authentication.Services;
 using HootOut.Contracts.WebSockets.Services;
-using HootOut.HootOutWebsockets.Services;
+using HootOut.HootOutWebsockets.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HootOut.HootOutWebsockets.Controllers
@@ -8,8 +8,8 @@ namespace HootOut.HootOutWebsockets.Controllers
     public class WebSocketController : ControllerBase
     {
         private readonly ILogger logger;
-        private readonly IWSConnectionManager connectionManager; 
-        private readonly IWSConnectionHandler connectionHandler; 
+        private readonly IWSConnectionManager connectionManager;
+        private readonly IWSConnectionHandler connectionHandler;
         private readonly IWSPubSubService pubSubService;
 
         private readonly IWSTicketService ticketService;
@@ -45,10 +45,10 @@ namespace HootOut.HootOutWebsockets.Controllers
                 }
 
                 var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-                var connectionId = await connectionManager.AddConnectionAsync(webSocket, HttpContext);
+                var connectionId = await connectionManager.AddConnectionAsync(webSocket, user);
                 try
                 {
-                    await connectionHandler.ReadMessagesAsync(webSocket, connectionId, "");
+                    await connectionHandler.ReadMessagesAsync(webSocket, connectionId, user);
                 }
                 catch (Exception ex)
                 {

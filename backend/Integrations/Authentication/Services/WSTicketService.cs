@@ -1,10 +1,8 @@
 ﻿using Dapper;
 using HootOut.CommonDomain.Persistence;
-using HootOut.Contracts.Authentication.Dtos;
 using HootOut.Contracts.Authentication.Services;
-using System;
+using HootOut.Contracts.WebSockets.Dtos;
 using System.Buffers.Text;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -41,10 +39,10 @@ namespace HootOut.Authentication.Services
             return ticket;
         }
 
-        public async Task<WsTicketIdentityDto?> ConsumeAsync(string ticket, CancellationToken ct = default)
+        public async Task<WSUserInfo?> ConsumeAsync(string ticket, CancellationToken ct = default)
         {
             await using var conn = await provider.OpenConnectionAsync(ct);
-            return await conn.QuerySingleOrDefaultAsync<WsTicketIdentityDto>(new CommandDefinition(
+            return await conn.QuerySingleOrDefaultAsync<WSUserInfo>(new CommandDefinition(
                 """
             delete from "HootOut"."WSTickets"
             where "TicketHash" = @hash and "ExpiresAt" > now()

@@ -8,7 +8,7 @@ export interface WebSocketHandlers {
 export class WebSocketService {
     private socket: WebSocket | null = null;
 
-    connect(url: string, handlers: WebSocketHandlers = {}): void {
+    connect(url: URL, handlers: WebSocketHandlers = {}): void {
         if (this.socket != null) { //Close old socket
             this.close();
         }
@@ -32,7 +32,7 @@ export class WebSocketService {
         this.socket = null;
     }
 
-    isConnected(): boolean { 
+    isConnected(): boolean {
         return this.socket == null ? false : this.socket?.OPEN == WebSocket.OPEN;
     }
 }

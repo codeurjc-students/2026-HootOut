@@ -7,6 +7,22 @@ To build the project run
 dotnet build
 ```
 
+### Making and trusting Certificates for localhost:
+You will need to create and trust a certificate for local development. It must be on this repositoy root folder /certs/cert.pem and certs/key.pem (not /backend/certs/)
+
+You can follow this guide by Let's encrypt:
+https://letsencrypt.org/docs/certificates-for-localhost/
+
+By using mkcert as it suggests:
+
+```sh
+mkcert -install
+mkdir -p certs
+mkcert -cert-file certs/cert.pem -key-file certs/key.pem localhost 127.0.0.1 ::1
+```
+
+These same certs need to be copied to the ../frontend folder if you want to run the frontend locally via npm.
+
 ### Environment variables:
 
 Before running docker compose, create a .env file, following the .env.example file, and update the variables with your own.

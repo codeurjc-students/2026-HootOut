@@ -65,7 +65,16 @@ namespace HootOut.HootOutAPI
                 .RequireAuthenticatedUser()
                 .Build());
 
-            services.AddCors();
+            var allowedOrigins = Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+            services.AddCors(options => options.AddDefaultPolicy(policy =>
+            {
+                if (allowedOrigins.Length > 0)
+                    policy.WithOrigins(allowedOrigins)
+                          .AllowCredentials()
+                          .WithMethods("GET", "POST")
+                          .WithHeaders("Authorization", "Content-Type", "X-Token-Delivery");
+            }));
+
             services.AddControllers();
             services.AddOpenApi();
             services.AddSwaggerGen();
@@ -80,37 +89,38 @@ namespace HootOut.HootOutAPI
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
             });
 
-            app.UseHttpsRedirection();
+            if (!env.IsDevelopment())
+                app.UseHsts();
+
+            // Backstop: if someone ever re-adds an HTTP listener, refuse instead of serving.
+            // No redirect, because credentials sent over HTTP are already exposed.
+            app.Use(async (context, next) =>
+            {
+                if (!context.Request.IsHttps)
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return;
+                }
+                await next();
+            });
 
             app.UseRouting();
-            app.UseCors(
-                    options => options.WithOrigins("*").AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin()
-                );
+
+            app.UseCors();
+
             app.UseAuthentication();
             app.UseAuthorization();
 
-            if (env.IsDevelopment())
+            app.UseEndpoints(endpoints =>
             {
-                /* TO-DO: define cors by config */
-                app.UseCors(
-                     options => options.WithOrigins("*").AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin()
-                 );
-
-                app.UseEndpoints(endpoints =>
+                endpoints.MapControllers();
+                if (env.IsDevelopment())
                 {
                     endpoints.MapOpenApi();
                     endpoints.MapSwagger();
                     endpoints.MapSwaggerUI();
-                    endpoints.MapControllers();
-                });
-            }
-            else
-            {
-                app.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapControllers();
-                });
-            }
+                }
+            });
         }
 
         // ConfigureContainer is where you can register things directly

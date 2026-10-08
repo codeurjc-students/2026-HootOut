@@ -20,7 +20,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 
         public AuthControllerTests(APIFixture apiFixture)
         {
-            httpClient = apiFixture.CreateClient();
+            httpClient = apiFixture.CreateHttpsClient();
             container = apiFixture.AutofacRoot.BeginLifetimeScope();
 
             var testPersistenceProvider = container.Resolve<IPersistenceProvider>();
@@ -76,7 +76,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var loginResponse = await LoginAsync(DefaultEmail, DefaultPassword, ct);
             var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);
 
-            var response = await GetUserInfoRequestAsync(auth!.AccessToken, ct);
+            var response = await GetUserInfoRequestAsync(auth!.AccessToken!, ct);
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
         }
@@ -142,7 +142,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var original = await RegisterAsync(ct);
 
             var refreshed = await RefreshAndReadAsync(original.RefreshToken, ct);
-            var response = await GetUserInfoRequestAsync(refreshed.AccessToken, ct);
+            var response = await GetUserInfoRequestAsync(refreshed.AccessToken!, ct);
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
         }
@@ -250,7 +250,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var auth = await RegisterAsync(ct);
 
             var response = await SendAuthorizeHttpRequest(
-                HttpMethod.Post, "/api/v1/auth/ws-ticket", auth.AccessToken, ct);
+                HttpMethod.Post, "/api/v1/auth/ws-ticket", auth.AccessToken!, ct);
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -266,9 +266,9 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var ct = TestContext.Current.CancellationToken;
             var auth = await RegisterAsync(ct);
 
-            var first = await (await SendAuthorizeHttpRequest(HttpMethod.Post, "/api/v1/auth/ws-ticket", auth.AccessToken, ct))
+            var first = await (await SendAuthorizeHttpRequest(HttpMethod.Post, "/api/v1/auth/ws-ticket", auth.AccessToken!, ct))
                 .Content.ReadFromJsonAsync<WSTicketResponse>(ct);
-            var second = await (await SendAuthorizeHttpRequest(HttpMethod.Post, "/api/v1/auth/ws-ticket", auth.AccessToken, ct))
+            var second = await (await SendAuthorizeHttpRequest(HttpMethod.Post, "/api/v1/auth/ws-ticket", auth.AccessToken!, ct))
                 .Content.ReadFromJsonAsync<WSTicketResponse>(ct);
 
             second!.Ticket.Should().NotBe(first!.Ticket);

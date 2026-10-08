@@ -12,14 +12,13 @@ using HootOut.Contracts.ChatMessage.Services;
 using HootOut.Contracts.WebSocket;
 using HootOut.Contracts.WebSockets.Handlers;
 using HootOut.Contracts.WebSockets.Services;
+using HootOut.HootOutWebsockets.Contracts;
 using HootOut.HootOutWebsockets.IntegrationTests.Common;
 using HootOut.HootOutWebsockets.Services;
 using HootOut.WebSockets.Service;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Newtonsoft.Json;
-using Org.BouncyCastle.Asn1.Ocsp;
 using System.Net.WebSockets;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 {
@@ -27,7 +26,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
     public class WSChatMessagesTests : IClassFixture<WebSocketServerFixture>, IDisposable
     {
         private readonly WebSocketServerFixture server;
-        private readonly ILifetimeScope container; 
+        private readonly ILifetimeScope container;
         private ClearAllTables clearTables;
         protected readonly JsonWebTokenHandler jtwHandler = new();
 
@@ -73,7 +72,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
         [Fact]
         public async Task Websocket_PubSubChatMessage_HappyPath()
         {
-            var ct = TestContext.Current.CancellationToken; 
+            var ct = TestContext.Current.CancellationToken;
             IWSConnectionManager IconnectionManager = container.Resolve<IWSConnectionManager>();
             IAuthenticationService authService = container.Resolve<IAuthenticationService>();
 
@@ -101,7 +100,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
             var userId2 = Guid.Parse(jtwHandler.ReadJsonWebToken(auth2.AccessToken!).GetClaim("sub").Value);
             var ticket2 = await authService.CreateWebSocketTicketAsync(userId2, username2, ct);
 
-            WSConnectionManager? connectionManager = null; 
+            WSConnectionManager? connectionManager = null;
             if (IconnectionManager is WSConnectionManager)
             {
                 connectionManager = IconnectionManager as WSConnectionManager;

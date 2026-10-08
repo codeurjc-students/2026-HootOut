@@ -140,9 +140,10 @@ namespace HootOut.Authentication.Services
         public async Task<WSTicketResponse> CreateWebSocketTicketAsync(Guid userId, string username, CancellationToken ct)
         {
             var ticket = await ticketService.IssueAsync(userId, username, IWSTicketService.DefaultLifetime, ct);
-            return new WSTicketResponse { 
+            return new WSTicketResponse
+            {
                 Ticket = ticket,
-                ExpiresIn = (int)IWSTicketService.DefaultLifetime.TotalSeconds 
+                ExpiresIn = (int)IWSTicketService.DefaultLifetime.TotalSeconds
             };
         }
     }

@@ -5,10 +5,9 @@ permissions:
   pull-requests: write
   checks: write
 
-on:
+on: 
   pull_request:
-    pull_request:
-      types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened]
     branches:
       - main
 
@@ -30,7 +29,7 @@ jobs:
       - name: Setup Dotnet 10.0
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '10.0'
+          dotnet-version: '10.0' 
 
       - name: Install SonarQube Cloud scanner
         run: dotnet tool install --global dotnet-sonarscanner
@@ -69,10 +68,10 @@ jobs:
       POSTGRES_PASSWORD: test_pwd
       POSTGRES_DB: test_db
       POSTGRES_PORT: 5432
-      HOOTOUTAPI_HTTP_PORTS: 1234
-      HOOTOUTAPI_HTTPS_PORTS: 1235
-      HOOTOUTWEBSOCKETS_HTTP_PORTS: 4321
-      HOOTOUTWEBSOCKETS_HTTPS_PORTS: 4323
+      HOOTOUTAPI_HTTPS_PORTS: 1234 
+      HOOTOUTWEBSOCKETS_HTTPS_PORTS: 4321
+      TLS_CERT: ../certs/cert.pem
+      TLS_KEY: ../certs/key.pem
     steps:
       - uses: actions/checkout@v7
 
@@ -93,8 +92,16 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
+      - name: Create self signed certificate for https connections
+        run: |
+          mkdir -p certs
+            openssl req -x509 -newkey rsa:2048 -nodes -days 7 \
+            -keyout certs/key.pem -out certs/cert.pem \
+            -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+            chmod 644 certs/*.pem
+
       - name: Docker Compose Backend
-        run: docker compose -f ../backend/compose.dev.yaml up -d --build
+        run: docker compose -f ../backend/compose.dev.yaml up -d --build --wait
 
       - name: Run Playwright tests
         run: npm run test:e2e

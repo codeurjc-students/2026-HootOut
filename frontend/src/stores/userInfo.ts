@@ -3,17 +3,11 @@ import { defineStore } from 'pinia'
 import type { UserInfo } from '@/types'
 
 export const userInfoStore = defineStore('userInfo', () => {
-  const username = ref("")
+  const user = ref<UserInfo>({})
 
-  function setUsername(name: string) {
-    username.value = name
+  function setUser(newUser: UserInfo) {
+    user.value = newUser;
   }
 
-  function getUserInfo(): UserInfo {
-    return {
-      username: username.value
-    }
-  }
-
-  return { username, setUsername, getUserInfo}
+  return { user, setUser }
 })

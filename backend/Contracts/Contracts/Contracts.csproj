@@ -10,4 +10,8 @@
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.23.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ChatMessage\Responses\" />
+  </ItemGroup>
+
 </Project>

@@ -443,6 +443,7 @@ backend/.sonarqube/
 
 keys/
 *.pem
+certs/
 
 ## Frontend gitignore
 

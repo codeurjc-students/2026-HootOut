@@ -1,8 +1,9 @@
 import type { WebSocketService } from "@/services/common/websockets/WebSocketService";
 import webSocketService from '@/services/common/websockets/WebSocketService';
-import { WSMessageType, type ChatChannelDto, type WebSocketMessage } from "@/types";
+import { WSMessageType, type ChatChannelDto, type WebSocketMessage, type WSTicketRespone } from "@/types";
 import { ref } from "vue";
 import { newId } from "../utils";
+import { post } from "../api/ApiService";
 
 type Pending = {
     resolve: (m: WebSocketMessage) => void;
@@ -15,6 +16,8 @@ export type AckPromise = {
     promise: Promise<WebSocketMessage>
 };
 
+const wssUrl = import.meta.env.VITE_WSS_URL;
+
 export class WebSocketMessageService {
     private webSocketService: WebSocketService = webSocketService;
     private connected = ref(false);
@@ -23,13 +26,18 @@ export class WebSocketMessageService {
 
     private pending = new Map<string, Pending>();
 
-    connect(onOnpen: () => void) {
+    async connect(onOnpen: () => void) {
 
         if (this.webSocketService.isConnected()) {
             return;
         }
 
-        this.webSocketService.connect(import.meta.env.VITE_WSS_URL, {
+        const { ticket } = await post<WSTicketRespone>('auth/ws-ticket');
+
+        const url = new URL(wssUrl)
+        url.searchParams.set('ticket', ticket)
+
+        this.webSocketService.connect(url, {
             onOpen: () => { this.connected.value = true; onOnpen(); },
             onClose: () => this.onClose(),
             onError: () => this.onClose(),
@@ -43,14 +51,13 @@ export class WebSocketMessageService {
     }
 
     onClose() {
-        {
-            this.connected.value = false;
-            // fail everything still waiting, so nothing hangs forever
-            for (const [id, p] of this.pending) {
-                clearTimeout(p.timer);
-                p.reject(new Error('Connection closed'));
-                this.pending.delete(id);
-            }
+
+        this.connected.value = false;
+        // fail everything still waiting, so nothing hangs forever
+        for (const [id, p] of this.pending) {
+            clearTimeout(p.timer);
+            p.reject(new Error('Connection closed'));
+            this.pending.delete(id);
         }
     }
 

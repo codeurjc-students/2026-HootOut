@@ -1,6 +1,6 @@
 ﻿using HootOut.Contracts.WebSocket;
 using HootOut.Contracts.WebSockets.Services;
-using HootOut.HootOutWebsockets.Services;
+using HootOut.HootOutWebsockets.Contracts;
 using System.Collections.Concurrent;
 
 namespace HootOut.WebSockets.Service
@@ -19,7 +19,7 @@ namespace HootOut.WebSockets.Service
             this.wsConnectionManager = wsConnectionManager ?? throw new ArgumentNullException(nameof(wsConnectionManager));
         }
 
-        public async Task HandleSubscribeAsync(Guid connectionId, string userId, string channel)
+        public async Task HandleSubscribeAsync(Guid connectionId, Guid userId, string channel)
         {
             //TO-DO Subscribe to rabbit queue
             ChannelSubscribers.AddOrUpdate(channel, new HashSet<Guid> { connectionId }, (_, existing) =>
@@ -42,7 +42,7 @@ namespace HootOut.WebSockets.Service
             });
         }
 
-        public async Task HandleUnsubscribeAsync(Guid connectionId, string userId, string channel)
+        public async Task HandleUnsubscribeAsync(Guid connectionId, Guid userId, string channel)
         {
             //TO-DO if no subscribers unsubscribe from rabbitq
             if (ChannelSubscribers.TryGetValue(channel, out var subscribers))
@@ -63,7 +63,7 @@ namespace HootOut.WebSockets.Service
                 lock (channels)
                 {
                     channels.Remove(channel);
-                    logger.LogInformation("Removed connection {ConnectionId} from channel {ChannelId}. Channel count {ConnectionCount}", connectionId, channel, subscribers.Count);
+                    logger.LogInformation("Removed connection {ConnectionId} from channel {ChannelId}. Channel count {ConnectionCount}", connectionId, channel, subscribers?.Count);
                     if (channels.Count == 0)
                     {
                         ConnectionSubscriptions.TryRemove(connectionId, out _);

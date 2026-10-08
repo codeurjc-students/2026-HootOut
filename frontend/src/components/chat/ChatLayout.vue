@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import ChatSideBar from './ChatSideBar.vue';
 import ChatMainSection from './ChatMainSection.vue';
-import wsMessageService from '@/services/common/websocketsMesage/WebSocketsMessageService.ts';
-import { onMounted, provide } from 'vue';
+import { onMounted } from 'vue';
 import { userInfoStore } from '@/stores/userInfo.ts';
+import type { UserInfo } from '@/types/userInfo.ts';
+import { get } from '@/services/common/api/ApiService.ts';
 
-provide('wsMessageService', wsMessageService)
 
 const userInfo = userInfoStore();
 
-onMounted(() => {
-    wsMessageService.connect(() => { });
-    userInfo.setUsername(`User${Math.floor(Math.random() * 100000)}`);
+onMounted(async () => {
+    const user = await get<UserInfo>('users/me');
+    userInfo.setUser(user);
 })
+
 
 </script>
 

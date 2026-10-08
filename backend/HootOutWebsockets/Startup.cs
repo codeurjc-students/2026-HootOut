@@ -36,6 +36,21 @@ namespace HootOut.HootOutWebsockets
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
             });
 
+            if (!env.IsDevelopment())
+                app.UseHsts();
+
+            // Backstop: if someone ever re-adds an HTTP listener, refuse instead of serving.
+            // No redirect, because credentials sent over HTTP are already exposed.
+            app.Use(async (context, next) =>
+            {
+                if (!context.Request.IsHttps)
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return;
+                }
+                await next();
+            });
+
             var websocketsOptions = new WebSocketOptions
             {
                 KeepAliveInterval = TimeSpan.FromSeconds(30),

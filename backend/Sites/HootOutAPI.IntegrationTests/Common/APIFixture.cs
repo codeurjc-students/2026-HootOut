@@ -39,6 +39,15 @@ namespace HootOut.HootOutAPI.IntegrationTests.Common
                 });
         }
 
+        public HttpClient CreateHttpsClient()
+        {
+            return CreateClient(new()
+            {
+                BaseAddress = new Uri("https://localhost"),
+                HandleCookies = false,
+            });
+        }
+
         protected override IHost CreateHost(IHostBuilder builder)
         {
             return base.CreateHost(builder);

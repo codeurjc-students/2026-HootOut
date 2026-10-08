@@ -21,7 +21,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 
         public ChatMessagesControllerTests(APIFixture apiFixture)
         {
-            httpClient = apiFixture.CreateClient();
+            httpClient = apiFixture.CreateHttpsClient();
             container = apiFixture.AutofacRoot.BeginLifetimeScope();
 
             var testPersistenceProvider = container.Resolve<IPersistenceProvider>();

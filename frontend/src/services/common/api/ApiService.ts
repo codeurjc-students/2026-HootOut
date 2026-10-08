@@ -1,51 +1,78 @@
+import { useAuthStore } from "@/stores/auth";
+import { ApiError } from "@/types";
+
 const apiUrl = import.meta.env.VITE_API_URL;
 const apiVersion = 'v1';
 
-type APIService_get = <T = unknown >(url: string, parameters?: Record<string, unknown>) => Promise<T>;
-type APIService_post = <T = unknown>(url: string, body: any) => Promise<T>;
+type Query = Record<string, unknown>;
+type Headers = Record<string, string>
 
-const get: APIService_get = async function APIService_get(url, parameters = {}) {
+interface RequestOptions {
+    method: 'GET' | 'POST';
+    url: string;
+    query?: Query;
+    body?: unknown;
+    headers?: Headers;
+};
 
-    const headers = {
-    };
-
-    const query = new URLSearchParams(Object.entries(parameters).map(([key, value]) => [key, String(value)])).toString();
-
-    const request: Promise<Response> = fetch(`${apiUrl}/${apiVersion}/${url}${query ? `?${query}` : ''}`, {
-        method: 'GET',
-        mode: 'cors',
-        headers: headers
-    });
-
-    const res: Response = await request;
-    if (!res.ok) {
-        const errorBody = await res.json().catch(() => null);
-        throw new Error(errorBody?.message ?? `HTTP ${res.status}`);
-    }
-
-    return res.json();
+function buildUrl(url: string, query: Query = {}): string {
+    const qs = new URLSearchParams(
+        Object.entries(query).map(([key, value]) => [key, String(value)])
+    ).toString();
+    return `${apiUrl}/${apiVersion}/${url}${qs ? `?${qs}` : ''}`;
 }
 
-const post: APIService_post = async function (url, body) {
-    const headers = {
-        'Content-Type': 'application/json'
-    };
+// One attempt. Headers are rebuilt every time so a retry picks up the new access token.
+async function send(options: RequestOptions): Promise<Response> {
+    const headers: Headers = { ...options.headers };
 
-    const request = fetch(`${apiUrl}/${apiVersion}/${url}`, {
-        method: 'POST',
+    if (options.body !== undefined) {
+        headers['Content-Type'] = 'application/json';
+    }
+
+    const token = useAuthStore().accessToken;
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    if (options.url.startsWith('auth/')) {
+        headers['X-Token-Delivery'] = 'cookie';
+    }
+
+    return fetch(buildUrl(options.url, options.query), {
+        method: options.method,
         mode: 'cors',
-        headers: headers,
-        body: JSON.stringify(body)
+        credentials: 'include',
+        headers,
+        body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
     });
+}
 
-    const res = await request;
+async function request<T>(options: RequestOptions): Promise<T> {
+    let res = await send(options);
+
+    // Expired access token: refresh once and retry once. No loops.
+    // /auth/* calls are excluded so a failed login or refresh can't trigger a refresh.
+    if (res.status === 401 && !options.url.startsWith('auth/')) {
+        const auth = useAuthStore();
+
+        if (await auth.refresh()) {
+            res = await send(options);
+        }
+    }
 
     if (!res.ok) {
         const errorBody = await res.json().catch(() => null);
-        throw new Error(errorBody?.message ?? `HTTP ${res.status}`);
+        throw new ApiError(res.status, errorBody?.message ?? `HTTP ${res.status}`);
     }
 
-    return res.json();
+    // Some endpoints (e.g. logout) answer 204 with no body.
+    const text = await res.text();
+    return (text ? JSON.parse(text) : undefined) as T;
 }
 
-export { get, post }
+export const get = <T = unknown>(url: string, query: Query = {}, headers?: Headers) =>
+    request<T>({ method: 'GET', url, query, headers });
+
+export const post = <T = unknown>(url: string, body?: unknown, query: Query = {}, headers?: Headers) =>
+    request<T>({ method: 'POST', url, body, query, headers });

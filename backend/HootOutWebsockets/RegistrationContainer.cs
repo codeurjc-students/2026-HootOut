@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using HootOut.Contracts.WebSockets.Services;
+using HootOut.HootOutWebsockets.Contracts;
 using HootOut.HootOutWebsockets.Services;
 using HootOut.Infraestructure.DI;
 using HootOut.WebSockets.Service;
