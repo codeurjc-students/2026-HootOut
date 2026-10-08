@@ -1,4 +1,4 @@
-// import { test, expect } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 // test('test temporalData user list', async ({ page }) => {
 //     await page.goto('/temporalData');
@@ -28,3 +28,13 @@
 
 // // })
 
+test('test load home', async ({ page }) => {
+    await page.goto('/');
+
+    page.on('console', msg => console.log('BROWSER:', msg.text()));
+    page.on('requestfailed', req => console.log('FAILED REQUEST:', req.url(), req.failure()?.errorText));
+
+    const title = page.locator('h1');
+
+    await expect(title).toHaveText("HootOut");
+})

@@ -7,25 +7,25 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: import('@/views/HomeView.vue'),
+      component: () => import('@/views/HomeView.vue'),
       meta: { layout: 'HomeLayout', public: true, guestOnly: false }
     },
     {
       path: '/login',
       name: 'login',
-      component: import('@/views/LoginView.vue'),
+      component: () => import('@/views/LoginView.vue'),
       meta: { layout: 'HomeLayout', public: true, guestOnly: false }
     },
     {
       path: '/register',
       name: 'register',
-      component: import('@/views/RegisterView.vue'),
+      component: () => import('@/views/RegisterView.vue'),
       meta: { layout: 'HomeLayout', public: true, guestOnly: false }
     },
     {
       path: '/chat',
       name: 'chat',
-      component: import('@/views/ChatView.vue'),
+      component: () => import('@/views/ChatView.vue'),
       meta: { layout: 'MainLayout' }
     },
   ],
