@@ -29,11 +29,10 @@ namespace HootOut.HootOutWebsockets.Controllers
         }
 
         [Route("/ws")]
-        public async Task Get()
+        public async Task Get([FromQuery] string? ticket = null)
         {
             if (HttpContext.WebSockets.IsWebSocketRequest)
-            {
-                var ticket = HttpContext.Request.Query["ticket"].ToString();
+            { 
                 var user = string.IsNullOrEmpty(ticket)
                     ? null
                     : await ticketService.ConsumeAsync(ticket, HttpContext.RequestAborted);

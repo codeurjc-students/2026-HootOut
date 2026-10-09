@@ -35,9 +35,9 @@ namespace HootOut.HootOutAPI.Controllers
 
         [HttpPost("register")]
         [AllowAnonymous]
-        public async Task<ActionResult<AuthResponse>> Register(AuthRegistrationRequest request, CancellationToken ct)
+        public async Task<ActionResult<AuthResponse>> Register(AuthRegistrationRequest request, [FromHeader(Name=DeliveryHeader)] string? deliveryHeader, CancellationToken ct)
         {
-            var cookieMode = WantsCookie;
+            var cookieMode = WantsCookie(deliveryHeader ?? string.Empty);
             return await CommandLaunchHelper.LaunchAsync(
                 logger,
                 async () => DeliverTokens(await authService.RegisterUserAsync(request, ct), cookieMode),
@@ -48,9 +48,9 @@ namespace HootOut.HootOutAPI.Controllers
 
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<ActionResult<AuthResponse>> Login(AuthRequest request, CancellationToken ct)
+        public async Task<ActionResult<AuthResponse>> Login(AuthRequest request, [FromHeader(Name = DeliveryHeader)] string? deliveryHeader, CancellationToken ct)
         {
-            var cookieMode = WantsCookie;
+            var cookieMode = WantsCookie(deliveryHeader ?? string.Empty);
             return await CommandLaunchHelper.LaunchAsync(
                 logger,
                 async () => DeliverTokens(await authService.AuthenticateUserAsync(request, ct), cookieMode),
@@ -64,9 +64,10 @@ namespace HootOut.HootOutAPI.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<AuthResponse>> RefreshJWT(
             [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] AuthRefreshRequest? request,
+            [FromHeader(Name = DeliveryHeader)] string? deliveryHeader,
             CancellationToken ct)
         {
-            var cookieMode = WantsCookie;
+            var cookieMode = WantsCookie(deliveryHeader ?? string.Empty);
             var refreshToken = cookieMode ? Request.Cookies[RefreshCookieName] : request?.RefreshToken;
 
             if (string.IsNullOrEmpty(refreshToken))
@@ -88,9 +89,13 @@ namespace HootOut.HootOutAPI.Controllers
 
         [HttpPost("logout")]
         [AllowAnonymous]
-        public async Task<ActionResult> Logout([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] AuthRefreshRequest? request, CancellationToken ct)
+        public async Task<ActionResult> Logout(
+            [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] AuthRefreshRequest? request,
+            [FromHeader(Name = DeliveryHeader)] string? deliveryHeader,
+            CancellationToken ct
+            )
         {
-            var cookieMode = WantsCookie;
+            var cookieMode = WantsCookie(deliveryHeader ?? string.Empty);
             var refreshToken = cookieMode ? Request.Cookies[RefreshCookieName] : request?.RefreshToken;
             if (cookieMode) ClearRefreshCookie();
 
@@ -126,8 +131,8 @@ namespace HootOut.HootOutAPI.Controllers
         // Refresh token delivery
         // ------------------------------------------------------------------
 
-        private bool WantsCookie =>
-            string.Equals(Request.Headers[DeliveryHeader].ToString(), DeliveryCookie, StringComparison.OrdinalIgnoreCase);
+        private bool WantsCookie (string deliveryHeader) => 
+            string.Equals(deliveryHeader, DeliveryCookie, StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// Body mode: returns the response untouched.
