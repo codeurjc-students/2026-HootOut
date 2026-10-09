@@ -35,7 +35,7 @@ namespace HootOut.HootOutAPI.Controllers
 
         [HttpPost("register")]
         [AllowAnonymous]
-        public async Task<ActionResult<AuthResponse>> Register(AuthRegistrationRequest request, [FromHeader(Name=DeliveryHeader)] string? deliveryHeader, CancellationToken ct)
+        public async Task<ActionResult<AuthResponse>> Register(AuthRegistrationRequest request, [FromHeader(Name = DeliveryHeader)] string? deliveryHeader, CancellationToken ct)
         {
             var cookieMode = WantsCookie(deliveryHeader ?? string.Empty);
             return await CommandLaunchHelper.LaunchAsync(
@@ -131,7 +131,7 @@ namespace HootOut.HootOutAPI.Controllers
         // Refresh token delivery
         // ------------------------------------------------------------------
 
-        private bool WantsCookie (string deliveryHeader) => 
+        private bool WantsCookie(string deliveryHeader) =>
             string.Equals(deliveryHeader, DeliveryCookie, StringComparison.OrdinalIgnoreCase);
 
         /// <summary>

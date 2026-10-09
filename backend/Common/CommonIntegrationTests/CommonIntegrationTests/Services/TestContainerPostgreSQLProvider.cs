@@ -31,9 +31,9 @@ namespace HootOut.CommonIntegrationTests.Services
             return connection;
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            return Container.DisposeAsync();
+            await Container.DisposeAsync();
         }
     }
 }

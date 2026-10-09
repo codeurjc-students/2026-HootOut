@@ -30,6 +30,7 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Common\CommonIntegrationTests\CommonIntegrationTests\CommonIntegrationTests.csproj" />
 	  <ProjectReference Include="..\..\HootOutWebsockets\HootOutWebsockets.csproj" />
+	  <ProjectReference Include="..\..\Integrations\RabbitMQ\RabbitMQ.csproj" />
 	</ItemGroup>
 
 </Project>

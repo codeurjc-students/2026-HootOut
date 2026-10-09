@@ -1,8 +1,8 @@
 ﻿using HootOut.Contracts.WebSockets.Handlers;
 
-namespace HootOut.Contracts.WebSocket
+namespace HootOut.Contracts.WebSockets.Dtos
 {
-    public class WebSocketMessage
+    public class WebSocketMessageDto
     {
         public Guid? Id { get; set; }
 

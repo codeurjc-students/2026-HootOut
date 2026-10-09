@@ -1,5 +1,4 @@
-﻿using HootOut.Contracts.WebSocket;
-using HootOut.Contracts.WebSockets.Dtos;
+﻿using HootOut.Contracts.WebSockets.Dtos;
 using HootOut.HootOutWebsockets.Contracts;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
@@ -28,7 +27,7 @@ namespace HootOut.HootOutWebsockets.Services
 
             Connections.TryAdd(connectionId, new WSSession
             {
-                User = user, 
+                User = user,
                 Socket = websocket,
             });
             ConnectionLock.TryAdd(connectionId, new SemaphoreSlim(1, 1));
@@ -48,7 +47,15 @@ namespace HootOut.HootOutWebsockets.Services
             return wsSession;
         }
 
-        public async Task SendMessageAsync(Guid connectionId, WebSocketMessage message)
+        public async Task SendMessageAsync(Guid connectionId, WebSocketMessageDto message)
+        {
+            var serializedMessage = JsonConvert.SerializeObject(message);
+            var rawMessage = Encoding.UTF8.GetBytes(serializedMessage);
+
+            await SendMessageAsync(connectionId, rawMessage);
+        }
+
+        public async Task SendMessageAsync(Guid connectionId, byte[] rawMessage)
         {
             var wsSession = await GetWebSocketSessionByConnectionIdAsync(connectionId);
 
@@ -56,28 +63,24 @@ namespace HootOut.HootOutWebsockets.Services
             {
                 return;
             }
-            await SendMessageAsync(wsSession, connectionId, message);
+            await SendMessageAsync(wsSession, connectionId, rawMessage);
         }
 
-        public async Task SendMessageAsync(WSSession wsSession, Guid connectionId, WebSocketMessage message)
+        public async Task SendMessageAsync(WSSession wsSession, Guid connectionId, byte[] rawMessage)
         {
             try
             {
                 if (wsSession.Socket.State == WebSocketState.Open)
                 {
-                    var rawMessage = JsonConvert.SerializeObject(message);
-                    var bytes = Encoding.UTF8.GetBytes(rawMessage);
-
                     ConnectionLock.TryGetValue(connectionId, out var sendLock);
 
                     if (sendLock != null)
                     {
                         await sendLock.WaitAsync();
-
                         try
                         {
                             await wsSession.Socket.SendAsync(
-                                new ArraySegment<byte>(bytes),
+                                new ArraySegment<byte>(rawMessage),
                                 WebSocketMessageType.Text,
                                 endOfMessage: true,
                                 CancellationToken.None

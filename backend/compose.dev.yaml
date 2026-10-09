@@ -19,7 +19,7 @@ services:
       ASPNETCORE_Kestrel__Certificates__Default__Path: /certs/cert.pem
       ASPNETCORE_Kestrel__Certificates__Default__KeyPath: /certs/key.pem
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
-      RABBITMQ_HOST: ${RABBIT_HOSTNAME}
+      RABBITMQ_HOST: rabbitmq
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSOWRD}
       LOGS_FOLDER: /var/logs
@@ -48,7 +48,7 @@ services:
       ASPNETCORE_Kestrel__Certificates__Default__Path: /certs/cert.pem
       ASPNETCORE_Kestrel__Certificates__Default__KeyPath: /certs/key.pem 
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
-      RABBITMQ_HOST: ${RABBIT_HOSTNAME}
+      RABBITMQ_HOST: rabbitmq
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSOWRD}
       LOGS_FOLDER: /var/logs

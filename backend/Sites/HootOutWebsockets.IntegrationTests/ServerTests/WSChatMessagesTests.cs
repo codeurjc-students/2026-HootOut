@@ -4,17 +4,19 @@ using HootOut.Authentication.Services;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
+using HootOut.CommonIntegrationTests.Services;
 using HootOut.Contracts.Authentication.Requests;
 using HootOut.Contracts.Authentication.Services;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
-using HootOut.Contracts.WebSocket;
+using HootOut.Contracts.WebSockets.Dtos;
 using HootOut.Contracts.WebSockets.Handlers;
 using HootOut.Contracts.WebSockets.Services;
 using HootOut.HootOutWebsockets.Contracts;
 using HootOut.HootOutWebsockets.IntegrationTests.Common;
 using HootOut.HootOutWebsockets.Services;
+using HootOut.RabbitMQ.Configuration;
 using HootOut.WebSockets.Service;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Newtonsoft.Json;
@@ -23,26 +25,35 @@ using System.Net.WebSockets;
 namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 {
     [Collection("IntegrationTests")]
-    public class WSChatMessagesTests : IClassFixture<WebSocketServerFixture>, IDisposable
+    public class WSChatMessagesTests : IClassFixture<WebSocketServerFixture>, IClassFixture<TestContaineRabbitConnectionFactory>, IDisposable
     {
         private readonly WebSocketServerFixture server;
         private readonly ILifetimeScope container;
         private ClearAllTables clearTables;
-        protected readonly JsonWebTokenHandler jtwHandler = new();
+        private readonly JsonWebTokenHandler jtwHandler = new();
 
-        public WSChatMessagesTests(WebSocketServerFixture server)
+        private readonly TestContaineRabbitConnectionFactory rabbitConnectionFactory;
+
+        public WSChatMessagesTests(WebSocketServerFixture server, TestContaineRabbitConnectionFactory rabbitConnectionFactory)
         {
             this.server = server;
             var rsaKeyProvider = new DevelopmentRsaKeyProvider("keys/jwt-private.pem");
+
+            this.rabbitConnectionFactory = rabbitConnectionFactory;
+
             this.server.RegisterDependencies = (ContainerBuilder? builder) =>
             {
                 builder?.RegisterInstance(rsaKeyProvider).As<IRsaKeyProvider>().SingleInstance(); //Used for creating the account
+                builder?.RegisterInstance(rabbitConnectionFactory).As<IRabbitConnectionFactory>().SingleInstance();
             };
 
             container = server.AutofacRoot.BeginLifetimeScope();
 
             var testPersistenceProvider = container.Resolve<IPersistenceProvider>();
             Assert.Same(server.PostgreSQLProvider, testPersistenceProvider);
+
+            var resolvedRabbitConnectionFactory = container.Resolve<IRabbitConnectionFactory>();
+            Assert.Same(this.rabbitConnectionFactory, resolvedRabbitConnectionFactory);
 
             clearTables = container.Resolve<ClearAllTables>();
             var defaultValues = container.Resolve<IEnumerable<IDefaultValues>>().OrderBy(x => x.Priority);
@@ -123,7 +134,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
             Guid channelId = Guid.NewGuid();
 
             var id1 = Guid.NewGuid();
-            await socket1.SendWithAckAsync(new WebSocketMessage
+            await socket1.SendWithAckAsync(new WebSocketMessageDto
             {
                 Type = WSHandlerType.Subscribe,
                 Channel = channelId.ToString()
@@ -135,14 +146,13 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
             if (IpubSubService is WSPubSubService)
             {
                 pubSubService = (IpubSubService as WSPubSubService)!;
-            }
-
+            } 
             pubSubService!.ChannelSubscribers.TryGetValue(channelId.ToString(), out var subscribers).Should().BeTrue();
             subscribers!.Count.Should().Be(1);
 
             pubSubService!.ConnectionSubscriptions.Count.Should().Be(1);
 
-            await socket2.SendWithAckAsync(new WebSocketMessage
+            await socket2.SendWithAckAsync(new WebSocketMessageDto
             {
                 Type = WSHandlerType.Subscribe,
                 Channel = channelId.ToString()
@@ -153,7 +163,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
             pubSubService!.ConnectionSubscriptions.Count.Should().Be(2);
 
             Guid otherChannelId = Guid.NewGuid();
-            await socket2.SendWithAckAsync(new WebSocketMessage
+            await socket2.SendWithAckAsync(new WebSocketMessageDto
             {
                 Type = WSHandlerType.Subscribe,
                 Channel = otherChannelId.ToString()
@@ -170,7 +180,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
                 AuthorId = userId1
             };
 
-            await socket1.SendWithAckAsync(new WebSocketMessage
+            await socket1.SendWithAckAsync(new WebSocketMessageDto
             {
                 Type = WSHandlerType.ChatMessage,
                 Channel = channelId.ToString(),

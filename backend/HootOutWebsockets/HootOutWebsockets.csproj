@@ -26,6 +26,7 @@
     <ProjectReference Include="..\Infraestructure\Infraestructure\Infraestructure.csproj" />
     <ProjectReference Include="..\Integrations\Authentication\Authentication.csproj" />
     <ProjectReference Include="..\Integrations\PostgreSQL\PostgreSQL.csproj" />
+    <ProjectReference Include="..\Integrations\RabbitMQ\RabbitMQ.csproj" />
   </ItemGroup>
 
 </Project>

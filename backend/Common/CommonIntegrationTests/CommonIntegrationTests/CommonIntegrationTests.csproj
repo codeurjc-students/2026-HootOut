@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Infraestructure\Infraestructure\Infraestructure.csproj" />
+    <ProjectReference Include="..\..\..\Integrations\RabbitMQ\RabbitMQ.csproj" />
     <ProjectReference Include="..\..\CommonDomain\CommonDomain.csproj" />
   </ItemGroup>
 
@@ -16,7 +17,12 @@
     <PackageReference Include="Npgsql" Version="10.0.3" />
 	<PackageReference Include="Dapper" Version="2.1.86" />
     <PackageReference Include="Testcontainers.PostgreSql" Version="4.15.0" />
+    <PackageReference Include="Testcontainers.RabbitMq" Version="4.16.0" />
 	<PackageReference Include="xunit.v3.extensibility.core" Version="4.0.1" />
+   </ItemGroup>
+
+   <ItemGroup>
+     <Folder Include="RabbitMQ\" />
    </ItemGroup>
 
 </Project>

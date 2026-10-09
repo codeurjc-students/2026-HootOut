@@ -32,7 +32,7 @@ namespace HootOut.HootOutWebsockets.Controllers
         public async Task Get([FromQuery] string? ticket = null)
         {
             if (HttpContext.WebSockets.IsWebSocketRequest)
-            { 
+            {
                 var user = string.IsNullOrEmpty(ticket)
                     ? null
                     : await ticketService.ConsumeAsync(ticket, HttpContext.RequestAborted);
