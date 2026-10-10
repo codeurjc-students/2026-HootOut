@@ -34,9 +34,9 @@ export const serverInfoStore = defineStore('serverInfo', () => {
 
   function confirmMessage(message: WebSocketMessage) {
     const channel = currentChatChannel.value
-    const chatMessage = pendingMessages.value[channel!.id]![message.id!];
+    const chatMessage = pendingMessages.value[channel!.id]![message.replyTo!];
     if (chatMessage) {
-      delete pendingMessages.value[channel!.id]![message.id!];
+      delete pendingMessages.value[channel!.id]![message.replyTo!];
       newMessage(message);
     }
   }

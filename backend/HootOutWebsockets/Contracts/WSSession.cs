@@ -5,7 +5,7 @@ namespace HootOut.HootOutWebsockets.Contracts
 {
     public sealed record WSSession
     {
-        public WSUserInfo? User { get; init; } 
-        public required WebSocket Socket { get; init; } 
+        public WSUserInfo? User { get; init; }
+        public required WebSocket Socket { get; init; }
     }
 }

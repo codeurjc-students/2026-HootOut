@@ -1,5 +1,5 @@
-﻿using HootOut.Contracts.WebSocket;
-using HootOut.Contracts.WebSockets.Dtos;
+﻿using HootOut.Contracts.WebSockets.Dtos;
+using HootOut.Contracts.WebSockets.Entities;
 using HootOut.Contracts.WebSockets.Handlers;
 using HootOut.Contracts.WebSockets.Services;
 using Microsoft.Extensions.Logging;
@@ -22,7 +22,7 @@ namespace HootOut.WebSockets.Handlers
             this.wsPubSubService = wsPubSubService ?? throw new ArgumentNullException(nameof(wsPubSubService));
         }
 
-        public async Task HandleMessageAsync(Guid connectionId, WSUserInfo user, WebSocketMessage message)
+        public async Task HandleMessageAsync(Guid connectionId, WSUserInfo user, WebSocketMessage message, CancellationToken ct = default)
         {
             if (string.IsNullOrWhiteSpace(message.Channel))
             {
@@ -30,7 +30,7 @@ namespace HootOut.WebSockets.Handlers
                 return;
             }
 
-            await wsPubSubService.HandleSubscribeAsync(connectionId, user.UserId, message.Channel);
+            await wsPubSubService.HandleSubscribeAsync(connectionId, nameof(WSHandlerType.ChatMessage), message.Channel, ct); //TO-DO Hardcoded subscribe to ChatMessage
         }
     }
 }

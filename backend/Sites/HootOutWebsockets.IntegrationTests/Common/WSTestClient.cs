@@ -1,4 +1,4 @@
-﻿using HootOut.Contracts.WebSocket;
+﻿using HootOut.Contracts.WebSockets.Dtos;
 using HootOut.Contracts.WebSockets.Handlers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -48,7 +48,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
             return new WSTestClient(Socket, effectiveTimeout);
         }
 
-        public Task SendAsync(WebSocketMessage message, CancellationToken ct = default) => SendAsync<WebSocketMessage>(message, ct);
+        public Task SendAsync(WebSocketMessageDto message, CancellationToken ct = default) => SendAsync<WebSocketMessageDto>(message, ct);
 
         public Task SendAsync<T>(T message, CancellationToken ct = default) => SendRawAsync(JsonConvert.SerializeObject(message, JsonSettings), ct);
 
@@ -65,7 +65,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
 
         // ---------- Receive ----------
 
-        public Task<WebSocketMessage> ReceiveAsync(CancellationToken ct = default) => ReceiveAsync<WebSocketMessage>(ct);
+        public Task<WebSocketMessageDto> ReceiveAsync(CancellationToken ct = default) => ReceiveAsync<WebSocketMessageDto>(ct);
 
         public async Task<T> ReceiveAsync<T>(CancellationToken ct = default)
         {
@@ -75,17 +75,17 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
         }
 
         /// <summary>Receive exactly <paramref name="count"/> messages, in order.</summary>
-        public async Task<List<WebSocketMessage>> ReceiveManyAsync(int count, CancellationToken ct = default)
+        public async Task<List<WebSocketMessageDto>> ReceiveManyAsync(int count, CancellationToken ct = default)
         {
-            var list = new List<WebSocketMessage>(count);
+            var list = new List<WebSocketMessageDto>(count);
             for (var i = 0; i < count; i++)
                 list.Add(await ReceiveAsync(ct));
             return list;
         }
 
         /// <summary>Keep receiving until a message matches the predicate (skips unrelated broadcasts).</summary>
-        public async Task<WebSocketMessage> ReceiveUntilAsync(
-            Func<WebSocketMessage, bool> predicate, CancellationToken ct = default)
+        public async Task<WebSocketMessageDto> ReceiveUntilAsync(
+            Func<WebSocketMessageDto, bool> predicate, CancellationToken ct = default)
         {
             while (true)
             {
@@ -150,7 +150,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
             return Socket.CloseStatus;
         }
 
-        public async Task<WebSocketMessage> SendWithAckAsync(WebSocketMessage message, CancellationToken ct = default)
+        public async Task<WebSocketMessageDto> SendWithAckAsync(WebSocketMessageDto message, CancellationToken ct = default)
         {
             message.Id ??= Guid.NewGuid();
             await SendAsync(message, ct);

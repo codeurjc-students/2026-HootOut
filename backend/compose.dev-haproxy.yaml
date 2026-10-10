@@ -1,6 +1,8 @@
 services:
   hootoutapi:
-    image: hootoutapi 
+    image: hootoutapi
+    deploy:
+      replicas: 2
     build:
       context: .
       dockerfile: HootOutAPI/Dockerfile
@@ -12,7 +14,7 @@ services:
       rabbitmq:
         condition: service_healthy
     ports: 
-      - ${HOOTOUTAPI_HTTPS_PORTS}:${HOOTOUTAPI_HTTPS_PORTS}
+      - ${HOOTOUTAPI_HTTPS_PORTS}
     environment: 
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: https://+:${HOOTOUTAPI_HTTPS_PORTS}   # the only listener, so there is no HTTP port to use
@@ -30,7 +32,9 @@ services:
       - logs:/var/logs
 
   hootoutwebsockets:
-    image: hootoutwebsockets 
+    image: hootoutwebsockets
+    deploy:
+      replicas: 2
     build:
       context: .
       dockerfile: HootOutWebsockets/Dockerfile
@@ -42,7 +46,7 @@ services:
       rabbitmq:
         condition: service_healthy
     ports: 
-      - ${HOOTOUTWEBSOCKETS_HTTPS_PORTS}:${HOOTOUTWEBSOCKETS_HTTPS_PORTS}
+      - ${HOOTOUTWEBSOCKETS_HTTPS_PORTS}
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: https://+:${HOOTOUTWEBSOCKETS_HTTPS_PORTS}
@@ -94,7 +98,18 @@ services:
       test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
       retries: 3
       timeout: 5s
-      interval: 30s  
+      interval: 30s
+  
+  haproxy:
+    image: haproxy:3.4
+    restart: unless-stopped
+    volumes: 
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - ../certs:/etc/ssl/certs:ro
+    ports:
+    - ${HOOTOUTAPI_HTTPS_PORTS}:${HOOTOUTAPI_HTTPS_PORTS}
+    - ${HOOTOUTWEBSOCKETS_HTTPS_PORTS}:${HOOTOUTWEBSOCKETS_HTTPS_PORTS}
+
 
 volumes:
   pgdata:
