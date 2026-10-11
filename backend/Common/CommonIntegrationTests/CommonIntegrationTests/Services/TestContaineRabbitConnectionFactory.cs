@@ -24,7 +24,10 @@ namespace HootOut.CommonIntegrationTests.Services
 
         public async ValueTask InitializeAsync()
         {
-            await rabbitContainer.StartAsync();
+            if (rabbitContainer.State == DotNet.Testcontainers.Containers.TestcontainersStates.Undefined)
+            {
+                await rabbitContainer.StartAsync();
+            }
         }
 
         public async ValueTask DisposeAsync()

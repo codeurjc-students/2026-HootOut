@@ -19,7 +19,7 @@ namespace HootOut.HootOutWebsockets.Schedulers
         public Task StartAsync(CancellationToken ct)
         {
             return queuePubService.StartConsuming<WebSocketMessage>(nameof(WSHandlerType.ChatMessage),
-                (exchange, channelId, message) => wsPubSubService.ReceiveMessageAsync(exchange, channelId, message),
+                async (exchange, channelId, message) => await wsPubSubService.ReceiveMessageAsync(exchange, channelId, message),
                 ct);
             ;
         }
