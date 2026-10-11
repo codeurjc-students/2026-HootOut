@@ -59,7 +59,7 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
         [Fact]
         public async Task GetChatMessages_One()
         {
-            Guid channelId = Guid.NewGuid(); 
+            Guid channelId = Guid.NewGuid();
             string content = "This is a test message for a test case";
 
             var userService = container.Resolve<IUserService>();
@@ -86,7 +86,7 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
             chatMessage.Author?.Id.Should().Be(user.Id);
             chatMessage.Author?.Username.Should().Be(user.Username);
             chatMessage.Content.Should().Be(content);
-            chatMessage.CreatedAt.Should().NotBe(default); 
+            chatMessage.CreatedAt.Should().NotBe(default);
 
             result = chatMessageService.GetMessagesByChannel(Guid.NewGuid());
             result.Should().BeEmpty();

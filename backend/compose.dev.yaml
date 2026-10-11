@@ -1,6 +1,6 @@
 services:
   hootoutapi:
-    image: hootoutapi
+    image: hootoutapi 
     build:
       context: .
       dockerfile: HootOutAPI/Dockerfile
@@ -19,17 +19,18 @@ services:
       ASPNETCORE_Kestrel__Certificates__Default__Path: /certs/cert.pem
       ASPNETCORE_Kestrel__Certificates__Default__KeyPath: /certs/key.pem
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
-      RABBITMQ_HOST: ${RABBIT_HOSTNAME}
+      RABBITMQ_HOST: rabbitmq
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSOWRD}
       LOGS_FOLDER: /var/logs
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
+      - ./keys:/app/keys:rw
       - ../certs:/certs:ro
       - logs:/var/logs
 
   hootoutwebsockets:
-    image: hootoutwebsockets
+    image: hootoutwebsockets 
     build:
       context: .
       dockerfile: HootOutWebsockets/Dockerfile
@@ -48,7 +49,7 @@ services:
       ASPNETCORE_Kestrel__Certificates__Default__Path: /certs/cert.pem
       ASPNETCORE_Kestrel__Certificates__Default__KeyPath: /certs/key.pem 
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
-      RABBITMQ_HOST: ${RABBIT_HOSTNAME}
+      RABBITMQ_HOST: rabbitmq
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSOWRD}
       LOGS_FOLDER: /var/logs
@@ -93,7 +94,7 @@ services:
       test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
       retries: 3
       timeout: 5s
-      interval: 30s
+      interval: 30s  
 
 volumes:
   pgdata:

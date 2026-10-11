@@ -11,7 +11,7 @@ namespace HootOut.RabbitMQ
         public void Register(ContainerBuilder builder)
         {
             builder.RegisterType<RabbitEnvironmentConnectionFactory>().As<IRabbitConnectionFactory>().SingleInstance();
-            builder.RegisterType<RabbitPubSubService>().As<IPubSubService>().SingleInstance();
+            builder.RegisterType<RabbitPubSubService>().As<IQueuePubService>().SingleInstance();
         }
     }
 }

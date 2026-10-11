@@ -28,10 +28,9 @@ function convertDate(date_string: string) {
 
 <template>
     <div id="messages-list">
-        <div class="message-entry pending" v-for='(message, index) in pendingMessagesList' :key='message.id'
-            :class="{ 'message-entry-user': message.author.username == user.username }">
+        <div class="message-entry pending" v-for='(message, index) in pendingMessagesList' :key='message.id'>
             <div>
-                {{ message.author.id }} --- {{ convertDate(message.createdAt!) }}
+                {{ user.username }} --- {{ convertDate(message.createdAt!) }}
             </div>
             <div>
                 {{ message.content }}

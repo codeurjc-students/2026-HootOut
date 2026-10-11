@@ -1,4 +1,4 @@
-﻿using HootOut.Contracts.WebSocket;
+﻿
 using HootOut.Contracts.WebSockets.Dtos;
 using HootOut.Contracts.WebSockets.Services;
 using System.Net.WebSockets;
@@ -13,6 +13,6 @@ namespace HootOut.HootOutWebsockets.Contracts
 
         Task<WSSession?> GetWebSocketSessionByConnectionIdAsync(Guid connectionId);
 
-        Task SendMessageAsync(WSSession wsSession, Guid connectionId, WebSocketMessage message);
+        Task SendMessageAsync(WSSession wsSession, Guid connectionId, byte[] rawMessage);
     }
 }

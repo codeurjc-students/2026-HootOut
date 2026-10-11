@@ -19,6 +19,7 @@ async function sendMessage() {
     message.value = "";
 
     const ackPromise = await wsMessageService.sendMessage(serverInfo.currentChatChannel!, chatMessage);
+    chatMessage.createdAt = new Date().toISOString();
     serverInfo.addPendingMessage(ackPromise.id, chatMessage);
 
     const wsMessage = await ackPromise.promise;

@@ -1,6 +1,4 @@
 ﻿using Autofac;
-using HootOut.CommonDomain.DefaultValues;
-using HootOut.HootOutAPI.Temporal;
 using HootOut.Infraestructure.DI;
 
 namespace HootOut.HootOutAPI
@@ -9,7 +7,6 @@ namespace HootOut.HootOutAPI
     {
         public void Register(ContainerBuilder builder)
         {
-            builder.RegisterType<TemporalDBInitialization>().As<IDefaultValues>().SingleInstance();
         }
     }
 }

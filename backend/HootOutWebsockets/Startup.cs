@@ -1,4 +1,5 @@
 using Autofac;
+using HootOut.HootOutWebsockets.Schedulers;
 using HootOut.Infraestructure.DI;
 using Microsoft.AspNetCore.HttpOverrides;
 using Newtonsoft.Json;
@@ -20,6 +21,7 @@ namespace HootOut.HootOutWebsockets
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddHostedService<PubSubQueueConsumerService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

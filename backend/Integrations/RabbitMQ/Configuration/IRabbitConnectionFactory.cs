@@ -4,6 +4,6 @@ namespace HootOut.RabbitMQ.Configuration
 {
     public interface IRabbitConnectionFactory
     {
-        public ConnectionFactory GetConnectionFactory();
+        ConnectionFactory GetConnectionFactory();
     }
 }

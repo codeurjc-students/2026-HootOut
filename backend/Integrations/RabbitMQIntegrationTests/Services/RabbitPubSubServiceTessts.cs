@@ -1,9 +1,17 @@
 ﻿using Autofac;
 using FluentAssertions;
+using HootOut.CommonIntegrationTests.Services;
 using HootOut.Contracts.Common.Messages.Events;
 using HootOut.Contracts.Common.Messages.Services;
+using HootOut.Contracts.Common.Saver;
+using HootOut.Contracts.WebSockets.Dtos;
+using HootOut.Contracts.WebSockets.Entities;
+using HootOut.Contracts.WebSockets.Handlers;
 using HootOut.Infraestructure.DI;
 using HootOut.RabbitMQ.Configuration;
+using HootOut.RabbitMQ.Services;
+using Microsoft.Extensions.Logging;
+using Moq;
 using RabbitMQ.Client;
 using Testcontainers.RabbitMq;
 
@@ -11,81 +19,109 @@ namespace HootOut.RabbitMQIntegrationTests.Services
 {
     public class RabbitPubSubServiceTests : IAsyncLifetime
     {
-        private IContainer container;
-
-        private IPubSubService pubSubService;
-
-        private RabbitTestConnectionFactory rabbitFactory = new RabbitTestConnectionFactory();
-
-        private RabbitMqContainer rabbitContainer { get; } = new RabbitMqBuilder("rabbitmq:4.3.6").Build();
-
-        public async ValueTask InitializeAsync()
-        {
-            await rabbitContainer.StartAsync()
-                .ConfigureAwait(false);
-
-            rabbitFactory.ConnectionString = rabbitContainer.GetConnectionString();
-        }
-
-        public ValueTask DisposeAsync()
-        {
-            return rabbitContainer.DisposeAsync();
-        }
+        private IQueuePubService pubSubService;
+        private TestContaineRabbitConnectionFactory rabbitConnectionFactory { get; set; }
 
         public RabbitPubSubServiceTests()
         {
-            var builder = new ContainerBuilder();
-            new RegistrationManager().RegisterAllAssemblies(builder);
-            builder.RegisterInstance(rabbitFactory).As<IRabbitConnectionFactory>();
-
-            container = builder.Build();
-
-            pubSubService = container.Resolve<IPubSubService>();
+            rabbitConnectionFactory = new TestContaineRabbitConnectionFactory();
+            pubSubService = new RabbitPubSubService(new Mock<ILogger<RabbitPubSubService>>().Object, rabbitConnectionFactory);
         }
 
-        [Fact]
-        public async Task PublishMessage()
+        public async ValueTask InitializeAsync()
         {
-            var sentMessage = new MessageEvent { Queue = "test" };
+            await rabbitConnectionFactory.InitializeAsync();
+        }
 
-            var tcs = new TaskCompletionSource<MessageEvent>();
+        public async ValueTask DisposeAsync()
+        {
+            await rabbitConnectionFactory.DisposeAsync();
+        } 
 
-            await pubSubService.Subscribe<MessageEvent>(sentMessage.Queue, (message) =>
-            {
-                tcs.SetResult(message);
-            });
+        [Fact]
+        public async Task RabbitPubSubService_PublishSubscribe_OneSubscriber()
+        {
+            var ct = TestContext.Current.CancellationToken;
 
-            await Task.Run(async () =>
-            {
-                var publisherService = container.Resolve<IPubSubService>();
-                await publisherService.Publish(sentMessage.Queue, sentMessage);
-            }, TestContext.Current.CancellationToken);
+            var tcs = new TaskCompletionSource<WebSocketMessage>();
+            string exchange = "testexchange";
+            var testMessage = new WebSocketMessageDto { Channel = "test", Payload = "testPayload" };
+
+            await pubSubService.StartConsuming<WebSocketMessage>(exchange, 
+                async (exchange, channelId, message) => { 
+                    tcs.SetResult(message);
+                    await Task.CompletedTask;
+                    },
+                ct);
+
+            await pubSubService.Subscribe(exchange, testMessage.Channel, ct);
+            await pubSubService.Publish(exchange, testMessage.Channel, testMessage, ct);
 
             var receivedMessage = await tcs.Task;
 
             receivedMessage.Should().NotBeNull();
-            receivedMessage.Should().NotBeSameAs(sentMessage);
-            receivedMessage.ID.Should().Be(sentMessage.ID);
-            receivedMessage.Queue.Should().Be(sentMessage.Queue);
-            receivedMessage.CreatedDate.Should().Be(sentMessage.CreatedDate);
+            receivedMessage.Should().NotBeSameAs(testMessage);
+            receivedMessage.Id.Should().Be(testMessage.Id);
+            receivedMessage.Channel.Should().Be(testMessage.Channel);
+            receivedMessage.Payload.Should().Be(testMessage.Payload);
         }
-    }
 
-    public class RabbitTestConnectionFactory : IRabbitConnectionFactory
-    {
-        public string ConnectionString { get; set; } = string.Empty;
-        private ConnectionFactory? connectionFactory;
-        public ConnectionFactory GetConnectionFactory()
+        [Fact]
+        public async Task RabbitPubSubService_PublishSubscribe_ThreeSubscribers()
         {
-            if (connectionFactory == null)
-            {
-                connectionFactory = new ConnectionFactory
-                {
-                    Uri = new Uri(ConnectionString)
-                };
-            }
+            var ct = TestContext.Current.CancellationToken;
 
-            return connectionFactory;
+            var tcs = new TaskCompletionSource<WebSocketMessage>();
+            var tcs2 = new TaskCompletionSource<WebSocketMessage>();
+            var tcs3 = new TaskCompletionSource<WebSocketMessage>();
+
+            string exchange = "testexchange";
+            var testMessage = new WebSocketMessageDto { Channel = "test", Payload = "testPayload" };
+
+            var pubSubService2 = new RabbitPubSubService(new Mock<ILogger<RabbitPubSubService>>().Object, rabbitConnectionFactory);
+            var pubSubService3 = new RabbitPubSubService(new Mock<ILogger<RabbitPubSubService>>().Object, rabbitConnectionFactory);
+
+            await pubSubService.StartConsuming<WebSocketMessage>(exchange,
+                async (exchange, channelId, message) => {
+                    tcs.SetResult(message);
+                    await Task.CompletedTask;
+                },
+                ct);
+
+            await pubSubService2.StartConsuming<WebSocketMessage>(exchange,
+                async (exchange, channelId, message) => {
+                    tcs2.SetResult(message);
+                    await Task.CompletedTask;
+                },
+                ct);
+
+            await pubSubService3.StartConsuming<WebSocketMessage>(exchange,
+                async (exchange, channelId, message) => {
+                    tcs3.SetResult(message);
+                    await Task.CompletedTask;
+                },
+                ct);
+
+            await pubSubService.Subscribe(exchange, testMessage.Channel, ct);
+            await pubSubService2.Subscribe(exchange, testMessage.Channel, ct);
+            await pubSubService3.Subscribe(exchange, testMessage.Channel, ct);
+
+            await pubSubService.Publish(exchange, testMessage.Channel, testMessage, ct);
+
+            WebSocketMessage[] receivedMessages = new WebSocketMessage[3];
+
+            receivedMessages[0] = await tcs.Task;
+            receivedMessages[1] = await tcs2.Task;
+            receivedMessages[2] = await tcs3.Task;
+
+            foreach (var message in receivedMessages)
+            {
+                message.Should().NotBeNull();
+                message.Should().NotBeSameAs(testMessage);
+                message.Id.Should().Be(testMessage.Id);
+                message.Channel.Should().Be(testMessage.Channel);
+                message.Payload.Should().Be(testMessage.Payload);
+            } 
         }
     }
 }

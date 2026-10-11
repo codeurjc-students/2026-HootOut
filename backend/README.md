@@ -32,6 +32,13 @@ On the backend folder:
 docker compose -f ./compose.dev.yaml up -d --build 
 ``` 
 
+
+If you want to run multiple instances of the backend services having Haproxy as load balancer, use compose.dev-haproxy.yaml.
+By default, there are 2 instances of the hootout-api and 2 of hootout-websockets. If you want more, update the "replicas" on compose.dev-haproxy.yaml and update ./haproxy/haproxy.cfg.
+```sh
+docker compose -f ./compose.dev-haproxy.yaml up -d --build 
+``` 
+
 ### Docker compose .env
 Make an .env file similar to .env.example. Each line is a env variable that is used on the docker compose file. 
 
