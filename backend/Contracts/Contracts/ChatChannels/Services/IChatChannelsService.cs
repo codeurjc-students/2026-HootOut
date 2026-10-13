@@ -5,8 +5,8 @@ namespace HootOut.Contracts.ChatChannels.Services
 {
     public interface IChatChannelsService
     {
-        ChatChannelDto CreateChatChannel(CreateChatChannelRequest request);
+        Task<ChatChannelDto> CreateChatChannelAsync(CreateChatChannelRequest request, CancellationToken ct = default);
 
-        IEnumerable<ChatChannelDto> GetAllChatChannelsDtos();
+        Task<IEnumerable<ChatChannelDto>> GetAllChatChannelsDtosAsync(CancellationToken ct = default);
     }
 }

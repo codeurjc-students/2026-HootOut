@@ -14,15 +14,14 @@ namespace HootOut.PostgreSQL.DBScripts
             this.sqlProvider = sqlProvider ?? throw new ArgumentNullException(nameof(sqlProvider));
         }
 
-        public void Init()
+        public async Task InitAsync(CancellationToken ct = default)
         {
-            using (var conn = sqlProvider.OpenConnection())
-            {
-                conn.Execute(Resources.UserInfoTable);
-                conn.Execute(Resources.ChatServerTable);
-                conn.Execute(Resources.ChatChannelTable);
-                conn.Execute(Resources.ChatMessageTable);
-            }
+            await using var conn = await sqlProvider.OpenConnectionAsync(ct);
+
+            await conn.ExecuteAsync(Resources.UserInfoTable, ct);
+            await conn.ExecuteAsync(Resources.ChatServerTable, ct);
+            await conn.ExecuteAsync(Resources.ChatChannelTable, ct);
+            await conn.ExecuteAsync(Resources.ChatMessageTable, ct);
         }
 
         public int Priority => 0;

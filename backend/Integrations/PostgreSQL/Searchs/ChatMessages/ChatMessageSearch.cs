@@ -9,10 +9,10 @@ namespace HootOut.PostgreSQL.Searchs.ChatMessages
     public class ChatMessageSearch : IChatMessageSearch
     {
 
-        private IPersistenceProvider persistenceProvider;
-        public ChatMessageSearch(IPersistenceProvider persistenceProvider)
+        private IPersistenceProvider provider;
+        public ChatMessageSearch(IPersistenceProvider provider)
         {
-            this.persistenceProvider = persistenceProvider ?? throw new ArgumentNullException(nameof(persistenceProvider));
+            this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
         }
 
         private const string getChatMessagesByChannelIdQuery = """
@@ -30,14 +30,18 @@ namespace HootOut.PostgreSQL.Searchs.ChatMessages
             ORDER BY chatMessage."CreatedAt" DESC
         """;
 
-        public IEnumerable<ChatMessageDto> GetMessagesByChannelId(Guid channelId)
+        public async Task<IEnumerable<ChatMessageDto>> GetMessagesByChannelIdAsync(Guid channelId, CancellationToken ct = default)
         {
-            using (var conn = persistenceProvider.OpenConnection())
-            {
-                return conn.Query<ChatMessageSearchDto>(getChatMessagesByChannelIdQuery, new
-                {
-                    chatChannelId = channelId
-                }).Select(x => new ChatMessageDto
+            await using var conn = await provider.OpenConnectionAsync(ct);
+
+            return (await conn.QueryAsync<ChatMessageSearchDto>(
+                new CommandDefinition(
+                    getChatMessagesByChannelIdQuery, new
+                    {
+                        chatChannelId = channelId
+                    }, cancellationToken: ct))
+                )
+                .Select(x => new ChatMessageDto
                 {
                     Id = x.Id,
                     Author = new UserDto
@@ -49,7 +53,6 @@ namespace HootOut.PostgreSQL.Searchs.ChatMessages
                     Content = x.Content,
                     CreatedAt = x.CreatedAt
                 }).ToList();
-            }
         }
     }
 

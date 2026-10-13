@@ -23,22 +23,22 @@ namespace HootOut.HootOutAPI.Controllers
         }
 
         [HttpGet("all")]
-        public ActionResult<IEnumerable<ChatChannelDto>> GetAllChatChannels()
+        public async Task<ActionResult<IEnumerable<ChatChannelDto>>> GetAllChatChannels(CancellationToken ct)
         {
-            return CommandLaunchHelper.Launch(
+            return await CommandLaunchHelper.LaunchAsync(
                logger,
-               () => chatChannelsService.GetAllChatChannelsDtos(),
+               async () => await chatChannelsService.GetAllChatChannelsDtosAsync(ct),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );
         }
 
         [HttpPost()]
-        public ActionResult<IEnumerable<ChatChannelDto>> CreateChatChannel(CreateChatChannelRequest request)
+        public async Task<ActionResult<IEnumerable<ChatChannelDto>>> CreateChatChannel(CreateChatChannelRequest request, CancellationToken ct)
         {
-            return CommandLaunchHelper.Launch(
+            return await CommandLaunchHelper.LaunchAsync(
                logger,
-               () => chatChannelsService.CreateChatChannel(request),
+               async () => await chatChannelsService.CreateChatChannelAsync(request, ct),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );

@@ -22,11 +22,11 @@ namespace HootOut.HootOutAPI.Controllers
         }
 
         [HttpGet("getByChannelId")]
-        public ActionResult<IEnumerable<ChatMessageDto>> GetChatMessagesByChannelId(Guid channelId)
+        public async Task<ActionResult<IEnumerable<ChatMessageDto>>> GetChatMessagesByChannelIdAsync(Guid channelId, CancellationToken ct)
         {
-            return CommandLaunchHelper.Launch(
+            return await CommandLaunchHelper.LaunchAsync(
                 logger,
-                () => chatMessageService.GetMessagesByChannel(channelId),
+                async () => await chatMessageService.GetMessagesByChannelAsync(channelId, ct),
                 BadRequest,
                 (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
                 );

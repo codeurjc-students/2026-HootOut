@@ -36,8 +36,6 @@ namespace HootOut.Authentication.Services
             this.ticketService = ticketService ?? throw new ArgumentNullException(nameof(ticketService));
         }
 
-
-
         public async Task<AuthResponse> AuthenticateUserAsync(AuthRequest request, CancellationToken ct = default)
         {
             //TO-DO proper user validation
@@ -49,7 +47,7 @@ namespace HootOut.Authentication.Services
             if (string.IsNullOrEmpty(request.Password))
                 throw new ValidationException("Invalid Password");
 
-            UserInfo? user = userSearch.GetUserByEmail(request.Email);
+            UserInfo? user = await userSearch.GetUserByEmailAsync(request.Email, ct);
 
             var validPassword = passwordHasherService.VerifyPassword(request.Password, user?.Password ?? passwordHasherService.DummyHash);
 
@@ -85,12 +83,12 @@ namespace HootOut.Authentication.Services
 
             var passwordHash = passwordHasherService.HashPassword(request.Password);
 
-            var newUser = userService.CreateUser(new CreateUserRequest
+            var newUser = await userService.CreateUserAsync(new CreateUserRequest
             {
                 Username = userName,
                 Email = request.Email,
                 Password = passwordHash
-            });
+            }, ct);
 
             return new AuthResponse
             {
@@ -111,7 +109,7 @@ namespace HootOut.Authentication.Services
                 throw new ValidationException("Invalid Token");
 
             // Re-load the user so disabled/deleted accounts and role changes take effect.
-            var user = userSearch.GetUserById(rotated.Value.UserId);
+            var user = await userSearch.GetUserByIdAsync(rotated.Value.UserId, ct);
             if (user is null)
             {
                 await refreshTokenService.RevokeAsync(rotated.Value.NewToken, ct);

@@ -60,20 +60,18 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 
             foreach (var value in defaultValues)
             {
-                value.Init();
+                value.InitAsync().Wait();
             }
         }
 
-        public ValueTask InitializeAsync()
+        public async ValueTask InitializeAsync()
         {
-            clearTables?.ClearTables();
-            return ValueTask.CompletedTask;
+            await clearTables.ClearTablesAsync();
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            clearTables?.ClearTables();
-            return ValueTask.CompletedTask;
+            await clearTables.ClearTablesAsync();
         }
         public void Dispose()
         {
@@ -146,7 +144,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
             if (IpubSubService is WSPubSubService)
             {
                 pubSubService = (IpubSubService as WSPubSubService)!;
-            } 
+            }
             pubSubService!.ChannelSubscribers.TryGetValue(channelId.ToString(), out var subscribers).Should().BeTrue();
             subscribers!.Count.Should().Be(1);
 
@@ -191,7 +189,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 
             IChatMessageService chatMessageService = container.Resolve<IChatMessageService>();
 
-            var messages = chatMessageService.GetMessagesByChannel(channelId);
+            var messages = await chatMessageService.GetMessagesByChannelAsync(channelId, ct);
             messages.Should().NotBeNullOrEmpty();
             messages.Should().HaveCount(1);
             var message1 = messages.Single();

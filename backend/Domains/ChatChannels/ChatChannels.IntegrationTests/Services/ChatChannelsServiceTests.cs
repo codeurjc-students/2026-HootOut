@@ -30,42 +30,42 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
 
             foreach (var value in defaultValues)
             {
-                value.Init();
+                value.InitAsync().Wait();
             }
 
             chatChannelsService = container.Resolve<IChatChannelsService>();
         }
-        public ValueTask InitializeAsync()
+        public async ValueTask InitializeAsync()
         {
 
-            clearTables?.ClearTables();
-            return ValueTask.CompletedTask;
+            await clearTables.ClearTablesAsync();
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            clearTables?.ClearTables();
-            return ValueTask.CompletedTask;
+            await clearTables.ClearTablesAsync();
         }
 
         [Fact]
         public async Task GetChatChannels_Empty()
         {
-            chatChannelsService.GetAllChatChannelsDtos().Should().BeEmpty();
+            var ct = TestContext.Current.CancellationToken;
+            (await chatChannelsService.GetAllChatChannelsDtosAsync(ct)).Should().BeEmpty();
         }
 
         [Fact]
         public async Task GetChatChannels_One()
         {
+            var ct = TestContext.Current.CancellationToken;
             string name = "nameTest";
             Guid serverId = Guid.NewGuid();
-            chatChannelsService.CreateChatChannel(new CreateChatChannelRequest
+            await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest
             {
                 Name = name,
                 ServerId = serverId
-            });
+            }, ct);
 
-            IEnumerable<ChatChannelDto> result = chatChannelsService.GetAllChatChannelsDtos();
+            IEnumerable<ChatChannelDto> result = await chatChannelsService.GetAllChatChannelsDtosAsync(ct);
             result.Should().HaveCount(1);
             ChatChannelDto chatChannel = result.Single();
 
@@ -79,13 +79,14 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
         [Fact]
         public async Task GetChannels_Many()
         {
+            var ct = TestContext.Current.CancellationToken;
             Guid serverId = Guid.NewGuid();
-            chatChannelsService.CreateChatChannel(new CreateChatChannelRequest { Name = "1", ServerId = serverId });
-            chatChannelsService.CreateChatChannel(new CreateChatChannelRequest { Name = "2", ServerId = serverId });
-            chatChannelsService.CreateChatChannel(new CreateChatChannelRequest { Name = "1", ServerId = serverId });
-            chatChannelsService.CreateChatChannel(new CreateChatChannelRequest { Name = "1", ServerId = Guid.NewGuid() });
+            await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "1", ServerId = serverId }, ct);
+            await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "2", ServerId = serverId }, ct);
+            await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "1", ServerId = serverId }, ct);
+            await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "1", ServerId = Guid.NewGuid() }, ct);
 
-            chatChannelsService.GetAllChatChannelsDtos().Should().HaveCount(4);
+            (await chatChannelsService.GetAllChatChannelsDtosAsync(ct)).Should().HaveCount(4);
         }
     }
 }

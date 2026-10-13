@@ -22,7 +22,7 @@ namespace HootOut.ChatChannels.Services
             this.search = search ?? throw new ArgumentNullException(nameof(search));
         }
 
-        public ChatChannelDto CreateChatChannel(CreateChatChannelRequest request)
+        public async Task<ChatChannelDto> CreateChatChannelAsync(CreateChatChannelRequest request, CancellationToken ct = default)
         {
             if (string.IsNullOrEmpty(request.Name))
             {
@@ -33,14 +33,14 @@ namespace HootOut.ChatChannels.Services
             newChannel.ChatServerId = serverId; //TO-DO all share the same Server because there are no servers yet.
             newChannel.Name = request.Name;
 
-            this.saver.Save(newChannel);
+            await saver.SaveAsync(newChannel, ct);
 
             return newChannel.ToDto();
         }
 
-        public IEnumerable<ChatChannelDto> GetAllChatChannelsDtos()
+        public async Task<IEnumerable<ChatChannelDto>> GetAllChatChannelsDtosAsync(CancellationToken ct = default)
         {
-            return search.getAllChannels()
+            return (await search.getAllChannelsAsync(ct))
                 .Select(x => x.ToDto())
                 .ToList();
         }

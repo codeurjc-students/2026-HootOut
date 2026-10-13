@@ -32,20 +32,18 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 
             foreach (var value in defaultValues)
             {
-                value.Init();
+                value.InitAsync().Wait();
             }
         }
 
-        public ValueTask InitializeAsync()
+        public async ValueTask InitializeAsync()
         {
-            clearTables?.ClearTables();
-            return ValueTask.CompletedTask;
+            await clearTables.ClearTablesAsync();
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            clearTables?.ClearTables();
-            return ValueTask.CompletedTask;
+            await clearTables.ClearTablesAsync();
         }
 
         [Fact]
@@ -87,22 +85,22 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             string content = "test1";
 
             IChatMessageService chatMessageService = container.Resolve<IChatMessageService>();
-            chatMessageService.CreateChatMessage(
+            await chatMessageService.CreateChatMessageAsync(
                 new CreateChatMessageRequest
                 {
                     ChatChannelId = channelId,
                     AuthorId = authorId,
                     Content = content
-                });
+                }, ct);
 
             // store another message so there are more messages
-            chatMessageService.CreateChatMessage(
+            await chatMessageService.CreateChatMessageAsync(
                 new CreateChatMessageRequest
                 {
                     ChatChannelId = Guid.NewGuid(),
                     AuthorId = authorId,
                     Content = content
-                });
+                }, ct);
 
             var response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get,

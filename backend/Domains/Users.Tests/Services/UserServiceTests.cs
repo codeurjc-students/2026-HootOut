@@ -23,33 +23,35 @@ namespace HootOut.Users.UnitTests.Services
             List<UserInfo> users = new List<UserInfo>();
 
             m_UserSearch.Setup(
-                x => x.GetUserById(It.IsAny<Guid>()))
-                .Returns((Guid id) => users.FirstOrDefault(x => x.Id == id));
+                x => x.GetUserByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .Returns((Guid id, CancellationToken _) => Task.FromResult(users.FirstOrDefault(x => x.Id == id)));
 
-            m_UserSaver.Setup(x => x.Save(It.IsAny<UserInfo>())).Callback<UserInfo>(x => users.Add(x));
+            m_UserSaver.Setup(x => x.SaveAsync(It.IsAny<UserInfo>(), It.IsAny<CancellationToken>())).Callback<UserInfo, CancellationToken>((x, _) => users.Add(x));
         }
 
         [Fact]
         public async Task GetUserById_Emtpy()
         {
+            var ct = TestContext.Current.CancellationToken;
             IUserService userService = new UserService(m_UserSaver.Object, m_UserSearch.Object);
-            userService.GetUserDtoById(Guid.NewGuid()).Should().BeNull();
+            (await userService.GetUserDtoByIdAsync(Guid.NewGuid(), ct)).Should().BeNull();
         }
 
         [Theory]
         [InlineData("email@test.com", "username1", "password12345")]
         public async Task GetUserDtoById_One(string username, string email, string password)
         {
+            var ct = TestContext.Current.CancellationToken;
             IUserService userService = new UserService(m_UserSaver.Object, m_UserSearch.Object);
 
-            var dto = userService.CreateUser(new CreateUserRequest
+            var dto = await userService.CreateUserAsync(new CreateUserRequest
             {
                 Username = username,
                 Email = email,
                 Password = password
-            });
+            }, ct);
 
-            UserDto? user = userService.GetUserDtoById(dto.Id);
+            UserDto? user = await userService.GetUserDtoByIdAsync(dto.Id, ct);
 
             user.Should().NotBeNull();
 
@@ -57,24 +59,25 @@ namespace HootOut.Users.UnitTests.Services
             user.Username.Should().Be(username);
             user.Email.Should().Be(email);
 
-            m_UserSaver.Verify(x => x.Save(It.IsAny<UserInfo>()), Times.Once());
-            m_UserSearch.Verify(x => x.GetUserById(dto.Id), Times.Once());
+            m_UserSaver.Verify(x => x.SaveAsync(It.IsAny<UserInfo>()), Times.Once());
+            m_UserSearch.Verify(x => x.GetUserByIdAsync(dto.Id, ct), Times.Once());
         }
 
         [Fact]
         public async Task GetUserDtoById_Many()
         {
+            var ct = TestContext.Current.CancellationToken;
             IUserService userService = new UserService(m_UserSaver.Object, m_UserSearch.Object);
 
-            userService.CreateUser(new CreateUserRequest { Email = "1", Password = "1", Username = "1" });
-            var dto = userService.CreateUser(new CreateUserRequest { Email = "2", Password = "2", Username = "2" });
-            userService.CreateUser(new CreateUserRequest { Email = "3", Password = "3", Username = "3" });
+            await userService.CreateUserAsync(new CreateUserRequest { Email = "1", Password = "1", Username = "1" }, ct);
+            var dto = await userService.CreateUserAsync(new CreateUserRequest { Email = "2", Password = "2", Username = "2" }, ct);
+            await userService.CreateUserAsync(new CreateUserRequest { Email = "3", Password = "3", Username = "3" }, ct);
 
-            var user = userService.GetUserDtoById(dto.Id);
+            var user = await userService.GetUserDtoByIdAsync(dto.Id, ct);
             user.Should().NotBeNull();
 
-            m_UserSaver.Verify(x => x.Save(It.IsAny<UserInfo>()), Times.Exactly(3));
-            m_UserSearch.Verify(x => x.GetUserById(dto.Id), Times.Once());
+            m_UserSaver.Verify(x => x.SaveAsync(It.IsAny<UserInfo>()), Times.Exactly(3));
+            m_UserSearch.Verify(x => x.GetUserByIdAsync(dto.Id, ct), Times.Once());
         }
     }
 }

@@ -22,12 +22,11 @@ namespace HootOut.PostgreSQL.Searchs.ChatChannels
             FROM "HootOut"."ChatChannel"
         """;
 
-        public IEnumerable<ChatChannel> getAllChannels()
+        public async Task<IEnumerable<ChatChannel>> getAllChannelsAsync(CancellationToken ct = default)
         {
-            using (var conn = persistenceProvider.OpenConnection())
-            {
-                return conn.Query<ChatChannel>(getAllChannelsQuery);
-            }
+            await using var conn = await persistenceProvider.OpenConnectionAsync(ct);
+
+            return await conn.QueryAsync<ChatChannel>(getAllChannelsQuery);
         }
     }
 }

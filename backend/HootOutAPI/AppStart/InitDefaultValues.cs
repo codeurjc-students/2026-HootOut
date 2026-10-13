@@ -5,7 +5,7 @@ namespace HootOut.HootOutAPI.AppStart
 {
     public static class InitDefaultValues
     {
-        public static void Init(ILifetimeScope builder)
+        public static async Task InitAsync(ILifetimeScope builder, CancellationToken ct = default)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 
@@ -15,7 +15,7 @@ namespace HootOut.HootOutAPI.AppStart
 
                 foreach (var defaultValue in defaultValues)
                 {
-                    defaultValue.Init();
+                    await defaultValue.InitAsync();
                 }
             }
         }

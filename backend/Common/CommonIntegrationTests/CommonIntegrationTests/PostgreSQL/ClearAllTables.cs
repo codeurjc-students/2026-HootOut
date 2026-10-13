@@ -13,20 +13,19 @@ namespace HootOut.CommonIntegrationTests.PostgreSQL
             this.persistenceProvider = persistenceProvicer ?? throw new ArgumentNullException(nameof(persistenceProvicer));
         }
 
-        public void ClearTables()
+        public async Task ClearTablesAsync(CancellationToken ct = default)
         {
             if (persistenceProvider is not TestContainerPostgreSQLProvider)
             {
                 throw new InvalidOperationException("The persistence provider is not the Testing persistence provider.");
             }
 
-            using (var conn = persistenceProvider.OpenConnection())
-            {
-                conn.Execute("""TRUNCATE TABLE "HootOut"."UserInfo" CASCADE;""");
-                conn.Execute("""TRUNCATE TABLE "HootOut"."ChatServer" CASCADE;""");
-                conn.Execute("""TRUNCATE TABLE "HootOut"."ChatChannel" CASCADE;""");
-                conn.Execute("""TRUNCATE TABLE "HootOut"."ChatMessage" CASCADE;""");
-            }
+            await using var conn = await persistenceProvider.OpenConnectionAsync(ct);
+
+            await conn.ExecuteAsync("""TRUNCATE TABLE "HootOut"."UserInfo" CASCADE;""");
+            await conn.ExecuteAsync("""TRUNCATE TABLE "HootOut"."ChatServer" CASCADE;""");
+            await conn.ExecuteAsync("""TRUNCATE TABLE "HootOut"."ChatChannel" CASCADE;""");
+            await conn.ExecuteAsync("""TRUNCATE TABLE "HootOut"."ChatMessage" CASCADE;""");
         }
     }
 }

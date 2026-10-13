@@ -19,28 +19,23 @@ namespace HootOut.PostgreSQL.Savers.ChatChannels
             VALUES (@Id, @ChatServerId, @Name, @CreatedAt, @ModifiedAt)
         """;
 
-        public void Save(ChatChannel item)
+        public async Task SaveAsync(ChatChannel item, CancellationToken ct = default)
         {
-            if (item == null) throw new ArgumentNullException(nameof(item));
+            await using var conn = await provider.OpenConnectionAsync(ct);
+            await using var tx = await conn.BeginTransactionAsync(ct);
 
             try
             {
-                using (var conn = provider.OpenConnection())
-                {
-                    var transaction = conn.BeginTransaction();
-
-                    var now = DateTime.UtcNow;
-
-                    conn.Execute(addOrReplaceChatChannel, new
+                await conn.ExecuteAsync(new CommandDefinition(
+                    addOrReplaceChatChannel, new
                     {
                         item.Id,
                         item.ChatServerId,
                         item.Name,
                         item.CreatedAt,
                         item.ModifiedAt
-                    }, transaction);
-                    transaction.Commit();
-                }
+                    }, tx, cancellationToken: ct));
+                await tx.CommitAsync(ct);
             }
             catch (Exception ex)
             {

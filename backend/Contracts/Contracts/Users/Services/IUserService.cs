@@ -5,7 +5,7 @@ namespace HootOut.Contracts.Users.Services
 {
     public interface IUserService
     {
-        UserDto CreateUser(CreateUserRequest createUserRequest);
-        UserDto? GetUserDtoById(Guid userId);
+        Task<UserDto> CreateUserAsync(CreateUserRequest createUserRequest, CancellationToken ct = default);
+        Task<UserDto?> GetUserDtoByIdAsync(Guid userId, CancellationToken ct = default);
     }
 }
