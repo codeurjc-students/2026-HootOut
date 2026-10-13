@@ -26,7 +26,7 @@ namespace HootOut.PostgreSQL.Searchs.ChatChannels
         {
             await using var conn = await persistenceProvider.OpenConnectionAsync(ct);
 
-            return await conn.QueryAsync<ChatChannel>(getAllChannelsQuery);
+            return await conn.QueryAsync<ChatChannel>(getAllChannelsQuery, ct);
         }
     }
 }
