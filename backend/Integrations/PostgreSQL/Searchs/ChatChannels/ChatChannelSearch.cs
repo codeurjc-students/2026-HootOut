@@ -13,12 +13,11 @@ namespace HootOut.PostgreSQL.Searchs.ChatChannels
             this.persistenceProvider = persistenceProvider ?? throw new ArgumentNullException(nameof(persistenceProvider));
         }
 
-        private const string getAllChannelsQuery = """
-            SELECT 
-                "Id",
-                "Name",
-                "CreatedAt",
-                "ModifiedAt"
+        private const string ChatChannelColums =
+            """ "Id", "Name", "ChatServerId", "CreatedAt", "ModifiedAt" """;
+
+        private const string getAllChannelsQuery = $"""
+            SELECT {ChatChannelColums}
             FROM "HootOut"."ChatChannel"
         """;
 
@@ -27,6 +26,22 @@ namespace HootOut.PostgreSQL.Searchs.ChatChannels
             await using var conn = await persistenceProvider.OpenConnectionAsync(ct);
 
             return await conn.QueryAsync<ChatChannel>(getAllChannelsQuery, ct);
+        }
+
+        public async Task<IEnumerable<ChatChannel>> getChannelsByServerId(Guid serverId, CancellationToken ct = default)
+        {
+            await using var conn = await persistenceProvider.OpenConnectionAsync(ct);
+
+            return await conn.QueryAsync<ChatChannel>(new CommandDefinition(
+               $"""
+                    SELECT
+                        {ChatChannelColums}
+                    FROM "HootOut"."ChatChannel"
+                    WHERE "ChatServerId" = @ServerId
+                    ORDER BY "Name"
+                """,
+                new { ServerId = serverId },
+                cancellationToken: ct));
         }
     }
 }

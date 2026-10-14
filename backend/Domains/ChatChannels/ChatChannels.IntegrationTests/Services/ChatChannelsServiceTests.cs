@@ -62,7 +62,7 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
             await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest
             {
                 Name = name,
-                ServerId = serverId
+                ChatServerId = serverId
             }, ct);
 
             IEnumerable<ChatChannelDto> result = await chatChannelsService.GetAllChatChannelsDtosAsync(ct);
@@ -81,10 +81,10 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
         {
             var ct = TestContext.Current.CancellationToken;
             Guid serverId = Guid.NewGuid();
-            await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "1", ServerId = serverId }, ct);
-            await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "2", ServerId = serverId }, ct);
-            await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "1", ServerId = serverId }, ct);
-            await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "1", ServerId = Guid.NewGuid() }, ct);
+            await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "1", ChatServerId = serverId }, ct);
+            await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "2", ChatServerId = serverId }, ct);
+            await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "1", ChatServerId = serverId }, ct);
+            await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "1", ChatServerId = Guid.NewGuid() }, ct);
 
             (await chatChannelsService.GetAllChatChannelsDtosAsync(ct)).Should().HaveCount(4);
         }

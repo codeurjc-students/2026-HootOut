@@ -12,7 +12,7 @@ namespace HootOut.Contracts.ChatServers.Dtos
 
         public string Description { get; set; } = string.Empty;
 
-        public IEnumerable<ChatChannelDto>? Channels { get; set; }
+        public IEnumerable<ChatChannelDto> Channels { get; set; } = [];
 
         public DateTime CreatedAt { get; set; }
 

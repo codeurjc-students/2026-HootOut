@@ -1,11 +1,7 @@
 ﻿using Dapper;
-using HootOut.ChatChannels.ChatChannels;
 using HootOut.ChatServers.ChatServers;
 using HootOut.ChatServers.Searchs;
 using HootOut.CommonDomain.Persistence;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.PostgreSQL.Searchs.ChatServers
 {

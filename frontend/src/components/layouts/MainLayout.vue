@@ -10,7 +10,7 @@ const { user } = storeToRefs(userInfo)
 </script>
 
 <template>
-    <div id="main-layout">
+    <div id="main-layout" class="background-primary">
         <nav id="navbar">
             <img id="navbar-logo" :src="navbarLogo" alt="HootOutLogo" />
 
@@ -26,12 +26,11 @@ const { user } = storeToRefs(userInfo)
 
 <style lang="css">
 #main-layout {
-    background-color: var(--color-background);
     width: 100vw;
     height: 100vh;
     max-height: 100vh;
     display: grid;
-    grid-template-rows: 3rem 1fr;
+    grid-template-rows: var(--navbar-height) 1fr;
 }
 
 #navbar {

@@ -4,28 +4,21 @@ using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.Contracts.Authentication.Responses;
-using HootOut.Contracts.ChatMessage.Dtos;
-using HootOut.Contracts.ChatMessage.Requests;
-using HootOut.Contracts.ChatMessage.Services;
 using HootOut.Contracts.ChatServers.Dtos;
 using HootOut.Contracts.ChatServers.Requests;
-using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.HootOutAPI.IntegrationTests.Common;
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Json;
-using System.Text;
 
 namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 {
     [Collection("IntegrationTests")]
-    public class ChatServerControllerTest : TestControllerBase, IClassFixture<APIFixture>, IDisposable, IAsyncLifetime
+    public class ChatServersControllerTest : TestControllerBase, IClassFixture<APIFixture>, IDisposable, IAsyncLifetime
     {
         private readonly ILifetimeScope container;
         private ClearAllTables clearTables;
 
-        public ChatServerControllerTest(APIFixture apiFixture)
+        public ChatServersControllerTest(APIFixture apiFixture)
         {
             httpClient = apiFixture.CreateHttpsClient();
             container = apiFixture.AutofacRoot.BeginLifetimeScope();
@@ -64,7 +57,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             Guid channelId = Guid.NewGuid();
             var response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get,
-                $"/api/v1/chatServer/all",
+                $"/api/v1/chatServers/all",
                 auth?.AccessToken!,
                 ct
             );
@@ -90,9 +83,9 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             string description = "short description of the server";
 
             var response = await SendAuthorizeHttpRequest(
-                HttpMethod.Post, "/api/v1/chatServer", new CreateChatServerRequest { Name = name, Description = description }, auth.AccessToken!, ct);
- 
-            response.StatusCode.Should().Be(HttpStatusCode.OK); 
+                HttpMethod.Post, "/api/v1/chatServers", new CreateChatServerRequest { Name = name, Description = description }, auth!.AccessToken!, ct);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var server = await response.Content.ReadFromJsonAsync<ChatServerDto>(ct);
             server.Should().NotBeNull();
@@ -102,7 +95,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             server.OwnerId.Should().Be(userId);
 
             response = await SendAuthorizeHttpRequest(
-                HttpMethod.Get, "/api/v1/chatServer/all", auth.AccessToken!, ct);
+                HttpMethod.Get, "/api/v1/chatServers/all", auth.AccessToken!, ct);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var serverList = await response.Content.ReadFromJsonAsync<IEnumerable<ChatServerDto>>(ct);
@@ -130,10 +123,10 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             string description = "short description of the server";
 
             await SendAuthorizeHttpRequest(
-                HttpMethod.Post, "/api/v1/chatServer", new CreateChatServerRequest { Name = name, Description = description }, auth.AccessToken!, ct);
+                HttpMethod.Post, "/api/v1/chatServers", new CreateChatServerRequest { Name = name, Description = description }, auth!.AccessToken!, ct);
 
             var response = await SendAuthorizeHttpRequest(
-                HttpMethod.Post, "/api/v1/chatServer", new CreateChatServerRequest { Name = name, Description = description }, auth.AccessToken!, ct);
+                HttpMethod.Post, "/api/v1/chatServers", new CreateChatServerRequest { Name = name, Description = description }, auth!.AccessToken!, ct);
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -145,12 +138,32 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             server.OwnerId.Should().Be(userId);
 
             response = await SendAuthorizeHttpRequest(
-                HttpMethod.Get, "/api/v1/chatServer/all", auth.AccessToken!, ct);
+                HttpMethod.Get, "/api/v1/chatServers/all", auth.AccessToken!, ct);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var serverList = await response.Content.ReadFromJsonAsync<IEnumerable<ChatServerDto>>(ct);
             serverList.Should().NotBeNull();
-            serverList.Should().HaveCount(2); 
+            serverList.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public async Task CreateAndGetServer_ReturnsBadRequest_EmptyName()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            await RegisterAsync(ct);
+
+            var loginResponse = await LoginAsync(DefaultEmail, DefaultPassword, ct);
+            var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);
+
+            Guid userId = GetUserIdFromAccessToken(auth?.AccessToken);
+            string description = "short description of the server";
+
+            var response = await SendAuthorizeHttpRequest(
+                HttpMethod.Post, "/api/v1/chatServers", new CreateChatServerRequest { Name = "", Description = description }, auth!.AccessToken!, ct);
+
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            var error = await response.Content.ReadFromJsonAsync<object[]>(ct);
+            Console.Write(error?.ToString());
         }
 
 

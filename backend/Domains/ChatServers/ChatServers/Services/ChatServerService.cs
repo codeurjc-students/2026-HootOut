@@ -23,12 +23,7 @@ namespace HootOut.ChatServers.Services
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
 
-            var result = request.Validate();
-
-            if (!result.IsValid)
-            {
-                Console.WriteLine(result.ToString()); // TO-DO Remove this
-            }
+            request.Validate();
 
             var newServer = Persistable.CreateNew<ChatServer>();
 
@@ -42,7 +37,7 @@ namespace HootOut.ChatServers.Services
         }
 
         public async Task<IEnumerable<ChatServerDto>> GetAllChatServerDtosAsync(CancellationToken ct = default)
-        { 
+        {
             return (await search.GetAllChatServersAsync(ct))
                 .Select(x => x.ToDto())
                 .ToList();

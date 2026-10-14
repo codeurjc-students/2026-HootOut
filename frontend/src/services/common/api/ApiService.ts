@@ -1,6 +1,5 @@
 import { useAuthStore } from "@/stores/auth";
-import { ApiError } from "@/types";
-
+import { ApiError, ValidationError } from "@/types";
 const apiUrl = import.meta.env.VITE_API_URL;
 const apiVersion = 'v1';
 
@@ -63,6 +62,9 @@ async function request<T>(options: RequestOptions): Promise<T> {
 
     if (!res.ok) {
         const errorBody = await res.json().catch(() => null);
+        if (res.status === 400 && Array.isArray(errorBody)) {
+            throw new ValidationError(errorBody, res.status);
+        }
         throw new ApiError(res.status, errorBody?.message ?? `HTTP ${res.status}`);
     }
 

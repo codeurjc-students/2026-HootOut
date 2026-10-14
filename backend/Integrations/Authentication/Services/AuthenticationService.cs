@@ -1,4 +1,5 @@
-﻿using HootOut.Contracts.Authentication.Requests;
+﻿using FluentValidation;
+using HootOut.Contracts.Authentication.Requests;
 using HootOut.Contracts.Authentication.Responses;
 using HootOut.Contracts.Authentication.Services;
 using HootOut.Contracts.Users.Dtos.Request;
@@ -6,7 +7,6 @@ using HootOut.Contracts.Users.Services;
 using HootOut.Users.Entities;
 using HootOut.Users.Mappers;
 using HootOut.Users.Search;
-using System.ComponentModel.DataAnnotations;
 
 namespace HootOut.Authentication.Services
 {
@@ -39,17 +39,11 @@ namespace HootOut.Authentication.Services
         public async Task<AuthResponse> AuthenticateUserAsync(AuthRequest request, CancellationToken ct = default)
         {
             //TO-DO proper user validation
-            if (string.IsNullOrEmpty(request.Email))
-            {
-                throw new ValidationException("Invalid Email");
-            }
+            request.Validate();
 
-            if (string.IsNullOrEmpty(request.Password))
-                throw new ValidationException("Invalid Password");
+            UserInfo? user = await userSearch.GetUserByEmailAsync(request.Email!, ct);
 
-            UserInfo? user = await userSearch.GetUserByEmailAsync(request.Email, ct);
-
-            var validPassword = passwordHasherService.VerifyPassword(request.Password, user?.Password ?? passwordHasherService.DummyHash);
+            var validPassword = passwordHasherService.VerifyPassword(request.Password!, user?.Password ?? passwordHasherService.DummyHash);
 
             if (user == null || !validPassword)
             {
@@ -70,23 +64,14 @@ namespace HootOut.Authentication.Services
             //TO-DO proper user validation
             var userName = request.Username?.Trim() ?? string.Empty;
 
-            if (string.IsNullOrEmpty(userName) || userName.Length < 3 || userName.Length > 50)
-                throw new ValidationException("Invalid Username");
+            request.Validate();
 
-            if (string.IsNullOrEmpty(request.Email))
-            {
-                throw new ArgumentOutOfRangeException("Invalid Email");
-            }
-
-            if (string.IsNullOrEmpty(request.Password) || request.Password.Length < 5)
-                throw new ValidationException("Invalid Password");
-
-            var passwordHash = passwordHasherService.HashPassword(request.Password);
+            var passwordHash = passwordHasherService.HashPassword(request.Password!);
 
             var newUser = await userService.CreateUserAsync(new CreateUserRequest
             {
                 Username = userName,
-                Email = request.Email,
+                Email = request.Email!,
                 Password = passwordHash
             }, ct);
 
@@ -101,6 +86,7 @@ namespace HootOut.Authentication.Services
 
         public async Task<AuthResponse> RefreshTokenAsync(AuthRefreshRequest request, CancellationToken ct = default)
         {
+
             if (string.IsNullOrEmpty(request.RefreshToken))
                 throw new ValidationException("Invalid Token"); // TO-DO proper validation
 

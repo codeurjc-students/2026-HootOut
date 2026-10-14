@@ -1,7 +1,4 @@
-﻿using HootOut.ChatChannels.Search;
-using HootOut.ChatChannels.Services;
-using HootOut.Contracts.ChatChannels.Services;
-using HootOut.Contracts.ChatServers.Dtos;
+﻿using HootOut.Contracts.ChatServers.Dtos;
 using HootOut.Contracts.ChatServers.Requests;
 using HootOut.Contracts.ChatServers.Services;
 using HootOut.HootOutAPI.Helpers;
@@ -12,13 +9,13 @@ namespace HootOut.HootOutAPI.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class ChatServerController : ControllerBase
+    public class ChatServersController : ControllerBase
     {
-        private readonly ILogger<ChatServerController> logger;
+        private readonly ILogger<ChatServersController> logger;
         private readonly IChatServerService chatServerService;
 
-        public ChatServerController(
-            ILogger<ChatServerController> logger,
+        public ChatServersController(
+            ILogger<ChatServersController> logger,
             IChatServerService chatServerService)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));

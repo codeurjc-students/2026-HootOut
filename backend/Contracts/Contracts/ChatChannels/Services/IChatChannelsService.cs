@@ -8,5 +8,7 @@ namespace HootOut.Contracts.ChatChannels.Services
         Task<ChatChannelDto> CreateChatChannelAsync(CreateChatChannelRequest request, CancellationToken ct = default);
 
         Task<IEnumerable<ChatChannelDto>> GetAllChatChannelsDtosAsync(CancellationToken ct = default);
+
+        Task<IEnumerable<ChatChannelDto>> GetChannelsByServerIdAsync(Guid serverId, CancellationToken ct = default);
     }
 }

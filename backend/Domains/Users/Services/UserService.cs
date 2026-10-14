@@ -1,11 +1,11 @@
-﻿using HootOut.Contracts.Common.Saver;
+﻿using FluentValidation;
+using HootOut.Contracts.Common.Saver;
 using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.Contracts.Users.Services;
 using HootOut.Users.Entities;
 using HootOut.Users.Mappers;
 using HootOut.Users.Search;
-using System.ComponentModel.DataAnnotations;
 
 namespace HootOut.Users.Services
 {

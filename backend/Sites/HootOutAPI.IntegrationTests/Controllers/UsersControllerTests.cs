@@ -92,7 +92,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);
             auth.Should().NotBeNull();
 
-            await RegisterAsync(ct, "DifferentUser", "Different Email", "DifferentPassword");
+            await RegisterAsync(ct, "DifferentUser", "Different@Email.com", "DifferentPassword");
 
             var response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get,

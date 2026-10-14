@@ -7,12 +7,11 @@ const { currentChatChannel } = storeToRefs(serverInfoStore())
 </script>
 
 <template>
-    <div id="chat-info"> {{ currentChatChannel!.name }}</div>
+    <div id="chat-info" class="background-light"> {{ currentChatChannel!.name }}</div>
 </template>
 
 <style>
 #chat-info {
-    background-color: var(--color-background-light);
     padding: .5rem;
     display: flex;
     align-items: center;

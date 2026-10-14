@@ -1,18 +1,24 @@
-import { ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import { defineStore } from 'pinia'
-import type { ChatChannelDto, ChatMessage, WebSocketMessage } from '@/types'
+import { type ChatServer, type ChatChannel, type ChatMessage, type WebSocketMessage } from '@/types'
+import ChatServerService from '@/services/chatServer/ChatServerService'
+import ChatChannelService from '@/services/chatChannel/ChatChannelService'
+import wsMessageService from '@/services/common/websocketsMesage/WebSocketsMessageService'
+import ChatMessageService from '@/services/chatMessage/ChatMessageService'
 
 export const serverInfoStore = defineStore('serverInfo', () => {
-  const currentChatChannel = ref<ChatChannelDto>()
-  const channels = ref<ChatChannelDto[]>([])
+  const currentChatChannel = ref<ChatChannel>()
+  const channels = ref<ChatChannel[]>([])
   const channelMessages = ref<Record<string, ChatMessage[]>>({})
   const pendingMessages = ref<Record<string, Record<string, ChatMessage>>>({})
+  const servers = ref<ChatServer[]>([])
+  const currentServer = ref<ChatServer>()
 
-  function setCurrentChatChannel(channel: ChatChannelDto) {
+  function setCurrentChatChannel(channel: ChatChannel) {
     currentChatChannel.value = channel
   }
 
-  function addNewChannel(channel: ChatChannelDto) {
+  function addNewChannel(channel: ChatChannel) {
     if (channels.value.includes(channel))
       return false;
 
@@ -20,6 +26,14 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     channelMessages.value[channel.id] = [];
     pendingMessages.value[channel.id] = {};
     return true;
+  }
+
+  function clearChannels() {
+    channels.value.length = 0;
+    if (currentChatChannel.value) {
+      delete channelMessages.value[currentChatChannel.value!.id];
+      delete pendingMessages.value[currentChatChannel.value!.id];
+    }
   }
 
   function newMessage(message: WebSocketMessage) {
@@ -41,14 +55,65 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     }
   }
 
-  function setServerChannels(newChannels: ChatChannelDto[]) {
+  function setServerChannels(newChannels: ChatChannel[]) {
     newChannels.forEach(c => addNewChannel(c));
   }
 
-  function setChannelMessages(channel: ChatChannelDto, messages: ChatMessage[]) {
+  async function unsubscribeFromChannels() {
+    wsMessageService.connect(() => { });
+    channels.value.forEach(channel => {
+      wsMessageService.subscribe(channel.id, (message: WebSocketMessage) => {
+        newMessage(message)
+      });
+    })
+  }
+
+  async function subscribeToChannels() {
+    wsMessageService.connect(() => { });
+    channels.value.forEach(channel => {
+      wsMessageService.subscribe(channel.id, (message: WebSocketMessage) => {
+        newMessage(message)
+      });
+    })
+  }
+
+  function setChannelMessages(channel: ChatChannel, messages: ChatMessage[]) {
     channelMessages.value[channel.id] = messages;
     pendingMessages.value[channel.id] = {};
   }
 
-  return { currentChatChannel, channels, addPendingMessage, confirmMessage, channelMessages, pendingMessages, setCurrentChatChannel, addNewChannel, newMessage, setServerChannels, setChannelMessages }
+  async function selectChannel(channel: ChatChannel) {
+    const messages = await ChatMessageService.getMessagesByChannelId(channel.id);
+    setChannelMessages(channel, messages)
+    setCurrentChatChannel(channel);
+  }
+
+  async function getChatServers(): Promise<Ref<ChatServer[]>> {
+    servers.value = await ChatServerService.getServers();
+    return servers;
+  }
+
+  function addChatServer(chatServer: ChatServer): void {
+    servers.value.push(chatServer);
+  }
+
+  async function setCurrentServer(chatServer: ChatServer): Promise<void> {
+    currentServer.value = chatServer;
+    await fetchServerChannels(chatServer);
+  }
+
+  async function fetchServerChannels(chatServer: ChatServer): Promise<void> {
+    const channels = await ChatChannelService.getChannelsByServerId(chatServer.id);
+    unsubscribeFromChannels();
+    clearChannels();
+    setServerChannels(channels);
+    currentChatChannel.value = undefined;
+
+    if (channels && channels.length > 0) {
+      subscribeToChannels();
+      await selectChannel(channels[0]!)
+    }
+  }
+
+  return { currentChatChannel, selectChannel, channels, addPendingMessage, confirmMessage, channelMessages, pendingMessages, setCurrentChatChannel, addNewChannel, newMessage, setServerChannels, setChannelMessages, getChatServers, addChatServer, servers, setCurrentServer, currentServer }
 })

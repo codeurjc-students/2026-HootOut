@@ -7,7 +7,7 @@ import ChatMessages from './chatConversation/ChatMessages.vue';
 </script>
 
 <template>
-      <div id="chat">
+      <div id="chat" class="background-primary">
             <ChatInfo />
             <ChatMessages />
             <ChatMessageBar />
@@ -18,8 +18,7 @@ import ChatMessages from './chatConversation/ChatMessages.vue';
 #chat {
       display: grid;
       grid-template-rows: auto 1fr auto;
-      background-color: var(--color-background);
-      border: 1px solid var(--color-border);
+      border: 1px solid rgb(var(--color-border));
       max-height: inherit;
 }
 </style>

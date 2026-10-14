@@ -9,6 +9,5 @@ export interface ChatMessage {
 }
 
 export interface CreateChatMessage {
-  content: string,
-  authorId: string //TO-DO Until user registration, the frontend is the "source of true" for userid
+  content: string
 }

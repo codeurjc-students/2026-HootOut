@@ -1,28 +1,29 @@
 /* color palette from <https://github.com/vuejs/theme> */
 :root {
-  --vt-c-white: rgb(255, 255, 255);
-  --vt-c-white-soft: rgb(248, 248, 248);
-  --vt-c-white-mute: rgb(242, 242, 242);
+  --vt-c-white: 255, 255, 255;
+  --vt-c-white-soft: 248, 248, 248;
+  --vt-c-white-mute: 242, 242, 242;
 
-  --vt-c-dark: rgb(36, 36, 36);
-  --vt-c-dark-soft: rgb(44, 44, 44);
-  --vt-c-dark-light: rgb(75, 75, 75);
+  --vt-c-dark: 36, 36, 36;
+  --vt-c-dark-soft: 44, 44, 44;
+  --vt-c-dark-light: 75, 75, 75;
 
-  --vt-c-indigo: rgb(44, 62, 80);
+  --vt-c-indigo: 44, 62, 80;
 
   --vt-c-divider-light-1: rgba(60, 60, 60, 0.29);
   --vt-c-divider-light-2: rgba(60, 60, 60, 0.12);
-  --vt-c-divider-dark-1: rgb(75, 75, 75);
+  --vt-c-divider-dark-1: 75, 75, 75;
   --vt-c-divider-dark-2: var(--vt-c-divider-dark-1);
 
   --vt-c-text-light-1: var(--vt-c-indigo);
   --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
-  --vt-c-text-dark-1: rgb(255, 252, 242);
-  --vt-c-text-dark-2: rgb(204, 197, 185);
+  --vt-c-text-dark-1: 255, 252, 242;
+  --vt-c-text-dark-2: 204, 197, 185;
 
-  --vt-c-dark-input: rgb(30, 30, 30);
+  --vt-c-dark-input: 30, 30, 30;
 
   --border-radius: 0.2rem;
+  --navbar-height: 3rem;
 }
 
 /* semantic color variables for this project */
@@ -74,8 +75,8 @@
 
 body {
   min-height: 100vh;
-  color: var(--color-text);
-  background: var(--color-background);
+  color: rgb(var(--color-text));
+  background: rgb(var(--color-background));
   transition:
     color 0.5s,
     background-color 0.5s;
@@ -101,18 +102,17 @@ body {
 
 /* Custom Button */
 
-.button-home {
-  background-color: var(--color-);
+.button-action {
   border: 0;
   border-radius: var(--border-radius);
   box-sizing: border-box;
-  background-color: var(--color-inverse);
+  background-color: rgb(var(--color-inverse));
   color: #111827;
   font-size: .95rem;
   font-weight: 600;
   line-height: 1.25rem;
   padding: .5rem 1rem;
-  text-decoration: none var(--color-inverse-light) solid;
+  text-decoration: none rgb(var(--color-inverse-light)) solid;
   text-decoration-thickness: auto;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   user-select: none;
@@ -121,26 +121,48 @@ body {
 }
 
 @media(max-width: 520px) {
-  .button-home {
+  .button-action {
     padding: 0.4em .8rem;
   }
 }
 
-.button-home:hover {
-  background-color: var(--color-background);
-  color: var(--color-text);
-  box-shadow: inset 0 0 0 1px var(--color-inverse);
+.button-action:hover {
+  background-color: rgb(var(--color-background));
+  color: rgb(var(--color-text));
+  box-shadow: inset 0 0 0 1px rgb(var(--color-inverse));
   cursor: pointer;
 }
 
-.button-home:focus:active {
-  outline: 2px solid var(--color-text);
-  background-color: var(--color-b);
+.button-action:focus:active {
+  outline: 2px solid rgb(var(--color-border));
+  background-color: rgb(var(--color-background));
   outline-offset: 2px;
 }
 
-.button-home:focus-visible {
+.button-action:focus-visible {
   box-shadow: none;
+}
+
+.round-btn {
+  max-width: 3rem;
+  max-height: 3em;
+  min-width: 3rem;
+  min-height: 3rem;
+  border: 2px solid rgb(var(--color-border));
+  border-radius: 100%;
+  position: relative;
+}
+
+.round-btn::after {
+  font-size: 2rem;
+  position: absolute;
+  top: 1.2rem;
+  left: 1.35rem;
+  transform: translate(-50%, -50%);
+}
+
+.round-btn:hover {
+  background-color: rgb(var(--color-background-light));
 }
 
 .pointer:hover {
@@ -152,7 +174,7 @@ body {
 .custom-form-wrapper {
   max-width: 30rem;
   margin: 0 auto;
-  background-color: var(--color-background);
+  background-color: rgb(var(--color-background));
   padding: 2rem 3rem;
   border-radius: var(--border-radius);
   box-shadow: 0px 0px 20px 3px rgba(0, 0, 0, 0.5);
@@ -179,13 +201,13 @@ body {
 }
 
 .custom-form-input-wrapper {
-  background-color: var(--color-background-input);
+  background-color: rgb(var(--color-background-input));
   display: flex;
   flex-wrap: wrap;
   box-sizing: border-box;
   align-items: center;
   height: 2.5rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid rgb(var(--color-border));
   border-radius: var(--border-radius);
 }
 
@@ -200,7 +222,7 @@ body {
   height: 100%;
 }
 
-.custom-form>.button-home {
+.custom-form>.button-action {
   margin-top: 2rem;
   width: 100%;
 }
@@ -211,5 +233,21 @@ body {
 }
 
 .custom-form-link>a {
-  color: var(--color-text);
+  color: rgb(var(--color-text));
+}
+
+.background-primary {
+  background-color: rgb(var(--color-background));
+}
+
+.background-soft {
+  background-color: rgb(var(--color-background-soft));
+}
+
+.background-light {
+  background-color: rgb(var(--color-background-light));
+}
+
+.color-text {
+  color: rgb(var(--color-text));
 }
