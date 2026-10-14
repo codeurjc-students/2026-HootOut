@@ -1,34 +1,21 @@
 <script setup lang="ts">
 
 import ChatChannelService from "@/services/chatChannel/ChatChannelService";
-import ChatMessageService from "@/services/chatMessage/ChatMessageService";
 import wsMessageService from "@/services/common/websocketsMesage/WebSocketsMessageService";
 import { serverInfoStore } from "@/stores/serverInfo"
-import type { ChatChannelDto, WebSocketMessage } from "@/types";
+import type { ChatChannel, WebSocketMessage } from "@/types";
 import { storeToRefs } from "pinia";
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 
 const serverInfo = serverInfoStore();
-const { channels, currentChatChannel } = storeToRefs(serverInfo) as any
+const { channels, currentChatChannel, currentServer } = storeToRefs(serverInfo) as any
 const newChannelName = ref("")
 
-onMounted(async () => {
-    wsMessageService.connect(async () => {
-        const channels = await ChatChannelService.getAllChannels();
-        serverInfo.setServerChannels(channels)
-        channels.forEach(channel => {
-            wsMessageService.connect(() => { });
-            wsMessageService.subscribe(channel.id, (message: WebSocketMessage) => {
-                serverInfo.newMessage(message)
-            });
-        })
-    });
-});
 
 async function addNewChannel() {
     if (newChannelName.value) {
 
-        const newChannel = await ChatChannelService.createNewChannel(newChannelName.value)
+        const newChannel = await ChatChannelService.createNewChannel({ name: newChannelName.value, chatServerId: serverInfo.currentServer?.id ?? "" });
 
         if (!serverInfo.addNewChannel(newChannel)) {
             return;
@@ -43,29 +30,36 @@ async function addNewChannel() {
     }
 }
 
-async function selectChannel(channel: ChatChannelDto) {
-    const messages = await ChatMessageService.getMessagesByChannelId(channel.id);
-    serverInfo.setChannelMessages(channel, messages)
-    serverInfo.setCurrentChatChannel(channel);
+async function selectChannel(channel: ChatChannel) {
+    serverInfo.selectChannel(channel);
 }
 
 </script>
 
 <template>
     <div id="left-bar">
-        <div> Add New Channel</div>
-        <div style="margin: .2rem 0">
-            <input type="text" @keyup.enter="addNewChannel" v-model="newChannelName" />
+        <div v-if="currentServer">
+            <div> Server: </div>
+            <div> {{ currentServer?.name }}</div>
+
+            <div> Add New Channel</div>
+            <div style="margin: .2rem 0">
+                <input type="text" @keyup.enter="addNewChannel" v-model="newChannelName" />
+            </div>
+            <div>
+                <button @click="addNewChannel"> Add channel</button>
+            </div>
+            <div style="margin: 1rem 0;">
+                Channel list
+            </div>
+            <div v-for="channel in channels" class="channel-name pointer"
+                :class="{ 'background-light': channel.id == currentChatChannel?.id }" :key="channel.id"
+                @click="selectChannel(channel)">
+                {{ channel.name }}
+            </div>
         </div>
-        <div>
-            <button @click="addNewChannel"> Add channel</button>
-        </div>
-        <div style="margin: 1rem 0;">
-            Channel list
-        </div>
-        <div v-for="channel in channels" class="channel-name" :class="{ active: channel.id == currentChatChannel?.id }"
-            @click="selectChannel(channel)">
-            {{ channel.name }}
+        <div v-else>
+            Select a Server First
         </div>
     </div>
 
@@ -74,10 +68,6 @@ async function selectChannel(channel: ChatChannelDto) {
 <style>
 #left-bar {
     padding: 1rem 0;
-}
-
-#left-bar>.channel-active {
-    background-color: var(--color-background-soft);
 }
 
 #left-bar>* {
@@ -89,11 +79,6 @@ async function selectChannel(channel: ChatChannelDto) {
 }
 
 .channel-name:hover {
-    cursor: pointer;
-    background-color: var(--color-background-light);
-}
-
-.channel-name.active {
-    background-color: var(--color-background-light);
+    background-color: rgb(var(--color-background-light));
 }
 </style>

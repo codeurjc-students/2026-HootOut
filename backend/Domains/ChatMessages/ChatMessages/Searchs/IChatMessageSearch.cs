@@ -4,6 +4,6 @@ namespace HootOut.ChatMessages.Searchs
 {
     public interface IChatMessageSearch
     {
-        IEnumerable<ChatMessageDto> GetMessagesByChannelId(Guid channelId);
+        Task<IEnumerable<ChatMessageDto>> GetMessagesByChannelIdAsync(Guid channelId, CancellationToken ct = default);
     }
 }

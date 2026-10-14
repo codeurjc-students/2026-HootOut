@@ -23,22 +23,33 @@ namespace HootOut.HootOutAPI.Controllers
         }
 
         [HttpGet("all")]
-        public ActionResult<IEnumerable<ChatChannelDto>> GetAllChatChannels()
+        public async Task<ActionResult<IEnumerable<ChatChannelDto>>> GetAllChatChannels(CancellationToken ct)
         {
-            return CommandLaunchHelper.Launch(
+            return await CommandLaunchHelper.LaunchAsync(
                logger,
-               () => chatChannelsService.GetAllChatChannelsDtos(),
+               async () => await chatChannelsService.GetAllChatChannelsDtosAsync(ct),
+               BadRequest,
+               (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
+           );
+        }
+
+        [HttpGet("getByServerId")]
+        public async Task<ActionResult<IEnumerable<ChatChannelDto>>> GetChannelsById(Guid serverId, CancellationToken ct)
+        {
+            return await CommandLaunchHelper.LaunchAsync(
+               logger,
+               async () => await chatChannelsService.GetChannelsByServerIdAsync(serverId, ct),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );
         }
 
         [HttpPost()]
-        public ActionResult<IEnumerable<ChatChannelDto>> CreateChatChannel(CreateChatChannelRequest request)
+        public async Task<ActionResult<IEnumerable<ChatChannelDto>>> CreateChatChannel(CreateChatChannelRequest request, CancellationToken ct)
         {
-            return CommandLaunchHelper.Launch(
+            return await CommandLaunchHelper.LaunchAsync(
                logger,
-               () => chatChannelsService.CreateChatChannel(request),
+               async () => await chatChannelsService.CreateChatChannelAsync(request, ct),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );

@@ -5,7 +5,7 @@ namespace HootOut.Contracts.ChatMessage.Services
 {
     public interface IChatMessageService
     {
-        IEnumerable<ChatMessageDto> GetMessagesByChannel(Guid channelId);
-        ChatMessageDto CreateChatMessage(CreateChatMessageRequest request);
+        Task<ChatMessageDto> CreateChatMessageAsync(CreateChatMessageRequest request, CancellationToken ct = default);
+        Task<IEnumerable<ChatMessageDto>> GetMessagesByChannelAsync(Guid channelId, CancellationToken ct = default);
     }
 }

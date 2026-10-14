@@ -15,7 +15,7 @@ namespace HootOut.HootOutAPI
             try
             {
                 var host = CreateHostBuilder(args).Build();
-                InitDefaultValues.Init(host.Services.GetAutofacRoot());
+                InitDefaultValues.InitAsync(host.Services.GetAutofacRoot()).Wait();
                 host.Run();
             }
             catch (Exception ex)

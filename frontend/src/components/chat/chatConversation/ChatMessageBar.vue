@@ -26,14 +26,13 @@ async function sendMessage() {
     serverInfo.confirmMessage(wsMessage)
 }
 
-
 </script>
 
 <template>
     <div id="message-input-bar">
-        <div id="message-box">
+        <div id="message-box" class="background-primary">
             <input v-model="message" type="text" id="message-input" @keyup.enter="sendMessage" />
-            <div class="btn" type="button" @click="sendMessage" id="wsmessage-btn">
+            <div class="btn pointer" type="button" @click="sendMessage" id="wsmessage-btn">
                 <span class="material-symbols-sharp">
                     send
                 </span>
@@ -49,8 +48,7 @@ async function sendMessage() {
 }
 
 #message-box {
-    background-color: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid rgb(var(--color-border));
     border-radius: 10px;
     height: 3rem;
     width: 100%;
@@ -77,9 +75,5 @@ async function sendMessage() {
     align-items: center;
     display: flex;
     margin-left: auto;
-}
-
-.btn:hover {
-    cursor: pointer;
 }
 </style>

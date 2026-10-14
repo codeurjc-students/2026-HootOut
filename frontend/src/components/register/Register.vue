@@ -47,7 +47,7 @@ async function onSubmit() {
 </script>
 
 <template>
-    <section id="register">
+    <section id="register" class="background-soft">
         <div class="custom-form-wrapper">
             <h1> Create Account </h1>
             <form class="custom-form" id="register-form" novalidate @submit.prevent="onSubmit">
@@ -60,7 +60,7 @@ async function onSubmit() {
                     </div>
                     <div class="custom-form-input-wrapper">
                         <input id="username" class="custom-form-text-input" v-model="form.username" type="text"
-                            autocomplete="username" autofocus required />
+                            autocomplete="username" autofocus required placeholder="Username" />
                     </div>
                 </div>
                 <div class="custom-form-row">
@@ -69,7 +69,7 @@ async function onSubmit() {
                     </div>
                     <div class="custom-form-input-wrapper">
                         <input id="email" class="custom-form-text-input" v-model="form.email" type="email"
-                            autocomplete="email" required />
+                            autocomplete="email" required placeholder="Email" />
                     </div>
                 </div>
                 <div class="custom-form-row">
@@ -78,7 +78,7 @@ async function onSubmit() {
                     </div>
                     <div class="custom-form-input-wrapper">
                         <input id="password" class="custom-form-text-input" type="password" v-model="form.password"
-                            autocomplete="new-password" required />
+                            autocomplete="new-password" required placeholder="Password" />
                     </div>
                 </div>
 
@@ -88,7 +88,7 @@ async function onSubmit() {
                     </div>
                     <div class="custom-form-input-wrapper">
                         <input class="custom-form-text-input" id="confirm-password" type="password"
-                            v-model="form.confirmPassword" autocomplete="new-password"
+                            v-model="form.confirmPassword" autocomplete="new-password" placeholder="Confirm Password"
                             :aria-invalid="form.confirmPassword !== '' && !passwordsMatch" required />
                     </div>
                     <p v-if="form.confirmPassword !== '' && !passwordsMatch" class="custom-form-field-error">
@@ -96,7 +96,7 @@ async function onSubmit() {
                     </p>
                 </div>
 
-                <button class="button-home" type="submit" :disabled="!canSubmit">
+                <button class="button-action" type="submit" :disabled="!canSubmit">
                     {{ submitting ? 'Creating Account' : 'Create Account' }}
                 </button>
             </form>
@@ -109,7 +109,6 @@ async function onSubmit() {
 
 <style>
 #register {
-    background-color: var(--color-background-soft);
     width: 100%;
     height: 100%;
     padding-top: 5rem;

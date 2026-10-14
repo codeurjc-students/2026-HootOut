@@ -30,20 +30,18 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 
             foreach (var value in defaultValues)
             {
-                value.Init();
+                value.InitAsync().Wait();
             }
         }
 
-        public ValueTask InitializeAsync()
+        public async ValueTask InitializeAsync()
         {
-            clearTables?.ClearTables();
-            return ValueTask.CompletedTask;
+            await clearTables.ClearTablesAsync();
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            clearTables?.ClearTables();
-            return ValueTask.CompletedTask;
+            await clearTables.ClearTablesAsync();
         }
 
         [Fact]
@@ -94,7 +92,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);
             auth.Should().NotBeNull();
 
-            await RegisterAsync(ct, "DifferentUser", "Different Email", "DifferentPassword");
+            await RegisterAsync(ct, "DifferentUser", "Different@Email.com", "DifferentPassword");
 
             var response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get,

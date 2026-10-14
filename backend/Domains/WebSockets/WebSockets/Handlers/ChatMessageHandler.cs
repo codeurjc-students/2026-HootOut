@@ -26,15 +26,13 @@ namespace HootOut.WebSockets.Actions
 
         public async Task HandleMessageAsync(Guid connectionId, WSUserInfo user, WebSocketMessage message, CancellationToken ct = default)
         {
-            // Check userId can send to this channel.
-            // Store message to DB
-            // Processing...
+            // Check userId can send to this channel. 
             CreateChatMessageRequest request = JsonConvert.DeserializeObject<CreateChatMessageRequest>(message.Payload!)!;
 
             request.ChatChannelId = Guid.Parse(message.Channel!);
             request.AuthorId = user.UserId;
 
-            ChatMessageDto savedMessage = chatMessageService.CreateChatMessage(request);
+            ChatMessageDto savedMessage = await chatMessageService.CreateChatMessageAsync(request, ct);
             savedMessage.Author?.Username = user.Username;
 
             message.Payload = JsonConvert.SerializeObject(savedMessage);

@@ -6,14 +6,14 @@ import { RouterLink } from 'vue-router';
 
 <template>
     <div id="home-layout">
-        <nav id="navbar">
+        <nav id="navbar" class="background-primary">
             <RouterLink to="/" class="pointer">
                 <img id="navbar-logo" :src="navbarLogo" alt="HootOutLogo" />
             </RouterLink>
 
             <div id="login-register-btns">
-                <RouterLink to="/login" class="button-home"> Login </RouterLink>
-                <RouterLink to="/register" class="button-home"> Register </RouterLink>
+                <RouterLink to="/login" class="button-action"> Login </RouterLink>
+                <RouterLink to="/register" class="button-action"> Register </RouterLink>
             </div>
         </nav>
         <section id="content">
@@ -38,7 +38,6 @@ import { RouterLink } from 'vue-router';
     align-content: space-between;
     padding: 0 10vw;
     max-height: 5rem;
-    background-color: var(--color-background);
 }
 
 #navbar-logo {

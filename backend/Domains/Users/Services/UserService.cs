@@ -1,11 +1,11 @@
-﻿using HootOut.Contracts.Common.Saver;
+﻿using FluentValidation;
+using HootOut.Contracts.Common.Saver;
 using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.Contracts.Users.Services;
 using HootOut.Users.Entities;
 using HootOut.Users.Mappers;
 using HootOut.Users.Search;
-using System.ComponentModel.DataAnnotations;
 
 namespace HootOut.Users.Services
 {
@@ -20,7 +20,7 @@ namespace HootOut.Users.Services
             this.userSearch = userSearch ?? throw new ArgumentNullException(nameof(userSearch));
         }
 
-        public UserDto CreateUser(CreateUserRequest createUserRequest)
+        public async Task<UserDto> CreateUserAsync(CreateUserRequest createUserRequest, CancellationToken ct = default)
         {
             if (createUserRequest == null) throw new ArgumentNullException(nameof(createUserRequest));
 
@@ -29,19 +29,19 @@ namespace HootOut.Users.Services
             newUser.Username = createUserRequest.Username;
             newUser.Password = createUserRequest.Password;
 
-            userSaver.Save(newUser);
+            await userSaver.SaveAsync(newUser);
 
             return newUser.ToDto();
         }
 
-        public UserDto? GetUserDtoById(Guid id)
+        public async Task<UserDto?> GetUserDtoByIdAsync(Guid id, CancellationToken ct = default)
         {
             if (Guid.Empty == id)
             {
                 throw new ValidationException("Invalid Request");
             }
 
-            return userSearch.GetUserById(id)?.ToDto();
+            return (await userSearch.GetUserByIdAsync(id, ct))?.ToDto();
         }
     }
 }

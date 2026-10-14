@@ -19,15 +19,14 @@ namespace HootOut.PostgreSQL.Savers.ChatMessages
             VALUES (@Id, @AuthorId, @ChatChannelId, @Content, @CreatedAt, @ModifiedAt)
         """;
 
-        public void Save(ChatMessage item)
+        public async Task SaveAsync(ChatMessage item, CancellationToken ct = default)
         {
+            await using var conn = await provider.OpenConnectionAsync(ct);
+            await using var tx = await conn.BeginTransactionAsync(ct);
             try
             {
-                using (var conn = provider.OpenConnection())
-                {
-                    var transaction = conn.BeginTransaction();
-
-                    conn.Execute(addChatMessage, new
+                await conn.ExecuteAsync(
+                    new CommandDefinition(addChatMessage, new
                     {
                         item.Id,
                         item.AuthorId,
@@ -36,9 +35,8 @@ namespace HootOut.PostgreSQL.Savers.ChatMessages
                         item.CreatedAt,
                         item.ModifiedAt
 
-                    }, transaction);
-                    transaction.Commit();
-                }
+                    }, tx, cancellationToken: ct));
+                await tx.CommitAsync(ct);
             }
             catch (Exception ex)
             {

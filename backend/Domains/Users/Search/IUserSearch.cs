@@ -4,9 +4,9 @@ namespace HootOut.Users.Search
 {
     public interface IUserSearch
     {
-        IEnumerable<UserInfo> GetAllUsers();
-        UserInfo? GetUserByEmail(string email);
+        Task<IEnumerable<UserInfo>> GetAllUsersAsync(CancellationToken ct = default);
+        Task<UserInfo?> GetUserByEmailAsync(string email, CancellationToken ct = default);
 
-        UserInfo? GetUserById(Guid id);
+        Task<UserInfo?> GetUserByIdAsync(Guid id, CancellationToken ct = default);
     }
 }

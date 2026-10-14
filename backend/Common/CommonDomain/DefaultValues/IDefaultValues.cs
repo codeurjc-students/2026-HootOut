@@ -2,7 +2,7 @@
 {
     public interface IDefaultValues
     {
-        void Init();
+        Task InitAsync(CancellationToken ct = default);
 
         int Priority => 100; // 0 Maximun priority, 100 lower
     }

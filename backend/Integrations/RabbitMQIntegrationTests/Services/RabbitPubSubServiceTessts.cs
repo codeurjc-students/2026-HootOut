@@ -1,19 +1,11 @@
-﻿using Autofac;
-using FluentAssertions;
+﻿using FluentAssertions;
 using HootOut.CommonIntegrationTests.Services;
-using HootOut.Contracts.Common.Messages.Events;
 using HootOut.Contracts.Common.Messages.Services;
-using HootOut.Contracts.Common.Saver;
 using HootOut.Contracts.WebSockets.Dtos;
 using HootOut.Contracts.WebSockets.Entities;
-using HootOut.Contracts.WebSockets.Handlers;
-using HootOut.Infraestructure.DI;
-using HootOut.RabbitMQ.Configuration;
 using HootOut.RabbitMQ.Services;
 using Microsoft.Extensions.Logging;
 using Moq;
-using RabbitMQ.Client;
-using Testcontainers.RabbitMq;
 
 namespace HootOut.RabbitMQIntegrationTests.Services
 {
@@ -36,7 +28,7 @@ namespace HootOut.RabbitMQIntegrationTests.Services
         public async ValueTask DisposeAsync()
         {
             await rabbitConnectionFactory.DisposeAsync();
-        } 
+        }
 
         [Fact]
         public async Task RabbitPubSubService_PublishSubscribe_OneSubscriber()
@@ -47,11 +39,12 @@ namespace HootOut.RabbitMQIntegrationTests.Services
             string exchange = "testexchange";
             var testMessage = new WebSocketMessageDto { Channel = "test", Payload = "testPayload" };
 
-            await pubSubService.StartConsuming<WebSocketMessage>(exchange, 
-                async (exchange, channelId, message) => { 
+            await pubSubService.StartConsuming<WebSocketMessage>(exchange,
+                async (exchange, channelId, message) =>
+                {
                     tcs.SetResult(message);
                     await Task.CompletedTask;
-                    },
+                },
                 ct);
 
             await pubSubService.Subscribe(exchange, testMessage.Channel, ct);
@@ -82,21 +75,24 @@ namespace HootOut.RabbitMQIntegrationTests.Services
             var pubSubService3 = new RabbitPubSubService(new Mock<ILogger<RabbitPubSubService>>().Object, rabbitConnectionFactory);
 
             await pubSubService.StartConsuming<WebSocketMessage>(exchange,
-                async (exchange, channelId, message) => {
+                async (exchange, channelId, message) =>
+                {
                     tcs.SetResult(message);
                     await Task.CompletedTask;
                 },
                 ct);
 
             await pubSubService2.StartConsuming<WebSocketMessage>(exchange,
-                async (exchange, channelId, message) => {
+                async (exchange, channelId, message) =>
+                {
                     tcs2.SetResult(message);
                     await Task.CompletedTask;
                 },
                 ct);
 
             await pubSubService3.StartConsuming<WebSocketMessage>(exchange,
-                async (exchange, channelId, message) => {
+                async (exchange, channelId, message) =>
+                {
                     tcs3.SetResult(message);
                     await Task.CompletedTask;
                 },
@@ -121,7 +117,7 @@ namespace HootOut.RabbitMQIntegrationTests.Services
                 message.Id.Should().Be(testMessage.Id);
                 message.Channel.Should().Be(testMessage.Channel);
                 message.Payload.Should().Be(testMessage.Payload);
-            } 
+            }
         }
     }
 }

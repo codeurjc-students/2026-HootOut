@@ -6,9 +6,13 @@ namespace HootOut.Contracts.ChatServers.Dtos
     {
         public Guid Id { get; set; }
 
+        public Guid OwnerId { get; set; }
+
         public string Name { get; set; } = string.Empty;
 
-        public IEnumerable<ChatChannelDto>? Channels { get; set; }
+        public string Description { get; set; } = string.Empty;
+
+        public IEnumerable<ChatChannelDto> Channels { get; set; } = [];
 
         public DateTime CreatedAt { get; set; }
 

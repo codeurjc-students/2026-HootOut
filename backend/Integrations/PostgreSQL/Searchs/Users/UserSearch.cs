@@ -7,41 +7,38 @@ namespace HootOut.PostgreSQL.Searchs.Users
 {
     public class UserSearch : IUserSearch
     {
-        private IPersistenceProvider persistenceProvider;
+        private IPersistenceProvider provider;
 
-        public UserSearch(IPersistenceProvider persistenceProvider)
+        public UserSearch(IPersistenceProvider provider)
         {
-            this.persistenceProvider = persistenceProvider ?? throw new ArgumentNullException(nameof(persistenceProvider));
+            this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
         }
 
         private const string UserColumns =
         """ "Id" as Id, "Username" as Username, "PasswordHash" as Password, "Email" as Email""";
-        public IEnumerable<UserInfo> GetAllUsers()
+        public async Task<IEnumerable<UserInfo>> GetAllUsersAsync(CancellationToken ct = default)
         {
-            using (var conn = persistenceProvider.OpenConnection())
-            {
-                return conn.Query<UserInfo>($"""SELECT {UserColumns} FROM "HootOut"."UserInfo" """);
-            }
+            await using var conn = await provider.OpenConnectionAsync(ct);
+
+            return await conn.QueryAsync<UserInfo>($"""SELECT {UserColumns} FROM "HootOut"."UserInfo" """, ct);
         }
 
-        public UserInfo? GetUserByEmail(string email)
+        public async Task<UserInfo?> GetUserByEmailAsync(string email, CancellationToken ct = default)
         {
-            using (var conn = persistenceProvider.OpenConnection())
-            {
-                return conn.QuerySingleOrDefault<UserInfo>(new CommandDefinition(
-                    $"""SELECT {UserColumns} FROM "HootOut"."UserInfo" where lower("Email") = lower(@Email)""",
-                     new { Email = email }));
-            }
+            await using var conn = await provider.OpenConnectionAsync(ct);
+
+            return await conn.QuerySingleOrDefaultAsync<UserInfo>(new CommandDefinition(
+                $"""SELECT {UserColumns} FROM "HootOut"."UserInfo" where lower("Email") = lower(@Email)""",
+                 new { Email = email }, cancellationToken: ct));
         }
 
-        public UserInfo? GetUserById(Guid id)
+        public async Task<UserInfo?> GetUserByIdAsync(Guid id, CancellationToken ct = default)
         {
-            using (var conn = persistenceProvider.OpenConnection())
-            {
-                return conn.QuerySingleOrDefault<UserInfo>(new CommandDefinition(
-                    $"""SELECT {UserColumns} FROM "HootOut"."UserInfo" where "Id" = @Id""",
-                     new { Id = id }));
-            }
+            await using var conn = await provider.OpenConnectionAsync(ct);
+
+            return await conn.QuerySingleOrDefaultAsync<UserInfo>(new CommandDefinition(
+                $"""SELECT {UserColumns} FROM "HootOut"."UserInfo" where "Id" = @Id""",
+                    new { Id = id }, cancellationToken: ct));
         }
     }
 }

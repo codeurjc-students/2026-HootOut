@@ -22,16 +22,16 @@ namespace HootOut.ChatMessages.Services
             this.search = search ?? throw new ArgumentNullException(nameof(search));
         }
 
-        public IEnumerable<ChatMessageDto> GetMessagesByChannel(Guid channelId)
+        public async Task<IEnumerable<ChatMessageDto>> GetMessagesByChannelAsync(Guid channelId, CancellationToken ct = default)
         {
             if (Guid.Empty == channelId)
             {
                 throw new ArgumentNullException(nameof(channelId)); //TO-DO proper parameter validation
             }
-            return search.GetMessagesByChannelId(channelId);
+            return await search.GetMessagesByChannelIdAsync(channelId, ct);
         }
 
-        public ChatMessageDto CreateChatMessage(CreateChatMessageRequest request)
+        public async Task<ChatMessageDto> CreateChatMessageAsync(CreateChatMessageRequest request, CancellationToken ct = default)
         {
             if (request == null) throw new ArgumentNullException(nameof(request)); // TO-DO proper parameter validation
             if (request.Content.Length >= 60000) throw new ArgumentOutOfRangeException(nameof(request.Content));
@@ -41,7 +41,7 @@ namespace HootOut.ChatMessages.Services
             chatMessage.ChatChannelId = request.ChatChannelId;
             chatMessage.AuthorId = request.AuthorId;
 
-            this.saver.Save(chatMessage);
+            await saver.SaveAsync(chatMessage, ct);
 
             ChatMessageDto messageDto = chatMessage.ToDto();
 

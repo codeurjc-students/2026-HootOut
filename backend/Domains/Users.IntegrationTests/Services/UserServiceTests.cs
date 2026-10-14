@@ -34,37 +34,36 @@ namespace HootOut.Users.IntegrationTests.Services
 
             foreach (var value in defaultValues)
             {
-                value.Init();
+                value.InitAsync().Wait();
             }
 
             userService = container.Resolve<IUserService>();
         }
 
-        public ValueTask InitializeAsync()
+        public async ValueTask InitializeAsync()
         {
 
-            clearTables?.ClearTables();
-            return ValueTask.CompletedTask;
+            await clearTables.ClearTablesAsync();
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            clearTables?.ClearTables();
-            return ValueTask.CompletedTask;
+            await clearTables.ClearTablesAsync();
         }
 
         [Theory]
         [InlineData("email@test.com", "username1", "password12345")]
         public async Task GetUserDtoById_One(string username, string email, string password)
         {
-            var dto = userService.CreateUser(new CreateUserRequest
+            var ct = TestContext.Current.CancellationToken;
+            var dto = await userService.CreateUserAsync(new CreateUserRequest
             {
                 Username = username,
                 Email = email,
                 Password = password
-            });
+            }, ct);
 
-            UserDto? user = userService.GetUserDtoById(dto.Id);
+            UserDto? user = await userService.GetUserDtoByIdAsync(dto.Id, ct);
             user.Should().NotBeNull();
 
             user.Id.Should().NotBeEmpty();
@@ -76,11 +75,12 @@ namespace HootOut.Users.IntegrationTests.Services
         [Fact]
         public async Task GetUserDtos_Many()
         {
-            userService.CreateUser(new CreateUserRequest { Email = "1", Password = "1", Username = "1" });
-            var dto = userService.CreateUser(new CreateUserRequest { Email = "2", Password = "2", Username = "2" });
-            userService.CreateUser(new CreateUserRequest { Email = "3", Password = "3", Username = "3" });
+            var ct = TestContext.Current.CancellationToken;
+            await userService.CreateUserAsync(new CreateUserRequest { Email = "1", Password = "1", Username = "1" }, ct);
+            var dto = await userService.CreateUserAsync(new CreateUserRequest { Email = "2", Password = "2", Username = "2" }, ct);
+            await userService.CreateUserAsync(new CreateUserRequest { Email = "3", Password = "3", Username = "3" }, ct);
 
-            UserDto? user = userService.GetUserDtoById(dto.Id);
+            UserDto? user = await userService.GetUserDtoByIdAsync(dto.Id, ct);
             user.Should().NotBeNull();
             user.Id.Should().Be(dto.Id);
         }

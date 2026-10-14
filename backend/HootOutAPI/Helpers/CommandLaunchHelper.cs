@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HootOut.HootOutAPI.Helpers
 {
@@ -69,7 +69,7 @@ namespace HootOut.HootOutAPI.Helpers
             catch (ValidationException ex)
             {
                 logger.LogInformation(ex, ex.Message);
-                return badRequest(ex.Message);
+                return badRequest(ex.Errors);
             }
             catch (Exception ex)
             {

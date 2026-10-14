@@ -43,7 +43,7 @@ async function onSubmit() {
 </script>
 
 <template>
-    <section id="login">
+    <section id="login" class="background-soft">
         <div class="custom-form-wrapper">
             <h1> Welcome Back! </h1>
             <form class="custom-form" id="login-form" novalidate @submit.prevent="onSubmit">
@@ -56,7 +56,7 @@ async function onSubmit() {
                     </div>
                     <div class="custom-form-input-wrapper">
                         <input id="email" class="custom-form-text-input" v-model="form.email" type="email"
-                            autocomplete="email" required />
+                            autocomplete="email" required placeholder="Email" />
                     </div>
                 </div>
                 <div class="custom-form-row">
@@ -65,11 +65,11 @@ async function onSubmit() {
                     </div>
                     <div class="custom-form-input-wrapper">
                         <input id="password" class="custom-form-text-input" type="password" v-model="form.password"
-                            autocomplete="current-password" />
+                            autocomplete="current-password" placeholder="Password" />
                     </div>
                 </div>
 
-                <button class="button-home" type="submit" :disabled="submitting || !form.email || !form.password">
+                <button class="button-action" type="submit" :disabled="submitting || !form.email || !form.password">
                     Log In
                 </button>
             </form>
@@ -82,7 +82,6 @@ async function onSubmit() {
 
 <style>
 #login {
-    background-color: var(--color-background-soft);
     width: 100%;
     height: 100%;
     padding-top: 5rem;

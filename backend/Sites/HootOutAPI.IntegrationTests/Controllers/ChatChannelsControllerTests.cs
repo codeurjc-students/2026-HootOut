@@ -1,16 +1,23 @@
 ﻿using Autofac;
+using FluentAssertions;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
+using HootOut.Contracts.Authentication.Responses;
+using HootOut.Contracts.ChatChannels.Dtos;
+using HootOut.Contracts.ChatChannels.Requests;
+using HootOut.Contracts.ChatServers.Dtos;
+using HootOut.Contracts.ChatServers.Requests;
 using HootOut.HootOutAPI.IntegrationTests.Common;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 {
-    [Collection("API")]
-    public class ChatChannelsControllerTests : IClassFixture<APIFixture>, IDisposable, IAsyncLifetime
+    [Collection("IntegrationTests")]
+    public class ChatChannelsControllerTests : TestControllerBase, IClassFixture<APIFixture>, IDisposable, IAsyncLifetime
     {
         private readonly ILifetimeScope container;
-        private readonly HttpClient httpClient;
         private ClearAllTables clearTables;
 
         public ChatChannelsControllerTests(APIFixture apiFixture)
@@ -26,20 +33,92 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 
             foreach (var value in defaultValues)
             {
-                value.Init();
+                value.InitAsync().Wait();
             }
         }
 
-        public ValueTask InitializeAsync()
+        public async ValueTask InitializeAsync()
         {
-            clearTables?.ClearTables();
-            return ValueTask.CompletedTask;
+            await clearTables.ClearTablesAsync();
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            clearTables?.ClearTables();
-            return ValueTask.CompletedTask;
+            await clearTables.ClearTablesAsync();
+        }
+
+        [Fact]
+        public async Task GetServers_ReturnsOk_Empty()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            await RegisterAsync(ct);
+
+            var loginResponse = await LoginAsync(DefaultEmail, DefaultPassword, ct);
+            var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);
+
+            Guid channelId = Guid.NewGuid();
+            var response = await SendAuthorizeHttpRequest(
+                HttpMethod.Get,
+                $"/api/v1/chatChannels/getByServerId?serverId={Guid.NewGuid()}",
+                auth?.AccessToken!,
+                ct
+            );
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var servers = await response.Content.ReadFromJsonAsync<IEnumerable<ChatChannelDto>>(ct);
+            servers.Should().NotBeNull();
+            servers.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task CreateAndGetChatChannelsByServerId_ReturnsOk_One()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            await RegisterAsync(ct);
+
+            var loginResponse = await LoginAsync(DefaultEmail, DefaultPassword, ct);
+            var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);
+
+            Guid userId = GetUserIdFromAccessToken(auth?.AccessToken);
+            string serverName = "test1";
+            string description = "short description of the server";
+
+            var response = await SendAuthorizeHttpRequest(
+                HttpMethod.Post, "/api/v1/chatServers", new CreateChatServerRequest { Name = serverName, Description = description }, auth!.AccessToken!, ct);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var server = await response.Content.ReadFromJsonAsync<ChatServerDto>(ct);
+            server.Should().NotBeNull();
+            server.Id.Should().NotBeEmpty();
+            server.Name.Should().Be(serverName);
+            server.Description.Should().Be(description);
+            server.OwnerId.Should().Be(userId);
+
+            string channelName = "Channel Test";
+            response = await SendAuthorizeHttpRequest(
+               HttpMethod.Post, "/api/v1/chatChannels", new CreateChatChannelRequest { Name = channelName, ChatServerId = server.Id }, auth!.AccessToken!, ct);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var channel = await response.Content.ReadFromJsonAsync<ChatChannelDto>(ct);
+            channel.Should().NotBeNull();
+            channel.Id.Should().NotBeEmpty();
+            channel.Name.Should().Be(channelName);
+            channel.ChatServerId.Should().Be(server.Id);
+
+            response = await SendAuthorizeHttpRequest(
+                HttpMethod.Get, $"/api/v1/chatChannels/getByServerId?serverId={server.Id.ToString()}", auth.AccessToken!, ct);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var channelList = await response.Content.ReadFromJsonAsync<IEnumerable<ChatChannelDto>>(ct);
+            channelList.Should().NotBeNullOrEmpty();
+            var channelDto = (channelList)?.FirstOrDefault();
+            channelDto.Should().NotBeNull();
+            channelDto.Id.Should().Be(channel.Id);
+            channelDto.Name.Should().Be(channel.Name);
+            channelDto.ChatServerId.Should().Be(channel.ChatServerId);
+            channelDto.CreatedAt.Should().BeSameDateAs(channel.CreatedAt);
+            channelDto.ModifiedAt.Should().BeSameDateAs(channel.ModifiedAt);
         }
         public void Dispose()
         {

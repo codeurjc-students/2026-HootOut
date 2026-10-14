@@ -13,8 +13,6 @@ namespace HootOut.ChatChannels.Services
         private readonly ISaver<ChatChannel> saver;
         private readonly IChatChannelSearch search;
 
-        private static Guid serverId = Guid.CreateVersion7();
-
         public ChatChannelsService(ISaver<ChatChannel> saver,
             IChatChannelSearch search)
         {
@@ -22,25 +20,29 @@ namespace HootOut.ChatChannels.Services
             this.search = search ?? throw new ArgumentNullException(nameof(search));
         }
 
-        public ChatChannelDto CreateChatChannel(CreateChatChannelRequest request)
+        public async Task<ChatChannelDto> CreateChatChannelAsync(CreateChatChannelRequest request, CancellationToken ct = default)
         {
-            if (string.IsNullOrEmpty(request.Name))
-            {
-                throw new ArgumentException(nameof(request.Name)); // TO-DO Proper validation
-            }
+            request.Validate();
 
             ChatChannel newChannel = Persistable.CreateNew<ChatChannel>();
-            newChannel.ChatServerId = serverId; //TO-DO all share the same Server because there are no servers yet.
+            newChannel.ChatServerId = request.ChatServerId;
             newChannel.Name = request.Name;
 
-            this.saver.Save(newChannel);
+            await saver.SaveAsync(newChannel, ct);
 
             return newChannel.ToDto();
         }
 
-        public IEnumerable<ChatChannelDto> GetAllChatChannelsDtos()
+        public async Task<IEnumerable<ChatChannelDto>> GetAllChatChannelsDtosAsync(CancellationToken ct = default)
         {
-            return search.getAllChannels()
+            return (await search.getAllChannelsAsync(ct))
+                .Select(x => x.ToDto())
+                .ToList();
+        }
+
+        public async Task<IEnumerable<ChatChannelDto>> GetChannelsByServerIdAsync(Guid serverId, CancellationToken ct = default)
+        {
+            return (await search.getChannelsByServerId(serverId, ct))
                 .Select(x => x.ToDto())
                 .ToList();
         }

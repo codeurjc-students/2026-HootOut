@@ -11,7 +11,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Common
 {
     public class TestControllerBase
     {
-        protected HttpClient httpClient;
+        protected HttpClient? httpClient;
         protected const string DefaultUsername = "Test1";
         protected const string DefaultEmail = "email@email.com";
         protected const string DefaultPassword = "test1";
@@ -23,10 +23,11 @@ namespace HootOut.HootOutAPI.IntegrationTests.Common
             string email = DefaultEmail,
             string password = DefaultPassword)
         {
-            var response = await httpClient.PostAsJsonAsync(
+            var response = await httpClient!.PostAsJsonAsync(
                 "/api/v1/auth/register",
                 new CreateUserRequest { Username = username, Email = email, Password = password },
                 ct);
+
             response.IsSuccessStatusCode.Should().BeTrue("the test user must be registered before the scenario starts");
 
             var auth = await response.Content.ReadFromJsonAsync<AuthResponse>(ct);
@@ -35,7 +36,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Common
         }
 
         protected Task<HttpResponseMessage> LoginAsync(string email, string password, CancellationToken ct) =>
-            httpClient.PostAsJsonAsync(
+            httpClient!.PostAsJsonAsync(
                 "/api/v1/auth/login",
                 new AuthRequest { Email = email, Password = password },
                 ct);
@@ -58,7 +59,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Common
             {
                 request.Content = JsonContent.Create<T>(body);
             }
-            return await httpClient.SendAsync(request, ct);
+            return await httpClient!.SendAsync(request, ct);
         }
 
         protected async Task<HttpResponseMessage> SendAuthorizeHttpRequest(HttpMethod method, string url, string accessToken, CancellationToken ct)

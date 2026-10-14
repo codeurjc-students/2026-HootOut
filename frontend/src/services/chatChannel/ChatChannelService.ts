@@ -1,4 +1,4 @@
-import type { ChatChannelDto } from "@/types";
+import type { ChatChannel, CreateChatChannelRequest } from "@/types";
 import { get, post } from "../common/api/ApiService"
 
 const ChatChannelService = {
@@ -6,8 +6,12 @@ const ChatChannelService = {
         return get('chatchannels/all');
     },
 
-    createNewChannel: async function (name: string): Promise<ChatChannelDto> {
-        return post('chatchannels', { name });
+    getChannelsByServerId: async function (serverId: string): Promise<Array<ChatChannel>> {
+        return get('chatchannels/getByServerId', { serverId });
+    },
+
+    createNewChannel: async function (request: CreateChatChannelRequest): Promise<ChatChannel> {
+        return post('chatchannels', request);
     }
 }
 

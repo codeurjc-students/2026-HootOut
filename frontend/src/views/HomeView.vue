@@ -11,7 +11,7 @@
                         them.
                   </h2>
 
-                  <RouterLink to="/register">
+                  <RouterLink to="/register" class="color-text">
                         Create an account and start chatting.
                   </RouterLink>
             </div>
@@ -51,7 +51,6 @@
       display: inline-block;
       font-size: 1.2rem;
       margin-top: 1rem;
-      color: var(--color-text)
 }
 
 #home-image {

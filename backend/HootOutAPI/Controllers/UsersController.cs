@@ -22,7 +22,7 @@ namespace HootOut.HootOutAPI.Controllers
         }
 
         [HttpGet("me")]
-        public ActionResult<UserDto> GetAuthorizedUserInfo()
+        public async Task<ActionResult<UserDto>> GetAuthorizedUserInfoAsync(CancellationToken ct)
         {
             ClaimsPrincipal principal = HttpContext.User;
             var userIdString = principal.FindFirstValue("sub");
@@ -32,9 +32,9 @@ namespace HootOut.HootOutAPI.Controllers
                 return StatusCode(StatusCodes.Status401Unauthorized);
             }
 
-            return CommandLaunchHelper.Launch(
+            return await CommandLaunchHelper.LaunchAsync(
                logger,
-               () => userService.GetUserDtoById(Guid.Parse(userIdString)),
+               async () => await userService.GetUserDtoByIdAsync(Guid.Parse(userIdString), ct),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );

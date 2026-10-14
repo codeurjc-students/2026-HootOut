@@ -19,19 +19,16 @@ namespace HootOut.PostgreSQL.Savers.Users
             VALUES (@Id, @Username, @Email, @PasswordHash, @CreatedAt, @ModifiedAt)
         """;
 
-        public void Save(UserInfo item)
+        public async Task SaveAsync(UserInfo item, CancellationToken ct = default)
         {
-            if (item == null) throw new ArgumentNullException(nameof(item));
+            await using var conn = await provider.OpenConnectionAsync(ct);
+            await using var tx = await conn.BeginTransactionAsync(ct);
 
             try
             {
-                using (var conn = provider.OpenConnection())
-                {
-                    var transaction = conn.BeginTransaction();
-
-                    var now = DateTime.UtcNow;
-
-                    conn.Execute(addOrReplaceUserInfo, new
+                var now = DateTime.UtcNow;
+                await conn.ExecuteAsync(new CommandDefinition(
+                    addOrReplaceUserInfo, new
                     {
                         item.Id,
                         item.Username,
@@ -39,9 +36,8 @@ namespace HootOut.PostgreSQL.Savers.Users
                         PasswordHash = item.Password,
                         item.CreatedAt,
                         item.ModifiedAt
-                    }, transaction);
-                    transaction.Commit();
-                }
+                    }, tx, cancellationToken: ct));
+                await tx.CommitAsync(ct);
             }
             catch (Exception ex)
             {

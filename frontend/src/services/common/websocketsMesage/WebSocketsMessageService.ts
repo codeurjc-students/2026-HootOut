@@ -1,6 +1,6 @@
 import type { WebSocketService } from "@/services/common/websockets/WebSocketService";
 import webSocketService from '@/services/common/websockets/WebSocketService';
-import { WSMessageType, type ChatChannelDto, type WebSocketMessage, type WSTicketRespone } from "@/types";
+import { WSMessageType, type ChatChannel, type WebSocketMessage, type WSTicketRespone } from "@/types";
 import { ref } from "vue";
 import { newId } from "../utils";
 import { post } from "../api/ApiService";
@@ -95,7 +95,7 @@ export class WebSocketMessageService {
         };
     }
 
-    sendMessage(chatChannel: ChatChannelDto, payload: any, timeoutMs = 5000): AckPromise {
+    sendMessage(chatChannel: ChatChannel, payload: any, timeoutMs = 5000): AckPromise {
         const message: WebSocketMessage = { channel: chatChannel.id, payload: JSON.stringify(payload), type: WSMessageType.ChatMessage };
         return this.sendWithAck(message, timeoutMs);
     }
@@ -103,6 +103,12 @@ export class WebSocketMessageService {
     subscribe(channel: string, callback: (payload: WebSocketMessage) => void) {
         this.subscriptions[channel] = callback
         const message: WebSocketMessage = { channel, type: WSMessageType.Subscribe };
+        this.webSocketService.send(JSON.stringify(message));
+    }
+
+    unsubscribe(channel: string, callback: (payload: WebSocketMessage) => void) {
+        delete this.subscriptions[channel]
+        const message: WebSocketMessage = { channel, type: WSMessageType.Unsubscribe };
         this.webSocketService.send(JSON.stringify(message));
     }
 

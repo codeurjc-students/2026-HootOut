@@ -5,7 +5,7 @@ namespace HootOut.PostgreSQL.Dapper
 {
     internal class InitTypeMappers : IDefaultValues
     {
-        public void Init()
+        public async Task InitAsync(CancellationToken ct)
         {
             SqlMapper.AddTypeHandler(new DateTimeMapper());
         }

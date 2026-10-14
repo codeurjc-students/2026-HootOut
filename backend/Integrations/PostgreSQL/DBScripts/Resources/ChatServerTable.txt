@@ -23,7 +23,8 @@ then
 	CREATE TABLE "HootOut"."ChatServer"(
 		"Id" UUID NOT NULL PRIMARY KEY , 
 		"OwnerId" UUID NOT NULL, 
-		"Name" VARCHAR(255) NOT NULL,
+		"Name" TEXT NOT NULL,
+		"Description" TEXT,
 		"Deleted" boolean NOT NULL DEFAULT false,
 		"CreatedAt" timestamptz  NOT NULL,
 		"ModifiedAt" timestamptz NOT NULL

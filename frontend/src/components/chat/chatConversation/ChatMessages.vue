@@ -38,7 +38,7 @@ function convertDate(date_string: string) {
         </div>
 
         <div class="message-entry" v-for='(message, index) in messages' :key='message.id'
-            :class="{ 'message-entry-user': message.author.username == user.username }">
+            :class="{ 'background-soft': message.author.username == user.username }">
             <div>
                 {{ message.author.username }} --- {{ convertDate(message.createdAt!) }}
             </div>
@@ -57,10 +57,6 @@ function convertDate(date_string: string) {
     padding: 0 1rem;
     display: flex;
     flex-direction: column-reverse;
-}
-
-.message-entry-user {
-    background-color: var(--color-background-soft);
 }
 
 .message-entry.pending {
