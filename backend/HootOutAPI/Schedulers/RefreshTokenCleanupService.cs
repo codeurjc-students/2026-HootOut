@@ -29,7 +29,7 @@ namespace HootOut.HootOutAPI.Schedulers
                 try
                 {
                     var deleted = await refreshTokenService.DeleteExpiredAsync(stoppingToken);
-                    if (deleted > 0)
+                    if ((deleted > 0) && logger.IsEnabled(LogLevel.Information))
                         logger.LogInformation("Deleted {Count} expired refresh tokens.", deleted);
 
                     await wsTicketService.DeleteExpiredAsync(stoppingToken);

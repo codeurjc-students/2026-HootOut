@@ -30,12 +30,12 @@ namespace HootOut.PostgreSQL
             RegisterSearchs(builder);
         }
 
-        private void RegisterSavers(ContainerBuilder builder)
+        private static void RegisterSavers(ContainerBuilder builder)
         {
             var assembly = Assembly.GetExecutingAssembly(); ;
             builder.RegisterAssemblyTypes(assembly).AsClosedTypesOf(typeof(ISaver<>)).SingleInstance();
         }
-        private void RegisterSearchs(ContainerBuilder builder)
+        private static void RegisterSearchs(ContainerBuilder builder)
         {
             builder.RegisterType<UserSearch>().As<IUserSearch>().SingleInstance();
             builder.RegisterType<ChatChannelSearch>().As<IChatChannelSearch>().SingleInstance();

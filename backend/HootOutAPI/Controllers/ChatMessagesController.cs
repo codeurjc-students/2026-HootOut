@@ -9,8 +9,8 @@ namespace HootOut.HootOutAPI.Controllers
     [Route("api/v1/[controller]")]
     public class ChatMessagesController : ControllerBase
     {
-        private ILogger<ChatMessagesController> logger;
-        private IChatMessageService chatMessageService;
+        private readonly ILogger<ChatMessagesController> logger;
+        private readonly IChatMessageService chatMessageService;
 
         public ChatMessagesController(
             ILogger<ChatMessagesController> logger,

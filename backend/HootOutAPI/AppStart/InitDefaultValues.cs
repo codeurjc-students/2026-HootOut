@@ -7,7 +7,7 @@ namespace HootOut.HootOutAPI.AppStart
     {
         public static async Task InitAsync(ILifetimeScope builder, CancellationToken ct = default)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            ArgumentNullException.ThrowIfNull(builder);
 
             using (var container = builder.BeginLifetimeScope())
             {

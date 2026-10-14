@@ -131,7 +131,7 @@ namespace HootOut.HootOutAPI.Controllers
         // Refresh token delivery
         // ------------------------------------------------------------------
 
-        private bool WantsCookie(string deliveryHeader) =>
+        private static bool WantsCookie(string deliveryHeader) =>
             string.Equals(deliveryHeader, DeliveryCookie, StringComparison.OrdinalIgnoreCase);
 
         /// <summary>

@@ -12,10 +12,10 @@ namespace HootOut.HootOutWebsockets.Services
         private IWSMessageDeserializer wsMessageDeserializer;
 
         public WSConnectionHandler(ILogger<WSConnectionHandler> logger,
-            IWSMessageDeserializer wSMessageDeserializer)
+            IWSMessageDeserializer wsMessageDeserializer)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            this.wsMessageDeserializer = wSMessageDeserializer ?? throw new ArgumentNullException(nameof(wsMessageDeserializer));
+            this.wsMessageDeserializer = wsMessageDeserializer ?? throw new ArgumentNullException(nameof(wsMessageDeserializer));
         }
 
         public async Task ReadMessagesAsync(WebSocket websocket, Guid connectionId, WSUserInfo user)

@@ -23,10 +23,10 @@ namespace HootOut.Authentication.Services
         private IPersistenceProvider persistenceProvider;
 
         public RefreshTokenService(IOptions<JwtSettings> options,
-            IPersistenceProvider persistanceProvider)
+            IPersistenceProvider persistenceProvider)
         {
             this.jwtSettings = options?.Value ?? throw new ArgumentNullException(nameof(options));
-            this.persistenceProvider = persistanceProvider ?? throw new ArgumentNullException(nameof(persistenceProvider));
+            this.persistenceProvider = persistenceProvider ?? throw new ArgumentNullException(nameof(persistenceProvider));
         }
 
         public async Task<string> IssueAsync(Guid userId, CancellationToken ct)

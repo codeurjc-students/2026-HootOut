@@ -37,13 +37,13 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
         }
         public async ValueTask InitializeAsync()
         {
-
             await clearTables.ClearTablesAsync();
         }
 
         public async ValueTask DisposeAsync()
         {
             await clearTables.ClearTablesAsync();
+            GC.SuppressFinalize(this);
         }
 
         [Fact]

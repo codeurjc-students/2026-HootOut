@@ -1,4 +1,5 @@
-﻿using HootOut.ChatMessages.ChatMessages;
+﻿using FluentValidation;
+using HootOut.ChatMessages.ChatMessages;
 using HootOut.ChatMessages.Mappers;
 using HootOut.ChatMessages.Searchs;
 using HootOut.Contracts.ChatMessage.Dtos;
@@ -11,8 +12,8 @@ namespace HootOut.ChatMessages.Services
     public class ChatMessageService : IChatMessageService
     {
 
-        private ISaver<ChatMessage> saver;
-        private IChatMessageSearch search;
+        private readonly ISaver<ChatMessage> saver;
+        private readonly IChatMessageSearch search;
 
         public ChatMessageService(
             ISaver<ChatMessage> saver,
@@ -21,7 +22,6 @@ namespace HootOut.ChatMessages.Services
             this.saver = saver ?? throw new ArgumentNullException(nameof(saver));
             this.search = search ?? throw new ArgumentNullException(nameof(search));
         }
-
         public async Task<IEnumerable<ChatMessageDto>> GetMessagesByChannelAsync(Guid channelId, CancellationToken ct = default)
         {
             if (Guid.Empty == channelId)
@@ -33,8 +33,10 @@ namespace HootOut.ChatMessages.Services
 
         public async Task<ChatMessageDto> CreateChatMessageAsync(CreateChatMessageRequest request, CancellationToken ct = default)
         {
-            if (request == null) throw new ArgumentNullException(nameof(request)); // TO-DO proper parameter validation
-            if (request.Content.Length >= 60000) throw new ArgumentOutOfRangeException(nameof(request.Content));
+            // TO-DO proper parameter validation
+            ArgumentNullException.ThrowIfNull(request);
+
+            if (request.Content.Length >= 60000) throw new ValidationException(nameof(request.Content));
 
             ChatMessage chatMessage = Persistable.CreateNew<ChatMessage>();
             chatMessage.Content = request.Content;

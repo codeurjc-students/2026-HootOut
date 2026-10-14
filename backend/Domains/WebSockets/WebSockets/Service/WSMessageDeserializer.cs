@@ -17,11 +17,11 @@ namespace HootOut.WebSockets.Service
 
         public WSMessageDeserializer(ILogger<WSMessageDeserializer> logger,
             IEnumerable<IWSMessageHandler> wsMessageHandlers,
-            IWSMessageSender wSMessageSender)
+            IWSMessageSender wsMessageSender)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.wsMessageHandlers = wsMessageHandlers ?? throw new ArgumentNullException(nameof(wsMessageHandlers));
-            this.wsMessageSender = wSMessageSender ?? throw new ArgumentNullException(nameof(wsMessageSender));
+            this.wsMessageSender = wsMessageSender ?? throw new ArgumentNullException(nameof(wsMessageSender));
         }
         public async Task HandleMessageAsync(Guid connectionId, WSUserInfo user, string rawMessage, CancellationToken ct = default)
         {

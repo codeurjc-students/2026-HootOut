@@ -113,10 +113,7 @@ namespace HootOut.Authentication.Services
 
         public async Task RevokeAsync(AuthRefreshRequest request, CancellationToken ct = default)
         {
-            if (string.IsNullOrEmpty(request.RefreshToken))
-            {
-                throw new ArgumentNullException(nameof(request.RefreshToken));
-            }
+            ArgumentNullException.ThrowIfNullOrEmpty(request.RefreshToken);
 
             await refreshTokenService.RevokeAsync(request.RefreshToken, ct);
         }

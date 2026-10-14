@@ -10,10 +10,10 @@ namespace HootOut.HootOutWebsockets.Schedulers
         private IQueuePubService queuePubService;
         private IWSPubSubService wsPubSubService;
 
-        public PubSubQueueConsumerService(IQueuePubService queuePubService, IWSPubSubService wSPubSubService)
+        public PubSubQueueConsumerService(IQueuePubService queuePubService, IWSPubSubService wsPubSubService)
         {
             this.queuePubService = queuePubService ?? throw new ArgumentNullException(nameof(queuePubService));
-            this.wsPubSubService = wSPubSubService ?? throw new ArgumentNullException(nameof(wsPubSubService));
+            this.wsPubSubService = wsPubSubService ?? throw new ArgumentNullException(nameof(wsPubSubService));
         }
 
         public Task StartAsync(CancellationToken ct)

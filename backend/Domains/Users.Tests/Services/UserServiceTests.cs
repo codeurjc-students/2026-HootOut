@@ -59,7 +59,7 @@ namespace HootOut.Users.UnitTests.Services
             user.Username.Should().Be(username);
             user.Email.Should().Be(email);
 
-            m_UserSaver.Verify(x => x.SaveAsync(It.IsAny<UserInfo>()), Times.Once());
+            m_UserSaver.Verify(x => x.SaveAsync(It.IsAny<UserInfo>(), It.IsAny<CancellationToken>()), Times.Once());
             m_UserSearch.Verify(x => x.GetUserByIdAsync(dto.Id, ct), Times.Once());
         }
 
@@ -76,7 +76,7 @@ namespace HootOut.Users.UnitTests.Services
             var user = await userService.GetUserDtoByIdAsync(dto.Id, ct);
             user.Should().NotBeNull();
 
-            m_UserSaver.Verify(x => x.SaveAsync(It.IsAny<UserInfo>()), Times.Exactly(3));
+            m_UserSaver.Verify(x => x.SaveAsync(It.IsAny<UserInfo>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
             m_UserSearch.Verify(x => x.GetUserByIdAsync(dto.Id, ct), Times.Once());
         }
     }

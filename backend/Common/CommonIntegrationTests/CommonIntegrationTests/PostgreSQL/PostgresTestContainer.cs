@@ -11,19 +11,19 @@ namespace HootOut.CommonIntegrationTests.PostgreSQL
     {
         public TestContainerPostgreSQLProvider? postgreSQLProvider { get; set; }
 
-        public ValueTask InitializeAsync()
+        public async ValueTask InitializeAsync()
         {
             if (postgreSQLProvider == null)
             {
                 postgreSQLProvider = new TestContainerPostgreSQLProvider();
-                return postgreSQLProvider.InitializeAsync();
+                await postgreSQLProvider.InitializeAsync();
             }
-            return ValueTask.CompletedTask;
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            return postgreSQLProvider?.DisposeAsync() ?? ValueTask.CompletedTask;
+            await postgreSQLProvider!.DisposeAsync();
+            GC.SuppressFinalize(this);
         }
 
         public ContainerBuilder RegisterTestPersistenceProvider()
