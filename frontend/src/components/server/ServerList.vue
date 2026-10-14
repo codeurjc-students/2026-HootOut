@@ -22,7 +22,7 @@ function setCurrentServer(server: ChatServer) {
 
 <template>
     <div v-for="server in servers" class="round-btn server-btn pointer" @click="setCurrentServer(server)"
-        :class="{ 'background-light': currentServer?.id == server.id }">
+        :class="{ 'background-light': currentServer?.id == server.id }" :key="server.id">
         <span class="server-btn-text">
             {{ server.name.charAt(0).toUpperCase() }}
         </span>

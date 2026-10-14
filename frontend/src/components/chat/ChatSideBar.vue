@@ -33,7 +33,7 @@ function onCreateServerSuccess(server: ChatServer) {
 
         <div id="new-server">
             <div id="new-server-btn" class="round-btn pointer" @click="openModal"></div>
-            <Modal title="Create New Server" ref="create-server-form-modal" @close="" @success="onSuccess">
+            <Modal title="Create New Server" ref="create-server-form-modal">
                 <template v-slot:body>
                     <CreateServerForm @success="onCreateServerSuccess" />
                 </template>
@@ -54,7 +54,6 @@ function onCreateServerSuccess(server: ChatServer) {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    overflow-y: auto;
     width: 100%;
     overflow-y: auto;
     overflow-x: hidden;

@@ -31,7 +31,7 @@ namespace HootOut.ChatServers.Services
             newServer.Description = request.Description;
             newServer.OwnerId = ownerId;
 
-            await saver.SaveAsync(newServer);
+            await saver.SaveAsync(newServer, ct);
 
             return newServer.ToDto();
         }

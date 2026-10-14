@@ -15,7 +15,7 @@ namespace HootOut.HootOutAPI.AppStart
 
                 foreach (var defaultValue in defaultValues)
                 {
-                    await defaultValue.InitAsync();
+                    await defaultValue.InitAsync(ct);
                 }
             }
         }

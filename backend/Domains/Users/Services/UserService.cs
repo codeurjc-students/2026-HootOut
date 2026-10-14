@@ -29,7 +29,7 @@ namespace HootOut.Users.Services
             newUser.Username = createUserRequest.Username;
             newUser.Password = createUserRequest.Password;
 
-            await userSaver.SaveAsync(newUser);
+            await userSaver.SaveAsync(newUser, ct);
 
             return newUser.ToDto();
         }
