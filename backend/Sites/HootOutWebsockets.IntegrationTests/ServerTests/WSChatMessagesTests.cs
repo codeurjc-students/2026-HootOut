@@ -72,11 +72,13 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
         public async ValueTask DisposeAsync()
         {
             await clearTables.ClearTablesAsync();
+            GC.SuppressFinalize(this);
         }
 
         public void Dispose()
         {
             container.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         [Fact]

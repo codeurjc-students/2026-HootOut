@@ -45,6 +45,7 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
         public async ValueTask DisposeAsync()
         {
             await clearTables.ClearTablesAsync();
+            GC.SuppressFinalize(this);
         }
 
         [Fact]

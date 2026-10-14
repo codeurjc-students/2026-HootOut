@@ -43,6 +43,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
         public async ValueTask DisposeAsync()
         {
             await clearTables.ClearTablesAsync();
+            GC.SuppressFinalize(this);
         }
 
         [Fact]
@@ -165,11 +166,10 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var error = await response.Content.ReadFromJsonAsync<object[]>(ct);
             Console.Write(error?.ToString());
         }
-
-
         public void Dispose()
         {
             container.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

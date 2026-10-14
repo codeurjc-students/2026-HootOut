@@ -27,6 +27,7 @@ namespace HootOut.CommonIntegrationTests.Services
         public async ValueTask DisposeAsync()
         {
             await Container.DisposeAsync();
+            GC.SuppressFinalize(this);
         }
     }
 }

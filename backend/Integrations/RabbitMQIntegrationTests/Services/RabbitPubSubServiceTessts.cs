@@ -28,6 +28,7 @@ namespace HootOut.RabbitMQIntegrationTests.Services
         public async ValueTask DisposeAsync()
         {
             await rabbitConnectionFactory.DisposeAsync();
+            GC.SuppressFinalize(this);
         }
 
         [Fact]

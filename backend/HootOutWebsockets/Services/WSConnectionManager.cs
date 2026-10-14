@@ -32,8 +32,6 @@ namespace HootOut.HootOutWebsockets.Services
             });
             ConnectionLock.TryAdd(connectionId, new SemaphoreSlim(1, 1));
 
-            logger.LogInformation("WebSocket connected: {ConnectionId} for user: {UserId}. Connections count {ConnectionCount}", connectionId, user.UserId, Connections.Count);
-
             return connectionId;
         }
 
@@ -100,8 +98,6 @@ namespace HootOut.HootOutWebsockets.Services
         public async Task RemoveConnectionAsync(Guid connectionId)
         {
             Connections.TryRemove(connectionId, out _);
-            Connections.TryRemove(connectionId, out _);
-            logger.LogInformation("WebSocket disconnected: {ConnectionId}. Connections count {ConnectionCount}", connectionId, Connections.Count);
         }
     }
 }

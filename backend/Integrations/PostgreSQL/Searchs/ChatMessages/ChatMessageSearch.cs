@@ -9,7 +9,7 @@ namespace HootOut.PostgreSQL.Searchs.ChatMessages
     public class ChatMessageSearch : IChatMessageSearch
     {
 
-        private IPersistenceProvider provider;
+        private readonly IPersistenceProvider provider;
         public ChatMessageSearch(IPersistenceProvider provider)
         {
             this.provider = provider ?? throw new ArgumentNullException(nameof(provider));

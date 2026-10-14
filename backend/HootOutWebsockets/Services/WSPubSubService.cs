@@ -60,7 +60,6 @@ namespace HootOut.WebSockets.Service
                     return;
 
                 subscribers.Remove(connectionId);
-                logger.LogInformation("Removed connection {ConnectionId} from channel {ChannelId}. Channel count {ConnectionCount}", connectionId, channel, subscribers.Count);
                 if (subscribers.Count == 0)
                 {
                     ChannelSubscribers.TryRemove(channel, out _);

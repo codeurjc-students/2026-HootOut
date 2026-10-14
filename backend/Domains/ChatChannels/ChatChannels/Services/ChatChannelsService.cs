@@ -35,16 +35,12 @@ namespace HootOut.ChatChannels.Services
 
         public async Task<IEnumerable<ChatChannelDto>> GetAllChatChannelsDtosAsync(CancellationToken ct = default)
         {
-            return (await search.getAllChannelsAsync(ct))
-                .Select(x => x.ToDto())
-                .ToList();
+            return [.. (await search.GetAllChannelsAsync(ct)).Select(x => x.ToDto())];
         }
 
         public async Task<IEnumerable<ChatChannelDto>> GetChannelsByServerIdAsync(Guid serverId, CancellationToken ct = default)
         {
-            return (await search.getChannelsByServerId(serverId, ct))
-                .Select(x => x.ToDto())
-                .ToList();
+            return [.. (await search.GetChannelsByServerId(serverId, ct)).Select(x => x.ToDto())];
         }
     }
 }

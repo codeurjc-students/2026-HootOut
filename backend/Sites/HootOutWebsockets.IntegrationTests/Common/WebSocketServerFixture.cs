@@ -52,9 +52,10 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
             return base.CreateHost(builder);
         }
 
-        public new ValueTask DisposeAsync()
+        public new async ValueTask DisposeAsync()
         {
-            return PostgreSQLProvider!.DisposeAsync();
+            await PostgreSQLProvider!.DisposeAsync();
+            GC.SuppressFinalize(this);
         }
 
         public ValueTask InitializeAsync()

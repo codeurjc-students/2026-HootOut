@@ -22,14 +22,14 @@ namespace HootOut.Users.Services
 
         public async Task<UserDto> CreateUserAsync(CreateUserRequest createUserRequest, CancellationToken ct = default)
         {
-            if (createUserRequest == null) throw new ArgumentNullException(nameof(createUserRequest));
+            ArgumentNullException.ThrowIfNull(createUserRequest);
 
             var newUser = Persistable.CreateNew<UserInfo>();
             newUser.Email = createUserRequest.Email;
             newUser.Username = createUserRequest.Username;
             newUser.Password = createUserRequest.Password;
 
-            await userSaver.SaveAsync(newUser);
+            await userSaver.SaveAsync(newUser, ct);
 
             return newUser.ToDto();
         }

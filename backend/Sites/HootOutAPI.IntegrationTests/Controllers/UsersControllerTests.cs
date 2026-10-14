@@ -42,13 +42,14 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
         public async ValueTask DisposeAsync()
         {
             await clearTables.ClearTablesAsync();
+            GC.SuppressFinalize(this);
         }
 
         [Fact]
         public async Task GetUsersAll_ReturnsUnAuthorized_Empty()
         {
             var ct = TestContext.Current.CancellationToken;
-            var response = await httpClient.GetAsync("/api/v1/users/me", ct);
+            var response = await httpClient!.GetAsync("/api/v1/users/me", ct);
 
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
@@ -58,7 +59,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
         {
             var ct = TestContext.Current.CancellationToken;
 
-            var response = await httpClient.GetAsync("/api/v1/users/all", ct);
+            var response = await httpClient!.GetAsync("/api/v1/users/all", ct);
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
             await RegisterAsync(ct);
@@ -129,6 +130,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
         public void Dispose()
         {
             container.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -17,7 +17,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
     public class ChatMessagesControllerTests : TestControllerBase, IClassFixture<APIFixture>, IDisposable, IAsyncLifetime
     {
         private readonly ILifetimeScope container;
-        private ClearAllTables clearTables;
+        private readonly ClearAllTables clearTables;
 
         public ChatMessagesControllerTests(APIFixture apiFixture)
         {
@@ -44,6 +44,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
         public async ValueTask DisposeAsync()
         {
             await clearTables.ClearTablesAsync();
+            GC.SuppressFinalize(this);
         }
 
         [Fact]
@@ -140,6 +141,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
         public void Dispose()
         {
             container.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

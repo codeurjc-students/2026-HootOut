@@ -2,8 +2,7 @@
 import { ref } from 'vue';
 
 const props = defineProps({
-    title: String,
-    show: Boolean,
+    title: String
 })
 
 const emit = defineEmits<{

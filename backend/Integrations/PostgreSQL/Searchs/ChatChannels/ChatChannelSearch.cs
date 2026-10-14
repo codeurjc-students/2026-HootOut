@@ -21,14 +21,14 @@ namespace HootOut.PostgreSQL.Searchs.ChatChannels
             FROM "HootOut"."ChatChannel"
         """;
 
-        public async Task<IEnumerable<ChatChannel>> getAllChannelsAsync(CancellationToken ct = default)
+        public async Task<IEnumerable<ChatChannel>> GetAllChannelsAsync(CancellationToken ct = default)
         {
             await using var conn = await persistenceProvider.OpenConnectionAsync(ct);
 
             return await conn.QueryAsync<ChatChannel>(getAllChannelsQuery, ct);
         }
 
-        public async Task<IEnumerable<ChatChannel>> getChannelsByServerId(Guid serverId, CancellationToken ct = default)
+        public async Task<IEnumerable<ChatChannel>> GetChannelsByServerId(Guid serverId, CancellationToken ct = default)
         {
             await using var conn = await persistenceProvider.OpenConnectionAsync(ct);
 

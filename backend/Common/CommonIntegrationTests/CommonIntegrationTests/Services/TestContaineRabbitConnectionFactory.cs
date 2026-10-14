@@ -33,6 +33,7 @@ namespace HootOut.CommonIntegrationTests.Services
         public async ValueTask DisposeAsync()
         {
             await rabbitContainer.DisposeAsync();
+            GC.SuppressFinalize(this);
         }
     }
 }

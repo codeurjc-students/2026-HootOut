@@ -21,7 +21,7 @@ namespace HootOut.ChatServers.Services
 
         public async Task<ChatServerDto> CreateChatServerAsync(CreateChatServerRequest request, Guid ownerId, CancellationToken ct = default)
         {
-            if (request == null) throw new ArgumentNullException(nameof(request));
+            ArgumentNullException.ThrowIfNull(request);
 
             request.Validate();
 
@@ -31,7 +31,7 @@ namespace HootOut.ChatServers.Services
             newServer.Description = request.Description;
             newServer.OwnerId = ownerId;
 
-            await saver.SaveAsync(newServer);
+            await saver.SaveAsync(newServer, ct);
 
             return newServer.ToDto();
         }

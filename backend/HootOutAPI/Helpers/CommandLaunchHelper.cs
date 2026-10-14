@@ -19,12 +19,13 @@ namespace HootOut.HootOutAPI.Helpers
             }
             catch (ValidationException ex)
             {
-                logger.LogInformation(ex, ex.Message);
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Validation Exception: {Message}", ex.Message);
                 return badRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, ex.Message);
+                logger.LogError(ex, "Internal Server Error {Message}", ex.Message);
                 return internalError("Internal Server Error");
             }
         }
@@ -42,12 +43,13 @@ namespace HootOut.HootOutAPI.Helpers
             }
             catch (ValidationException ex)
             {
-                logger.LogInformation(ex.Message);
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Validation Exception: {Message}", ex.Message);
                 return badRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex.Message);
+                logger.LogError(ex, "Internal Server Error {Message}", ex.Message);
                 return internalError("Internal Server Error");
             }
 
@@ -68,12 +70,13 @@ namespace HootOut.HootOutAPI.Helpers
             }
             catch (ValidationException ex)
             {
-                logger.LogInformation(ex, ex.Message);
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Validation Exception: {Message}", ex.Message);
                 return badRequest(ex.Errors);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, ex.Message);
+                logger.LogError(ex, "Internal Server Error {Message}", ex.Message);
                 return internalError("Internal Server Error");
             }
         }
@@ -91,12 +94,13 @@ namespace HootOut.HootOutAPI.Helpers
             }
             catch (ValidationException ex)
             {
-                logger.LogInformation(ex.Message);
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Validation Exception: {Message}", ex.Message);
                 return badRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex.Message);
+                logger.LogError(ex, "Internal Server Error {Message}", ex.Message);
                 return internalError("Internal Server Error");
             }
             return new OkResult();

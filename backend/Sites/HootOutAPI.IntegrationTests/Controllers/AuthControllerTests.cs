@@ -207,7 +207,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var ct = TestContext.Current.CancellationToken;
             var auth = await RegisterAsync(ct);
 
-            var logout = await httpClient.PostAsJsonAsync(
+            var logout = await httpClient!.PostAsJsonAsync(
                 "/api/v1/auth/logout", new AuthRefreshRequest { RefreshToken = auth.RefreshToken }, ct);
             logout.IsSuccessStatusCode.Should().BeTrue();
 
@@ -225,7 +225,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
         {
             var ct = TestContext.Current.CancellationToken;
 
-            var response = await httpClient.PostAsync("/api/v1/auth/ws-ticket", null, ct);
+            var response = await httpClient!.PostAsync("/api/v1/auth/ws-ticket", null, ct);
 
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
@@ -277,7 +277,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
         // ------------------------------------------------------------------ 
 
         private Task<HttpResponseMessage> RefreshAsync(string refreshToken, CancellationToken ct) =>
-            httpClient.PostAsJsonAsync(
+            httpClient!.PostAsJsonAsync(
                 "/api/v1/auth/refresh",
                 new AuthRefreshRequest { RefreshToken = refreshToken },
                 ct);
@@ -296,12 +296,13 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/users/me");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            return await httpClient.SendAsync(request, ct);
+            return await httpClient!.SendAsync(request, ct);
         }
 
         public void Dispose()
         {
             container.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }
