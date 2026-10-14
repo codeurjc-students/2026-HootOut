@@ -6,7 +6,7 @@ import { onMounted } from 'vue';
 
 
 const serverInfo = serverInfoStore()
-const { servers } = storeToRefs(serverInfo)
+const { servers, currentServer } = storeToRefs(serverInfo)
 
 
 
@@ -21,7 +21,8 @@ function setCurrentServer(server: ChatServer) {
 </script>
 
 <template>
-    <div v-for="server in servers" class="round-btn server-btn pointer" @click="setCurrentServer(server)">
+    <div v-for="server in servers" class="round-btn server-btn pointer" @click="setCurrentServer(server)"
+        :class="{ 'background-light': currentServer?.id == server.id }">
         <span class="server-btn-text">
             {{ server.name.charAt(0).toUpperCase() }}
         </span>
