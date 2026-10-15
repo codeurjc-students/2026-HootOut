@@ -22,17 +22,6 @@ namespace HootOut.HootOutAPI.Controllers
             this.chatChannelsService = chatChannelsService ?? throw new ArgumentNullException(nameof(chatChannelsService));
         }
 
-        [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<ChatChannelDto>>> GetAllChatChannels(CancellationToken ct)
-        {
-            return await CommandLaunchHelper.LaunchAsync(
-               logger,
-               async () => await chatChannelsService.GetAllChatChannelsDtosAsync(ct),
-               BadRequest,
-               (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
-           );
-        }
-
         [HttpGet("getByServerId")]
         public async Task<ActionResult<IEnumerable<ChatChannelDto>>> GetChannelsById(Guid serverId, CancellationToken ct)
         {
@@ -45,11 +34,33 @@ namespace HootOut.HootOutAPI.Controllers
         }
 
         [HttpPost()]
-        public async Task<ActionResult<IEnumerable<ChatChannelDto>>> CreateChatChannel(CreateChatChannelRequest request, CancellationToken ct)
+        public async Task<ActionResult<ChatChannelDto>> CreateChatChannel(CreateChatChannelRequest request, CancellationToken ct)
         {
             return await CommandLaunchHelper.LaunchAsync(
                logger,
                async () => await chatChannelsService.CreateChatChannelAsync(request, ct),
+               BadRequest,
+               (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
+           );
+        }
+
+        [HttpPut()]
+        public async Task<ActionResult<ChatChannelDto>> ModifyChatChannel(UpdateChatChannelRequest request, CancellationToken ct)
+        {
+            return await CommandLaunchHelper.LaunchAsync(
+               logger,
+               async () => await chatChannelsService.UpdateChatChannelAsync(request, ct),
+               BadRequest,
+               (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
+           );
+        }
+
+        [HttpDelete()] 
+        async Task<ActionResult<Guid>> DeleteChatChannelChatChannel(Guid channelId, CancellationToken ct)
+        {
+            return await CommandLaunchHelper.LaunchAsync(
+               logger,
+               async () => await chatChannelsService.DeleteChatChannelAsync(channelId, ct),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );

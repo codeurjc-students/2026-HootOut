@@ -33,6 +33,8 @@ async function onSubmit() {
 
     try {
         const newServer = await ChatServerService.createNewServer({ name: form.name, description: form.description });
+        form.name = ''
+        form.description = ''
         emit('success', newServer);
     } catch (err) {
         error.value = err instanceof ApiError && err.status < 500
@@ -44,8 +46,6 @@ async function onSubmit() {
             formErrors.value = getValidationErrors(err);
         }
     } finally {
-        form.name = ''
-        form.description = ''
         submitting.value = false
     }
 }
@@ -93,7 +93,7 @@ async function cleanForm() {
         </div>
 
         <button class="button-action" type="submit" :disabled="submitting || !form.name">
-            Log In
+            Create Server
         </button>
     </form>
 </template>

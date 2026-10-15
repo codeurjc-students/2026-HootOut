@@ -14,19 +14,7 @@ namespace HootOut.PostgreSQL.Searchs.ChatChannels
         }
 
         private const string ChatChannelColums =
-            """ "Id", "Name", "ChatServerId", "CreatedAt", "ModifiedAt" """;
-
-        private const string getAllChannelsQuery = $"""
-            SELECT {ChatChannelColums}
-            FROM "HootOut"."ChatChannel"
-        """;
-
-        public async Task<IEnumerable<ChatChannel>> GetAllChannelsAsync(CancellationToken ct = default)
-        {
-            await using var conn = await persistenceProvider.OpenConnectionAsync(ct);
-
-            return await conn.QueryAsync<ChatChannel>(getAllChannelsQuery, ct);
-        }
+            """ "Id", "Name", "ChatServerId", "CreatedAt", "ModifiedAt" """;  
 
         public async Task<IEnumerable<ChatChannel>> GetChannelsByServerId(Guid serverId, CancellationToken ct = default)
         {
@@ -37,11 +25,27 @@ namespace HootOut.PostgreSQL.Searchs.ChatChannels
                     SELECT
                         {ChatChannelColums}
                     FROM "HootOut"."ChatChannel"
-                    WHERE "ChatServerId" = @ServerId
+                    WHERE "ChatServerId" = @ServerId AND "Deleted" = False
                     ORDER BY "Name"
                 """,
                 new { ServerId = serverId },
                 cancellationToken: ct));
+        } 
+
+        public async Task<ChatChannel?> GetChannelByIdAsync(Guid channelId, CancellationToken ct = default)
+        {
+            await using var conn = await persistenceProvider.OpenConnectionAsync(ct);
+
+            return (await conn.QueryAsync<ChatChannel>(new CommandDefinition(
+               $"""
+                    SELECT
+                        {ChatChannelColums}
+                    FROM "HootOut"."ChatChannel"
+                    WHERE "Id" = @Id AND "Deleted" = False
+                    ORDER BY "Name"
+                """,
+                new { Id = channelId },
+                cancellationToken: ct))).FirstOrDefault();
         }
     }
 }

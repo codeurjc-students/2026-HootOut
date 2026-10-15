@@ -28,7 +28,7 @@ defineExpose({
 
 <template>
     <Teleport to="body">
-        <div v-if="show" class="modal-background"></div>
+        <div v-if="show" class="modal-background" @click="close"></div>
         <div v-if="show" class="modal custom-form-wrapper">
             <div class="modal-title">
                 <h2>
@@ -83,7 +83,7 @@ defineExpose({
     align-self: center;
 }
 
-@media(max-width: 480px) {
+@media(max-width: 520px) {
     .modal {
         top: 0;
         left: 0;

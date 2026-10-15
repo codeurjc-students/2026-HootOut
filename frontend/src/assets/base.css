@@ -3,6 +3,7 @@
   --vt-c-white: 255, 255, 255;
   --vt-c-white-soft: 248, 248, 248;
   --vt-c-white-mute: 242, 242, 242;
+  --vt-c-white-disabled: 120, 120, 120;
 
   --vt-c-dark: 36, 36, 36;
   --vt-c-dark-soft: 44, 44, 44;
@@ -61,6 +62,7 @@
   --color-inverse: var(--vt-c-text-dark-2);
   --color-inverse-soft: var(--vt-c-text-dark-2);
   --color-inverse-light: var(--vt-c-white-mute);
+  --color-inverse-disabled: var(--vt-c-white-disabled)
 }
 
 /* } */
@@ -102,12 +104,27 @@ body {
 
 /* Custom Button */
 
+.inline-btn {
+  border: 0;
+  background-color: transparent;
+  text-decoration: none rgb(var(--color-inverse-light)) solid;
+  text-decoration-thickness: auto;
+  color: rgb(var(--color-text));
+  font-size: 1.5rem;
+  transition: all .2s ease-in-out;
+}
+
+.inline-btn:hover {
+  border: 0;
+  transform: scale(1.1);
+}
+
 .button-action {
   border: 0;
   border-radius: var(--border-radius);
   box-sizing: border-box;
   background-color: rgb(var(--color-inverse));
-  color: #111827;
+  color: rgb(var(--color-background));
   font-size: .95rem;
   font-weight: 600;
   line-height: 1.25rem;
@@ -140,6 +157,12 @@ body {
 }
 
 .button-action:focus-visible {
+  box-shadow: none;
+}
+
+.button-action:disabled {
+  background-color: rgb(var(--color-inverse-disabled));
+  color: rgb(var(--color-background-light));
   box-shadow: none;
 }
 
