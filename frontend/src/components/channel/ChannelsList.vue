@@ -54,7 +54,7 @@ async function onChannelDeleted(id: string) {
     </div>
     <Modal title="Update Channel" ref="update-channel-form-modal">
         <template v-slot:body>
-            <UpdateChannelForm :channel="channelToEdit" @success="onUpdatedChannelSuccess"
+            <UpdateChannelForm :channel="channelToEdit" :server="currentServer" @success="onUpdatedChannelSuccess"
                 @deleted="onChannelDeleted" />
         </template>
     </Modal>
