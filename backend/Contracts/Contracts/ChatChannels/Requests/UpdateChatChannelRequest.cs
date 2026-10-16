@@ -1,14 +1,11 @@
 ﻿using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.Contracts.ChatChannels.Requests
 {
     public sealed class UpdateChatChannelRequest
     {
         public Guid Id { get; set; }
-        public string Name { get; init; } = string.Empty; 
+        public string Name { get; init; } = string.Empty;
         public void Validate() => new UpdateChatChannelRequestValidator().ValidateAndThrow(this);
     }
 

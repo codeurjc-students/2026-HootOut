@@ -29,7 +29,7 @@ defineExpose({
 <template>
     <Teleport to="body">
         <div v-if="show" class="modal-background" @click="close"></div>
-        <div v-if="show" class="modal custom-form-wrapper">
+        <div v-if="show" class="modal custom-form-wrapper p-2">
             <div class="modal-title">
                 <h2>
                     {{ props.title }}
@@ -40,7 +40,7 @@ defineExpose({
                     </span>
                 </div>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" @keyup.esc="close">
                 <slot name="body"></slot>
             </div>
         </div>
@@ -66,7 +66,6 @@ defineExpose({
     top: 20%;
     left: 50%;
     transform: translateX(-50%);
-    padding: 1.5rem;
 }
 
 .modal-title {

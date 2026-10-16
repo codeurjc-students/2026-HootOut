@@ -13,7 +13,7 @@ const { currentServer } = storeToRefs(serverInfoStore())
         <div v-if="currentServer">
             <ServerChannelsBar />
         </div>
-        <div v-else>
+        <div v-else class="p-1">
             Select a Server First
         </div>
     </div>

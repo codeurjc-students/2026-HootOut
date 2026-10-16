@@ -156,14 +156,14 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 
             string newName = "New Name";
             response = await SendAuthorizeHttpRequest(
-               HttpMethod.Put, "/api/v1/chatChannels", new UpdateChatChannelRequest { Name = newName, Id = channel.ChatServerId }, auth!.AccessToken!, ct);
+               HttpMethod.Put, "/api/v1/chatChannels", new UpdateChatChannelRequest { Name = newName, Id = channel.Id }, auth!.AccessToken!, ct);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var updatedChannel = await response.Content.ReadFromJsonAsync<ChatChannelDto>(ct);
             updatedChannel.Should().NotBeNull();
             updatedChannel.Id.Should().Be(channel.Id);
             updatedChannel.Name.Should().Be(newName);
-            updatedChannel.ChatServerId.Should().Be(channel.Id);
+            updatedChannel.ChatServerId.Should().Be(channel.ChatServerId);
 
             response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get, $"/api/v1/chatChannels/getByServerId?serverId={server.Id.ToString()}", auth.AccessToken!, ct);
@@ -211,21 +211,21 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             channel.Id.Should().NotBeEmpty();
             channel.Name.Should().Be(channelName);
             channel.ChatServerId.Should().Be(server.Id);
-             
+
             response = await SendAuthorizeHttpRequest(
-               HttpMethod.Delete, $"/api/v1/chatChannels?channelId={channel.Id}", auth!.AccessToken!, ct);
+               HttpMethod.Delete, $"/api/v1/chatChannels/{channel.Id.ToString()}", auth!.AccessToken!, ct);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var id = await response.Content.ReadFromJsonAsync<Guid>(ct);
             id.Should().NotBeEmpty();
             id.Should().Be(channel.Id);
-            
+
             response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get, $"/api/v1/chatChannels/getByServerId?serverId={server.Id.ToString()}", auth.AccessToken!, ct);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var channelList = await response.Content.ReadFromJsonAsync<IEnumerable<ChatChannelDto>>(ct);
-            channelList.Should().BeEmpty(); 
+            channelList.Should().BeEmpty();
         }
 
 

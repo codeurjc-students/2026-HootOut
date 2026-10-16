@@ -10,7 +10,7 @@ import type { WebSocketMessage } from '@/types/websocketMessage.ts';
 
 const createChannelFormModal = useTemplateRef('create-channel-form-modal');
 const serverInfo = serverInfoStore();
-const { channels, currentChatChannel, currentServer } = storeToRefs(serverInfo)
+const { currentServer } = storeToRefs(serverInfo)
 
 async function onCreateChannelSuccess(newChannel: ChatChannel) {
 

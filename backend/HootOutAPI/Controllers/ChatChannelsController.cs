@@ -45,7 +45,7 @@ namespace HootOut.HootOutAPI.Controllers
         }
 
         [HttpPut()]
-        public async Task<ActionResult<ChatChannelDto>> ModifyChatChannel(UpdateChatChannelRequest request, CancellationToken ct)
+        public async Task<ActionResult<ChatChannelDto>> UpdateChatChannel(UpdateChatChannelRequest request, CancellationToken ct)
         {
             return await CommandLaunchHelper.LaunchAsync(
                logger,
@@ -55,12 +55,12 @@ namespace HootOut.HootOutAPI.Controllers
            );
         }
 
-        [HttpDelete()] 
-        async Task<ActionResult<Guid>> DeleteChatChannelChatChannel(Guid channelId, CancellationToken ct)
+        [HttpDelete("{id:guid}")]
+        public async Task<ActionResult<Guid>> DeleteChatChannel(Guid id, CancellationToken ct)
         {
             return await CommandLaunchHelper.LaunchAsync(
                logger,
-               async () => await chatChannelsService.DeleteChatChannelAsync(channelId, ct),
+               async () => await chatChannelsService.DeleteChatChannelAsync(id, ct),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );

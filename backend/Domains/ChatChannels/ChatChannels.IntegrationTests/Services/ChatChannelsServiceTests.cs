@@ -51,7 +51,7 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
         public async Task GetChatChannelsByServerId_Empty()
         {
             var ct = TestContext.Current.CancellationToken;
-            (await chatChannelsService.GetChannelsByServerIdAsync(Guid.NewGuid(),ct)).Should().BeEmpty();
+            (await chatChannelsService.GetChannelsByServerIdAsync(Guid.NewGuid(), ct)).Should().BeEmpty();
         }
 
         [Fact]
@@ -123,7 +123,7 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
             var newChannel = await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "test", ChatServerId = serverId }, ct);
 
             IChatChannelSearch search = container.Resolve<IChatChannelSearch>();
-            var channel = await search.GetChannelByIdAsync(newChannel.Id, ct); 
+            var channel = await search.GetChannelByIdAsync(newChannel.Id, ct);
 
             var id = await chatChannelsService.DeleteChatChannelAsync(channel.Id, ct);
             id.Should().Be(channel.Id);
@@ -133,7 +133,7 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
 
             var channels = await chatChannelsService.GetChannelsByServerIdAsync(serverId, ct);
             channels.Should().NotBeNull();
-            channels.Should().BeEmpty(); 
+            channels.Should().BeEmpty();
         }
     }
 }

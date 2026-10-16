@@ -43,7 +43,7 @@ namespace HootOut.ChatChannels.Services
         {
             request.Validate();
 
-            ChatChannel? channel = await search.GetChannelByIdAsync(request.Id, ct); 
+            ChatChannel? channel = await search.GetChannelByIdAsync(request.Id, ct);
             if (channel == null) throw new FluentValidation.ValidationException("Channel not found"); //TO-DO Check user is on server
 
             channel.Name = request.Name;

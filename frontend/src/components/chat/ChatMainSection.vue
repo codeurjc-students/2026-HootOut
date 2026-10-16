@@ -12,7 +12,7 @@ const { currentChatChannel } = storeToRefs(serverInfoStore())
     <section id="main-section" class="background-soft">
         <ChatLeftBar />
         <ChatConversationView v-if="currentChatChannel" />
-        <div v-else id="empty-chat" class="background-primary">
+        <div v-else id="empty-chat" class="background-primary p-1">
             Start a new chat
         </div>
     </section>
@@ -27,7 +27,6 @@ const { currentChatChannel } = storeToRefs(serverInfoStore())
 }
 
 #empty-chat {
-    padding: 1rem;
     border: 1px solid rgb(var(--color-border));
 }
 </style>

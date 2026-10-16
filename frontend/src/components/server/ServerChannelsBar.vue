@@ -11,7 +11,7 @@ const { currentServer } = storeToRefs(serverInfo) as any
 
 <template>
     <div class="server-channels-bar">
-        <div class="server-name">
+        <div class="server-name p-1">
             <div> {{ currentServer?.name }}</div>
         </div>
 
@@ -23,7 +23,6 @@ const { currentServer } = storeToRefs(serverInfo) as any
 
 <style>
 .server-name {
-    padding: 1rem 1rem;
     font-size: 1.25rem;
     font-weight: bold;
     border-bottom: 1px solid rgb(var(--color-background-light));

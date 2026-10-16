@@ -62,9 +62,9 @@ namespace HootOut.PostgreSQL.Savers.ChatChannels
                         "ModifiedAt" = @ModifiedAt
                     WHERE "Id" = @Id
                     """, new
-                    
+
                     {
-                        item.Id, 
+                        item.Id,
                         ModifiedAt = DateTime.UtcNow
                     }, tx, cancellationToken: ct));
                 await tx.CommitAsync(ct);

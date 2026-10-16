@@ -1,27 +1,30 @@
 /* color palette from <https://github.com/vuejs/theme> */
 :root {
-  --vt-c-white: 255, 255, 255;
-  --vt-c-white-soft: 248, 248, 248;
-  --vt-c-white-mute: 242, 242, 242;
-  --vt-c-white-disabled: 120, 120, 120;
+  --c-white: 255, 255, 255;
+  --c-white-soft: 248, 248, 248;
+  --c-white-mute: 242, 242, 242;
+  --c-white-disabled: 120, 120, 120;
 
-  --vt-c-dark: 36, 36, 36;
-  --vt-c-dark-soft: 44, 44, 44;
-  --vt-c-dark-light: 75, 75, 75;
+  --c-dark: 36, 36, 36;
+  --c-dark-soft: 44, 44, 44;
+  --c-dark-light: 75, 75, 75;
 
-  --vt-c-indigo: 44, 62, 80;
+  --c-indigo: 44, 62, 80;
 
-  --vt-c-divider-light-1: rgba(60, 60, 60, 0.29);
-  --vt-c-divider-light-2: rgba(60, 60, 60, 0.12);
-  --vt-c-divider-dark-1: 75, 75, 75;
-  --vt-c-divider-dark-2: var(--vt-c-divider-dark-1);
+  --c-divider-light-1: rgba(60, 60, 60, 0.29);
+  --c-divider-light-2: rgba(60, 60, 60, 0.12);
+  --c-divider-dark-1: 75, 75, 75;
+  --c-divider-dark-2: var(--c-divider-dark-1);
 
-  --vt-c-text-light-1: var(--vt-c-indigo);
-  --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
-  --vt-c-text-dark-1: 255, 252, 242;
-  --vt-c-text-dark-2: 204, 197, 185;
+  --c-text-light-1: var(--c-indigo);
+  --c-text-light-2: rgba(60, 60, 60, 0.66);
+  --c-text-dark-1: 255, 252, 242;
+  --c-text-dark-2: 204, 197, 185;
 
-  --vt-c-dark-input: 30, 30, 30;
+  --c-dark-input: 30, 30, 30;
+
+  --c-red: 184, 0, 31;
+  --c-red-soft: 212, 24, 55;
 
   --border-radius: 0.2rem;
   --navbar-height: 3rem;
@@ -29,40 +32,43 @@
 
 /* semantic color variables for this project */
 :root {
-  --color-background: var(--vt-c-white);
-  --color-background-soft: var(--vt-c-white-soft);
-  --color-background-mute: var(--vt-c-white-mute);
+  --color-background: var(--c-white);
+  --color-background-soft: var(--c-white-soft);
+  --color-background-mute: var(--c-white-mute);
 
-  --color-border: var(--vt-c-divider-light-2);
-  --color-border-hover: var(--vt-c-divider-light-1);
+  --color-border: var(--c-divider-light-2);
+  --color-border-hover: var(--c-divider-light-1);
 
-  --color-heading: var(--vt-c-text-light-1);
-  --color-text: var(--vt-c-text-light-1);
+  --color-heading: var(--c-text-light-1);
+  --color-text: var(--c-text-light-1);
 
-  --color-inverse: var(--vt-c-dark);
-  --color-inverse-soft: var(--vt-c-dark-soft);
-  --color-inverse-light: var(--vt-c-dark-light);
+  --color-inverse: var(--c-dark);
+  --color-inverse-soft: var(--c-dark-soft);
+  --color-inverse-light: var(--c-dark-light);
 
   --section-gap: 160px;
 }
 
 /* @media (prefers-color-scheme: dark) { */
 :root {
-  --color-background: var(--vt-c-dark);
-  --color-background-soft: var(--vt-c-dark-soft);
-  --color-background-light: var(--vt-c-dark-light);
-  --color-background-input: var(--vt-c-dark-input);
+  --color-background: var(--c-dark);
+  --color-background-soft: var(--c-dark-soft);
+  --color-background-light: var(--c-dark-light);
+  --color-background-input: var(--c-dark-input);
 
-  --color-border: var(--vt-c-divider-dark-2);
-  --color-border-hover: var(--vt-c-divider-dark-1);
+  --color-border: var(--c-divider-dark-2);
+  --color-border-hover: var(--c-divider-dark-1);
 
-  --color-heading: var(--vt-c-text-dark-1);
-  --color-text: var(--vt-c-text-dark-2);
+  --color-heading: var(--c-text-dark-1);
+  --color-text: var(--c-text-dark-2);
 
-  --color-inverse: var(--vt-c-text-dark-2);
-  --color-inverse-soft: var(--vt-c-text-dark-2);
-  --color-inverse-light: var(--vt-c-white-mute);
-  --color-inverse-disabled: var(--vt-c-white-disabled)
+  --color-inverse: var(--c-text-dark-2);
+  --color-inverse-soft: var(--c-text-dark-2);
+  --color-inverse-light: var(--c-white-mute);
+  --color-inverse-disabled: var(--c-white-disabled);
+
+  --color-warning: var(--c-red);
+  --color-warning-soft: var(--c-red-soft);
 }
 
 /* } */
@@ -164,6 +170,16 @@ body {
   background-color: rgb(var(--color-inverse-disabled));
   color: rgb(var(--color-background-light));
   box-shadow: none;
+}
+
+.button-action-danger {
+  background-color: rgb(var(--color-warning-soft));
+  color: rgb(var(--color-text));
+}
+
+.button-action-danger:hover {
+  background-color: rgb(var(--color-warning));
+  box-shadow: inset 0 0 0 1px rgb(var(--color-border-hover));
 }
 
 .round-btn {
@@ -273,4 +289,16 @@ body {
 
 .color-text {
   color: rgb(var(--color-text));
+}
+
+.p-1 {
+  padding: 1rem;
+}
+
+.p-2 {
+  padding: 2rem;
+}
+
+.p-3 {
+  padding: 3rem;
 }

@@ -71,8 +71,9 @@ namespace HootOut.HootOutAPI
                 if (allowedOrigins.Length > 0)
                     policy.WithOrigins(allowedOrigins)
                           .AllowCredentials()
-                          .WithMethods("GET", "POST")
+                          .WithMethods("GET", "POST", "PUT", "DELETE")
                           .WithHeaders("Authorization", "Content-Type", "X-Token-Delivery");
+                policy.AllowAnyMethod();
             }));
 
             services.AddControllers();

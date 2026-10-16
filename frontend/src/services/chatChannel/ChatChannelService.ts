@@ -1,17 +1,24 @@
-import type { ChatChannel, CreateChatChannelRequest } from "@/types";
-import { get, post } from "../common/api/ApiService"
+import type { ChatChannel, CreateChatChannelRequest, UpdateChatChannelRequest } from "@/types";
+import { deleteHTTP, get, post, put } from "../common/api/ApiService"
+
+const channelsUrl = 'chatchannels'
 
 const ChatChannelService = {
-    getAllChannels: async function (): Promise<Array<any>> {
-        return get('chatchannels/all');
-    },
 
     getChannelsByServerId: async function (serverId: string): Promise<Array<ChatChannel>> {
-        return get('chatchannels/getByServerId', { serverId });
+        return await get(`${channelsUrl}/getByServerId`, { serverId });
     },
 
     createNewChannel: async function (request: CreateChatChannelRequest): Promise<ChatChannel> {
-        return post('chatchannels', request);
+        return await post(channelsUrl, request);
+    },
+
+    updateChatChannel: async function (request: UpdateChatChannelRequest): Promise<ChatChannel> {
+        return await put(channelsUrl, request);
+    },
+
+    deleteChatChannel: async function (id: string): Promise<string> {
+        return await deleteHTTP(`${channelsUrl}/${id}`)
     }
 }
 

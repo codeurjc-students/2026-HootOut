@@ -6,6 +6,6 @@ namespace HootOut.Contracts.Common.Saver
     {
         Task SaveAsync(T item, CancellationToken ct = default);
 
-        async Task DeleteAsync(T item, CancellationToken ct = default) {}
+        async Task DeleteAsync(T item, CancellationToken ct = default) { }
     }
 }

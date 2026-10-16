@@ -2,7 +2,7 @@
 import ChatServerService from '@/services/chatServer/ChatServerService'
 import { getValidationErrors } from '@/services/common/utils'
 import { ApiError, ValidationError, type ChatServer } from '@/types'
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 
 defineExpose({
     cleanForm
@@ -14,13 +14,19 @@ const emit = defineEmits<{
 
 const form = reactive({ name: '', description: '' })
 const submitting = ref(false)
-const error = ref('')
+const error = ref('');
+
+const firstinput = ref<HTMLElement>();
+onMounted(() => firstinput?.value?.focus())
 
 const canSubmit = computed(
     () =>
         !submitting.value &&
         form.name.trim() !== ''
 )
+
+
+
 
 const formErrors = ref(new Map<string, Map<string, string>>())
 
@@ -69,8 +75,8 @@ async function cleanForm() {
                 <label for="server-name">Server Name *</label>
             </div>
             <div class="custom-form-input-wrapper">
-                <input id="server-name" class="custom-form-text-input" v-model="form.name" type="text" required
-                    placeholder="Server name" minlength="5" maxlength="50" />
+                <input id="server-name" ref="firstinput" class="custom-form-text-input" v-model="form.name" type="text"
+                    required placeholder="Server name" minlength="5" maxlength="50" autofocus autocomplete="off" />
             </div>
 
             <p v-for="err in formErrors.get('Name')?.values()" :key="err" class="custom-form-field-error">
@@ -84,7 +90,7 @@ async function cleanForm() {
             </div>
             <div class="custom-form-input-wrapper">
                 <input id="server-description" class="custom-form-text-input" type="text" v-model="form.description"
-                    placeholder="Short description of the server" maxlength="200" />
+                    placeholder="Short description of the server" maxlength="200" autocomplete="off" />
             </div>
 
             <p v-for="err in formErrors.get('Description')?.values()" :key="err" class="custom-form-field-error">

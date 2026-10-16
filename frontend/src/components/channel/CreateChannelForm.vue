@@ -2,7 +2,7 @@
 import ChatChannelService from '@/services/chatChannel/ChatChannelService';
 import { getValidationErrors } from '@/services/common/utils';
 import { ApiError, ValidationError, type ChatChannel } from '@/types';
-import { computed, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 
 defineExpose({
     cleanForm
@@ -19,6 +19,9 @@ const emit = defineEmits<{
 const form = reactive({ name: '' })
 const submitting = ref(false)
 const error = ref('')
+
+const firstinput = ref<HTMLElement>();
+onMounted(() => firstinput?.value?.focus())
 
 const canSubmit = computed(
     () =>
@@ -72,8 +75,8 @@ async function cleanForm() {
                 <label for="server-name">Channel Name *</label>
             </div>
             <div class="custom-form-input-wrapper">
-                <input id="server-name" class="custom-form-text-input" v-model="form.name" type="text" required
-                    placeholder="Server name" minlength="5" maxlength="50" />
+                <input id="server-name" ref="firstinput" class="custom-form-text-input" v-model="form.name" type="text"
+                    required placeholder="Server name" minlength="3" maxlength="50" autofocus autocomplete="off" />
             </div>
 
             <p v-for="err in formErrors.get('Name')?.values()" :key="err" class="custom-form-field-error">
