@@ -4,6 +4,9 @@
 
 #### Added
 
+- Users can Create, Edit and Delete Channels inside Servers. Channels have only a name. 
+- Users can Create Servers with a Name and Description.
+- Added RabbitMQ to the Backend, so we can have multiple WSServices running at the same time
 - Added Home page
 - Backend and frontend now uses HTTPS and WSS instead of HTTP and WS.
 - User registration and Login. Auth with JWT access and refresh tokens.
