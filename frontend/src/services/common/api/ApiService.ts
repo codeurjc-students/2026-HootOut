@@ -7,7 +7,7 @@ type Query = Record<string, unknown>;
 type Headers = Record<string, string>
 
 interface RequestOptions {
-    method: 'GET' | 'POST';
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE';
     url: string;
     query?: Query;
     body?: unknown;
@@ -78,3 +78,9 @@ export const get = <T = unknown>(url: string, query: Query = {}, headers?: Heade
 
 export const post = <T = unknown>(url: string, body?: unknown, query: Query = {}, headers?: Headers) =>
     request<T>({ method: 'POST', url, body, query, headers });
+
+export const put = <T = unknown>(url: string, body?: unknown, query: Query = {}, headers?: Headers) =>
+    request<T>({ method: 'PUT', url, body, query, headers });
+
+export const deleteHTTP = <T = unknown>(url: string, body?: unknown, query: Query = {}, headers?: Headers) =>
+    request<T>({ method: 'DELETE', url, body, query, headers });

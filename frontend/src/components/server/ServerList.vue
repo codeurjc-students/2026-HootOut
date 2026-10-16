@@ -44,7 +44,7 @@ function setCurrentServer(server: ChatServer) {
     text-align: center;
     align-self: center;
     font-size: 2rem;
-    transform: translateY(-2%) translateX(2%);
+    transform: translateY(-2%);
 
 }
 </style>

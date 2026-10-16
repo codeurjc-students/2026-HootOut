@@ -9,9 +9,6 @@ import { serverInfoStore } from '@/stores/serverInfo.ts';
 const createServerFormModal = useTemplateRef('create-server-form-modal');
 const serverstore = serverInfoStore();
 
-function onSuccess(newServer: ChatServer) {
-    console.log(newServer)
-}
 function openModal() {
     createServerFormModal.value?.open();
 }

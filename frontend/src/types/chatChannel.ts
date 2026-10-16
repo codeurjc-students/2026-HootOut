@@ -10,3 +10,8 @@ export interface CreateChatChannelRequest {
     name: string;
     chatServerId: string;
 }
+
+export interface UpdateChatChannelRequest {
+    id: string;
+    name: string;
+}

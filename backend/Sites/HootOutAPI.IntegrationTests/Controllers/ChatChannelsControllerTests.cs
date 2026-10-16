@@ -121,6 +121,114 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             channelDto.CreatedAt.Should().BeSameDateAs(channel.CreatedAt);
             channelDto.ModifiedAt.Should().BeSameDateAs(channel.ModifiedAt);
         }
+
+        [Fact]
+        public async Task CreateAndUpdateChannel_ReturnsOk_One()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            await RegisterAsync(ct);
+
+            var loginResponse = await LoginAsync(DefaultEmail, DefaultPassword, ct);
+            var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);
+
+            Guid userId = GetUserIdFromAccessToken(auth?.AccessToken);
+            string serverName = "test1";
+            string description = "short description of the server";
+
+            var response = await SendAuthorizeHttpRequest(
+                HttpMethod.Post, "/api/v1/chatServers", new CreateChatServerRequest { Name = serverName, Description = description }, auth!.AccessToken!, ct);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var server = await response.Content.ReadFromJsonAsync<ChatServerDto>(ct);
+            server.Should().NotBeNull();
+            server.Id.Should().NotBeEmpty();
+
+            string channelName = "Channel Test";
+            response = await SendAuthorizeHttpRequest(
+               HttpMethod.Post, "/api/v1/chatChannels", new CreateChatChannelRequest { Name = channelName, ChatServerId = server.Id }, auth!.AccessToken!, ct);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var channel = await response.Content.ReadFromJsonAsync<ChatChannelDto>(ct);
+            channel.Should().NotBeNull();
+            channel.Id.Should().NotBeEmpty();
+            channel.Name.Should().Be(channelName);
+            channel.ChatServerId.Should().Be(server.Id);
+
+            string newName = "New Name";
+            response = await SendAuthorizeHttpRequest(
+               HttpMethod.Put, "/api/v1/chatChannels", new UpdateChatChannelRequest { Name = newName, Id = channel.Id }, auth!.AccessToken!, ct);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var updatedChannel = await response.Content.ReadFromJsonAsync<ChatChannelDto>(ct);
+            updatedChannel.Should().NotBeNull();
+            updatedChannel.Id.Should().Be(channel.Id);
+            updatedChannel.Name.Should().Be(newName);
+            updatedChannel.ChatServerId.Should().Be(channel.ChatServerId);
+
+            response = await SendAuthorizeHttpRequest(
+                HttpMethod.Get, $"/api/v1/chatChannels/getByServerId?serverId={server.Id.ToString()}", auth.AccessToken!, ct);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var channelList = await response.Content.ReadFromJsonAsync<IEnumerable<ChatChannelDto>>(ct);
+            channelList.Should().NotBeNullOrEmpty();
+            var channelDto = (channelList)?.FirstOrDefault();
+            channelDto.Should().NotBeNull();
+            channelDto.Id.Should().Be(channel.Id);
+            channelDto.Name.Should().Be(newName);
+            channelDto.ChatServerId.Should().Be(channel.ChatServerId);
+            channelDto.CreatedAt.Should().BeSameDateAs(channel.CreatedAt);
+            channelDto.ModifiedAt.Should().BeSameDateAs(updatedChannel.ModifiedAt);
+        }
+
+        [Fact]
+        public async Task CreateAndDeleteChannel_ReturnsOk_One()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            await RegisterAsync(ct);
+
+            var loginResponse = await LoginAsync(DefaultEmail, DefaultPassword, ct);
+            var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);
+
+            Guid userId = GetUserIdFromAccessToken(auth?.AccessToken);
+            string serverName = "test1";
+            string description = "short description of the server";
+
+            var response = await SendAuthorizeHttpRequest(
+                HttpMethod.Post, "/api/v1/chatServers", new CreateChatServerRequest { Name = serverName, Description = description }, auth!.AccessToken!, ct);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var server = await response.Content.ReadFromJsonAsync<ChatServerDto>(ct);
+            server.Should().NotBeNull();
+            server.Id.Should().NotBeEmpty();
+
+            string channelName = "Channel Test";
+            response = await SendAuthorizeHttpRequest(
+               HttpMethod.Post, "/api/v1/chatChannels", new CreateChatChannelRequest { Name = channelName, ChatServerId = server.Id }, auth!.AccessToken!, ct);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var channel = await response.Content.ReadFromJsonAsync<ChatChannelDto>(ct);
+            channel.Should().NotBeNull();
+            channel.Id.Should().NotBeEmpty();
+            channel.Name.Should().Be(channelName);
+            channel.ChatServerId.Should().Be(server.Id);
+
+            response = await SendAuthorizeHttpRequest(
+               HttpMethod.Delete, $"/api/v1/chatChannels/{channel.Id.ToString()}", auth!.AccessToken!, ct);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var id = await response.Content.ReadFromJsonAsync<Guid>(ct);
+            id.Should().NotBeEmpty();
+            id.Should().Be(channel.Id);
+
+            response = await SendAuthorizeHttpRequest(
+                HttpMethod.Get, $"/api/v1/chatChannels/getByServerId?serverId={server.Id.ToString()}", auth.AccessToken!, ct);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var channelList = await response.Content.ReadFromJsonAsync<IEnumerable<ChatChannelDto>>(ct);
+            channelList.Should().BeEmpty();
+        }
+
+
         public void Dispose()
         {
             container.Dispose();

@@ -115,5 +115,5 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     }
   }
 
-  return { currentChatChannel, selectChannel, channels, addPendingMessage, confirmMessage, channelMessages, pendingMessages, setCurrentChatChannel, addNewChannel, newMessage, setServerChannels, setChannelMessages, getChatServers, addChatServer, servers, setCurrentServer, currentServer }
+  return { currentChatChannel, selectChannel, channels, addPendingMessage, confirmMessage, channelMessages, pendingMessages, setCurrentChatChannel, addNewChannel, newMessage, setServerChannels, setChannelMessages, getChatServers, addChatServer, servers, setCurrentServer, currentServer, fetchServerChannels }
 })

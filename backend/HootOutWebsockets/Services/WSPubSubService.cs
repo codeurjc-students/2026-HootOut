@@ -56,25 +56,25 @@ namespace HootOut.WebSockets.Service
             await initLock.WaitAsync(ct);
             try
             {
-                if (!ChannelSubscribers.TryGetValue(channel, out var subscribers))
-                    return;
-
-                subscribers.Remove(connectionId);
-                if (subscribers.Count == 0)
+                if (ChannelSubscribers.TryGetValue(channel, out var subscribers))
                 {
-                    ChannelSubscribers.TryRemove(channel, out _);
-                    await queuePubService.UnSubscribe(exchange, channel, ct);
+                    subscribers.Remove(connectionId);
+                    if (subscribers.Count == 0)
+                    {
+                        ChannelSubscribers.TryRemove(channel, out _);
+                        await queuePubService.UnSubscribe(exchange, channel, ct);
+                    }
                 }
 
 
-                if (!ConnectionSubscriptions.TryGetValue(connectionId, out var channels))
-                    return;
-
-                channels.Remove(channel);
-
-                if (channels.Count == 0)
+                if (ConnectionSubscriptions.TryGetValue(connectionId, out var channels))
                 {
-                    ConnectionSubscriptions.TryRemove(connectionId, out _);
+                    channels.Remove(channel);
+
+                    if (channels.Count == 0)
+                    {
+                        ConnectionSubscriptions.TryRemove(connectionId, out _);
+                    }
                 }
             }
             finally
