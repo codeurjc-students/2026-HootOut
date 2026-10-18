@@ -17,6 +17,7 @@
     <ProjectReference Include="..\..\Domains\ChatChannels\ChatChannels\ChatChannels.csproj" />
     <ProjectReference Include="..\..\Domains\ChatMessages\ChatMessages\ChatMessages.csproj" />
     <ProjectReference Include="..\..\Domains\ChatServers\ChatServers\ChatServers.csproj" />
+    <ProjectReference Include="..\..\Domains\MediaFile\MediaFile\MediaFiles.csproj" />
     <ProjectReference Include="..\..\Domains\Users\Users.csproj" />
     <ProjectReference Include="..\..\Infraestructure\Infraestructure\Infraestructure.csproj" />
   </ItemGroup>

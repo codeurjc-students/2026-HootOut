@@ -74,7 +74,7 @@ namespace HootOut.PostgreSQL.Properties {
         ///
         ///end $$; 
         ///
-        ///-- CHAT MESSAGE TABLE ---------------------------------------------------------------
+        ///-- CHAT CHANNEL TABLE ---------------------------------------------------------------
         ///----------------------------------------------------------------------------------
         ///
         ///DO $$
@@ -136,7 +136,7 @@ namespace HootOut.PostgreSQL.Properties {
         ///
         ///end $$; 
         ///
-        ///-- CHAT MESSAGE TABLE ---------------------------------------------------------------
+        ///-- CHAT SERVER TABLE ---------------------------------------------------------------
         ///----------------------------------------------------------------------------------
         ///
         ///DO $$
@@ -145,11 +145,42 @@ namespace HootOut.PostgreSQL.Properties {
         ///				WHERE TABLE_SCHEMA = &apos;HootOut&apos;
         ///				AND   TABLE_NAME = &apos;ChatServer&apos;)
         ///then
-        ///	CREATE TABLE &quot;HootOut&quot;.&quot;ChatSer [rest of string was truncated]&quot;;.
+        ///	CREATE TABLE &quot;HootOut&quot;.&quot;ChatServ [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ChatServerTable {
             get {
                 return ResourceManager.GetString("ChatServerTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DO $$
+        ///BEGIN
+        ///
+        ///if NOT EXISTS  (
+        ///SELECT  schema_name
+        ///FROM	information_schema.schemata
+        ///WHERE	schema_name = &apos;HootOut&apos; )
+        ///then 
+        ///	CREATE SCHEMA &quot;HootOut&quot;;
+        ///end if;
+        ///
+        ///end $$; 
+        ///
+        ///-- MEDIA FILE TABLE ---------------------------------------------------------------
+        ///----------------------------------------------------------------------------------
+        ///
+        ///DO $$
+        ///BEGIN
+        ///if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
+        ///				WHERE TABLE_SCHEMA = &apos;HootOut&apos;
+        ///				AND   TABLE_NAME = &apos;MediaFile&apos;)
+        ///then
+        ///	CREATE TABLE &quot;HootOut&quot;.&quot;MediaFile&quot; [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string MediaFileTable {
+            get {
+                return ResourceManager.GetString("MediaFileTable", resourceCulture);
             }
         }
         

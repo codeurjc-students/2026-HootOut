@@ -18,6 +18,9 @@
   <Folder Name="/Domains/ChatServers/">
     <Project Path="Domains/ChatServers/ChatServers/ChatServers.csproj" Id="75a51ef4-2461-43e1-9e34-e0ed52f128ee" />
   </Folder>
+  <Folder Name="/Domains/MediaFile/">
+    <Project Path="Domains/MediaFile/MediaFile/MediaFiles.csproj" Id="9c6e2497-a1d5-464f-96d6-98d3ab26164c" />
+  </Folder>
   <Folder Name="/Domains/UsersDomain/">
     <Project Path="Domains/Users.IntegrationTests/Users.IntegrationTests.csproj" />
     <Project Path="Domains/Users.Tests/Users.UnitTests.csproj" />
@@ -31,6 +34,7 @@
   </Folder>
   <Folder Name="/Integrations/">
     <Project Path="Integrations/Authentication/Authentication.csproj" Id="9991b245-4e66-40c1-9e97-5dd39348e4eb" />
+    <Project Path="Integrations/FileStorage/FileStorage/FileStorage.csproj" Id="b0fe5c86-729d-4bf4-9349-ca6ac2647ac8" />
     <Project Path="Integrations/PostgreSQL/PostgreSQL.csproj" Id="0dfcf893-6bb3-45c4-b4ff-85775ac5321a" />
     <Project Path="Integrations/RabbitMQ/RabbitMQ.csproj" Id="aa9d1ffe-599f-42a3-b6ee-e5fd37f149ec" />
     <Project Path="Integrations/RabbitMQIntegrationTests/RabbitMQIntegrationTests.csproj" Id="b298a748-204a-4096-8657-03e53e61275f" />
