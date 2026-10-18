@@ -26,9 +26,10 @@ export class WebSocketMessageService {
 
     private pending = new Map<string, Pending>();
 
-    async connect(onOnpen: () => void) {
+    async connect(onOnpen: () => Promise<void>) {
 
         if (this.webSocketService.isConnected()) {
+            await onOnpen();
             return;
         }
 
@@ -38,7 +39,7 @@ export class WebSocketMessageService {
         url.searchParams.set('ticket', ticket)
 
         this.webSocketService.connect(url, {
-            onOpen: () => { this.connected.value = true; onOnpen(); },
+            onOpen: async () => { this.connected.value = true; await onOnpen(); },
             onClose: () => this.onClose(),
             onError: () => this.onClose(),
             onMessage: (event) => {

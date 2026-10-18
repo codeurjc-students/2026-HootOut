@@ -25,9 +25,6 @@ const canSubmit = computed(
         form.name.trim() !== ''
 )
 
-
-
-
 const formErrors = ref(new Map<string, Map<string, string>>())
 
 async function onSubmit() {

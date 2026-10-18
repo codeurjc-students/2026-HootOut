@@ -4,6 +4,7 @@ using FluentValidation;
 using HootOut.CommonDomain.FileStorage;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Contracts.MediaFile.Dtos;
+using HootOut.Contracts.MediaFile.Responses;
 using HootOut.FileStorage.Configuration;
 using HootOut.MediaFiles.Entities;
 using HootOut.MediaFiles.Mappers;
@@ -27,7 +28,7 @@ namespace HootOut.FileStorage.Services
             this.search = search ?? throw new ArgumentNullException(nameof(search));
         }
 
-        public async Task<MediaFileDto> UploadFileAsync(string bucketName, string fileName, Stream fileStream, string contentType, Guid? uploader, CancellationToken ct = default)
+        public async Task<UploadFileResponse> UploadFileAsync(string bucketName, string fileName, Stream fileStream, string contentType, Guid? uploader, CancellationToken ct = default)
         {
             ArgumentNullException.ThrowIfNull(fileStream);
 
@@ -62,13 +63,21 @@ namespace HootOut.FileStorage.Services
             newFile.OwnerId = uploader;
             newFile.ContentType = contentType;
 
-            await saver.SaveAsync(newFile, ct);
+            await saver.SaveAsync(newFile, ct); 
 
-            return newFile.ToDto();
+            return new UploadFileResponse
+            {
+                Id = newFile.Id,
+                ContentType = newFile.ContentType,
+                BytesSize = bytesSize,
+                FileName = newFile.FileName,
+            };
         }
 
         public async Task<(Stream, string, string)> GetFileAsync(Guid id, CancellationToken ct = default)
         {
+            //TO-DO Check if user can get that file...
+
             var mediaFile = await search.GetMediaFileByIdAsync(id, ct);
 
             if (mediaFile == null)
