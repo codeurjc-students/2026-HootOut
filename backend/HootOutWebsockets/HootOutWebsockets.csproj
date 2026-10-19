@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -22,9 +22,11 @@
     <ProjectReference Include="..\Domains\ChatChannels\ChatChannels\ChatChannels.csproj" />
     <ProjectReference Include="..\Domains\ChatMessages\ChatMessages\ChatMessages.csproj" />
     <ProjectReference Include="..\Domains\ChatServers\ChatServers\ChatServers.csproj" />
+    <ProjectReference Include="..\Domains\MediaFile\MediaFile\MediaFiles.csproj" />
     <ProjectReference Include="..\Domains\WebSockets\WebSockets\WebSockets.csproj" />
     <ProjectReference Include="..\Infraestructure\Infraestructure\Infraestructure.csproj" />
     <ProjectReference Include="..\Integrations\Authentication\Authentication.csproj" />
+    <ProjectReference Include="..\Integrations\FileStorage\FileStorage\FileStorage.csproj" />
     <ProjectReference Include="..\Integrations\PostgreSQL\PostgreSQL.csproj" />
     <ProjectReference Include="..\Integrations\RabbitMQ\RabbitMQ.csproj" />
   </ItemGroup>

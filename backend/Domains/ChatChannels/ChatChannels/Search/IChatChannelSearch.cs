@@ -1,4 +1,4 @@
-﻿using HootOut.ChatChannels.ChatChannels;
+﻿using HootOut.ChatChannels.Entities;
 
 namespace HootOut.ChatChannels.Search
 {

@@ -105,6 +105,37 @@ namespace HootOut.PostgreSQL.Properties {
         ///
         ///end $$; 
         ///
+        ///-- CHAT MESSAGE ATTACHMENT TABLE ---------------------------------------------------------------
+        ///----------------------------------------------------------------------------------
+        ///
+        ///DO $$
+        ///BEGIN
+        ///if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
+        ///				WHERE TABLE_SCHEMA = &apos;HootOut&apos;
+        ///				AND   TABLE_NAME = &apos;ChatMessageATtachment&apos;)
+        ///then
+        ///	CREATE TA [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ChatMessageAttachmentTable {
+            get {
+                return ResourceManager.GetString("ChatMessageAttachmentTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DO $$
+        ///BEGIN
+        ///
+        ///if NOT EXISTS  (
+        ///SELECT  schema_name
+        ///FROM	information_schema.schemata
+        ///WHERE	schema_name = &apos;HootOut&apos; )
+        ///then 
+        ///	CREATE SCHEMA &quot;HootOut&quot;;
+        ///end if;
+        ///
+        ///end $$; 
+        ///
         ///-- CHAT MESSAGE TABLE ---------------------------------------------------------------
         ///----------------------------------------------------------------------------------
         ///

@@ -1,4 +1,4 @@
-﻿using HootOut.ChatChannels.ChatChannels;
+﻿using HootOut.ChatChannels.Entities;
 using HootOut.Contracts.ChatChannels.Dtos;
 
 namespace HootOut.ChatChannels.Mappers

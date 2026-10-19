@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace HootOut.Contracts.MediaFile.Responses
+﻿namespace HootOut.Contracts.MediaFile.Responses
 {
     public sealed record UploadFileResponse
     {

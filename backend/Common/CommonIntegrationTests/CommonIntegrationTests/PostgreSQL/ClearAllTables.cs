@@ -27,6 +27,7 @@ namespace HootOut.CommonIntegrationTests.PostgreSQL
             await conn.ExecuteAsync("""TRUNCATE TABLE "HootOut"."ChatChannel" CASCADE;""");
             await conn.ExecuteAsync("""TRUNCATE TABLE "HootOut"."ChatMessage" CASCADE;""");
             await conn.ExecuteAsync("""TRUNCATE TABLE "HootOut"."MediaFile" CASCADE;""");
+            await conn.ExecuteAsync("""TRUNCATE TABLE "HootOut"."ChatMessageAttachment" CASCADE;""");
         }
     }
 }

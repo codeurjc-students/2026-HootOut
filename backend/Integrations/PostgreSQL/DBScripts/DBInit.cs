@@ -23,6 +23,7 @@ namespace HootOut.PostgreSQL.DBScripts
             await conn.ExecuteAsync(Resources.ChatChannelTable, ct);
             await conn.ExecuteAsync(Resources.ChatMessageTable, ct);
             await conn.ExecuteAsync(Resources.MediaFileTable, ct);
+            await conn.ExecuteAsync(Resources.ChatMessageAttachmentTable, ct);
         }
 
         public int Priority => 0;

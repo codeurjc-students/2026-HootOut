@@ -1,5 +1,5 @@
 ﻿using Dapper;
-using HootOut.ChatChannels.ChatChannels;
+using HootOut.ChatChannels.Entities;
 using HootOut.ChatChannels.Search;
 using HootOut.CommonDomain.Persistence;
 

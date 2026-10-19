@@ -1,13 +1,10 @@
-﻿using Amazon.S3;
-using Amazon.S3.Model;
+﻿using Amazon.S3.Model;
 using FluentValidation;
 using HootOut.CommonDomain.FileStorage;
 using HootOut.Contracts.Common.Saver;
-using HootOut.Contracts.MediaFile.Dtos;
 using HootOut.Contracts.MediaFile.Responses;
 using HootOut.FileStorage.Configuration;
 using HootOut.MediaFiles.Entities;
-using HootOut.MediaFiles.Mappers;
 using HootOut.MediaFiles.Search;
 using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
@@ -44,7 +41,7 @@ namespace HootOut.FileStorage.Services
 
             var sha = await SHA256.HashDataAsync(fileStream, ct);
             fileStream.Position = 0;
-            var hex = Convert.ToHexString(sha).ToLowerInvariant();   
+            var hex = Convert.ToHexString(sha).ToLowerInvariant();
 
             PutObjectRequest request = new PutObjectRequest
             {
@@ -57,7 +54,7 @@ namespace HootOut.FileStorage.Services
 
             var response = await s3ClientProvider.GetS3Client().PutObjectAsync(request, ct);
 
-            newFile.FileName = fileName; 
+            newFile.FileName = fileName;
             newFile.Checksum = hex;
             newFile.BytesSize = bytesSize;
             newFile.OwnerId = uploader;

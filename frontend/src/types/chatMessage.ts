@@ -13,8 +13,8 @@ export interface MessageAttachment {
   id?: string;
   messageId?: string;
   mediaFileId: string;
-  contentType: string;
-  url: string;
+  contentType?: string;
+  url?: string;
 }
 
 export interface CreateChatMessage {

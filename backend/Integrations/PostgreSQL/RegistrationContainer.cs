@@ -44,6 +44,7 @@ namespace HootOut.PostgreSQL
             builder.RegisterType<ChatMessageSearch>().As<IChatMessageSearch>().SingleInstance();
             builder.RegisterType<ChatServerSearch>().As<IChatServerSearch>().SingleInstance();
             builder.RegisterType<MediaFileSearch>().As<IMediaFileSearch>().SingleInstance();
+            builder.RegisterType<ChatMessageAttachmentSearch>().As<IChatMessageAttachmentSearch>().SingleInstance();
         }
     }
 }

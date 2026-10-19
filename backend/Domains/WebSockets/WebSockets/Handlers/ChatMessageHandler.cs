@@ -26,18 +26,19 @@ namespace HootOut.WebSockets.Actions
 
         public async Task HandleMessageAsync(Guid connectionId, WSUserInfo user, WebSocketMessage message, CancellationToken ct = default)
         {
-            // Check userId can send to this channel. 
+            // Check userId can send to this channel.
             CreateChatMessageRequest request = JsonConvert.DeserializeObject<CreateChatMessageRequest>(message.Payload!)!;
 
             request.ChatChannelId = Guid.Parse(message.Channel!);
             request.AuthorId = user.UserId;
 
             ChatMessageDto savedMessage = await chatMessageService.CreateChatMessageAsync(request, ct);
+
             savedMessage.Author?.Username = user.Username;
 
             message.Payload = JsonConvert.SerializeObject(savedMessage);
 
-            await wsPubSubService.SendMessageAsync(nameof(WSHandlerType.ChatMessage), message.Channel!, message, ct); //Here the exchange is hardcoded because it is the right one
+            await wsPubSubService.SendMessageAsync(nameof(WSHandlerType.ChatMessage), message.Channel!, message, ct); //Here the exchange is hardcoded because it is the correct one
         }
     }
 }

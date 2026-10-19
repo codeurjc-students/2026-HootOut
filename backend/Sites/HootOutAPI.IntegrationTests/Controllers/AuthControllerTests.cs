@@ -43,6 +43,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
         public async ValueTask DisposeAsync()
         {
             await clearTables.ClearTablesAsync();
+            GC.SuppressFinalize(this);
         }
 
         // ------------------------------------------------------------------

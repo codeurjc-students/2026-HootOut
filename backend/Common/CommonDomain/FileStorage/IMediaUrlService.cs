@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace HootOut.CommonDomain.FileStorage
+﻿namespace HootOut.CommonDomain.FileStorage
 {
     public interface IMediaUrlService
     {

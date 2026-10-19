@@ -36,7 +36,7 @@ namespace HootOut.FileStorage.Configuration
             {
                 var config = new AmazonS3Config
                 {
-                    ServiceURL = Environment.GetEnvironmentVariable("S3_Public_URL") ?? throw new InvalidOperationException("Environment variable S3_URL is null"),
+                    ServiceURL = Environment.GetEnvironmentVariable("S3_Public_URL") ?? throw new InvalidOperationException("Environment variable S3_Public_URL is null"),
                     ForcePathStyle = true,
                     RequestChecksumCalculation = Amazon.Runtime.RequestChecksumCalculation.WHEN_REQUIRED,
                 };

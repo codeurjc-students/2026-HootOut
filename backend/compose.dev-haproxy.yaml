@@ -60,6 +60,9 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSOWRD}
+      S3_Public_URL: "https://localhost:${RUSTFS_PORT}"
+      S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
+      S3_SECRET_KEY: ${RUSTFS_SECRET_KEY}
       SSL_CERT_FILE: /certs/ca.pem
       LOGS_FOLDER: /var/logs
     volumes:

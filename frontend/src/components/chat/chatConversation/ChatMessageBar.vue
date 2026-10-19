@@ -12,15 +12,14 @@ const { currentChatChannel } = storeToRefs(serverInfo);
 
 const message = ref("");
 const fileInput = ref<HTMLInputElement>();
-const imgTemp = ref<HTMLImageElement>();
 const attachments = ref<MessageAttachment[]>([])
 
 async function sendMessage() {
-    if (!message.value)
+    if (!message.value && attachments.value.length == 0)
         return;
     const chatMessage: ChatMessage = {
         content: message.value,
-        attachments: attachments.value
+        attachments: attachments.value.flatMap(x => <MessageAttachment>{ mediaFileId: x.mediaFileId })
     } as ChatMessage
     message.value = "";
 
@@ -50,7 +49,7 @@ async function uploadFile() {
 }
 
 function removeFile(file: MessageAttachment) {
-    attachments.value = attachments.value?.filter(x => x.id != file.id);
+    attachments.value = attachments.value?.filter(x => x.mediaFileId != file.mediaFileId);
 }
 
 </script>
@@ -73,7 +72,7 @@ function removeFile(file: MessageAttachment) {
                 <input id="file-input" ref="fileInput" type="file" hidden @change="uploadFile" />
             </div>
             <input v-model="message" type="text" id="message-input" @keyup.enter="sendMessage"
-                :placeholder="`Write a message to ${currentChatChannel?.name}`" />
+                :placeholder="`Write a message to ${currentChatChannel?.name}`" autocomplete="off" />
             <div class="inline-btn pointer material-symbols-sharp" type="button" @click="sendMessage"
                 id="wsmessage-btn">
                 send

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace HootOut.FileStorage.Configuration
+﻿namespace HootOut.FileStorage.Configuration
 {
     public sealed class FileStorageSettings
     {

@@ -1,13 +1,9 @@
-﻿using Amazon.Runtime;
-using Amazon.S3;
+﻿using Amazon.S3;
 using Amazon.S3.Model;
 using HootOut.CommonDomain.FileStorage;
 using HootOut.FileStorage.Configuration;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.FileStorage.Services
 {
@@ -45,7 +41,7 @@ namespace HootOut.FileStorage.Services
                 Protocol = Protocol.HTTPS
             };
 
-            request.ResponseHeaderOverrides.ContentType = contentType; // the type you validated, not the client's
+            request.ResponseHeaderOverrides.ContentType = contentType;
             request.ResponseHeaderOverrides.ContentDisposition = "inline";
             request.ResponseHeaderOverrides.CacheControl = "private, max-age=1800";
 

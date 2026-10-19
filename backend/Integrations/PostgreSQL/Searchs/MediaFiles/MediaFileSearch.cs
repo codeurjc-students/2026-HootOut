@@ -1,9 +1,7 @@
 ﻿using Dapper;
-using HootOut.ChatChannels.ChatChannels;
 using HootOut.CommonDomain.Persistence;
 using HootOut.MediaFiles.Entities;
 using HootOut.MediaFiles.Search;
-using System.Threading.Channels;
 
 namespace HootOut.PostgreSQL.Searchs.MediaFiles
 {

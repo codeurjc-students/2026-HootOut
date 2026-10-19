@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using HootOut.ChatMessages.ChatMessages;
+using HootOut.ChatMessages.Entities;
 using HootOut.ChatMessages.Mappers;
 using HootOut.ChatMessages.Searchs;
 using HootOut.Contracts.ChatMessage.Dtos;
@@ -14,13 +14,16 @@ namespace HootOut.ChatMessages.Services
 
         private readonly ISaver<ChatMessage> saver;
         private readonly IChatMessageSearch search;
+        private readonly IChatMessageAttachmentService attachmentService;
 
         public ChatMessageService(
             ISaver<ChatMessage> saver,
-            IChatMessageSearch search)
+            IChatMessageSearch search,
+            IChatMessageAttachmentService attachmentService)
         {
             this.saver = saver ?? throw new ArgumentNullException(nameof(saver));
             this.search = search ?? throw new ArgumentNullException(nameof(search));
+            this.attachmentService = attachmentService ?? throw new ArgumentNullException(nameof(attachmentService));
         }
         public async Task<IEnumerable<ChatMessageDto>> GetMessagesByChannelAsync(Guid channelId, CancellationToken ct = default)
         {
@@ -28,7 +31,12 @@ namespace HootOut.ChatMessages.Services
             {
                 throw new ArgumentNullException(nameof(channelId)); //TO-DO proper parameter validation
             }
-            return await search.GetMessagesByChannelIdAsync(channelId, ct);
+            var messages = await search.GetMessagesByChannelIdAsync(channelId, ct);
+            foreach (var message in messages)
+            {
+                message.Attachments = await attachmentService.GetMessageAttachmentDtos(message.Id, ct);
+            }
+            return messages;
         }
 
         public async Task<ChatMessageDto> CreateChatMessageAsync(CreateChatMessageRequest request, CancellationToken ct = default)
@@ -44,8 +52,12 @@ namespace HootOut.ChatMessages.Services
             chatMessage.AuthorId = request.AuthorId;
 
             await saver.SaveAsync(chatMessage, ct);
-
             ChatMessageDto messageDto = chatMessage.ToDto();
+
+            if (request != null && request.Attachments.Any())
+            {
+                messageDto.Attachments = await attachmentService.CreateMessageAttachments(chatMessage.Id, request.Attachments, ct);
+            }
 
             return messageDto;
         }

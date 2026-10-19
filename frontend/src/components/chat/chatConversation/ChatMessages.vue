@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import FilePreview from "@/components/shared/filePreview/FilePreview.vue";
 import { serverInfoStore } from "@/stores/serverInfo"
 import { userInfoStore } from "@/stores/userInfo";
 import { storeToRefs } from "pinia";
@@ -45,6 +46,7 @@ function convertDate(date_string: string) {
             <div>
                 {{ message.content }}
             </div>
+            <FilePreview v-for="attachment in message.attachments" :file="attachment" />
         </div>
     </div>
 </template>

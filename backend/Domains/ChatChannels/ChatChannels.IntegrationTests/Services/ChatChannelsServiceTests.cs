@@ -125,7 +125,7 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
             IChatChannelSearch search = container.Resolve<IChatChannelSearch>();
             var channel = await search.GetChannelByIdAsync(newChannel.Id, ct);
 
-            var id = await chatChannelsService.DeleteChatChannelAsync(channel.Id, ct);
+            var id = await chatChannelsService.DeleteChatChannelAsync(channel!.Id, ct);
             id.Should().Be(channel.Id);
 
             var deletedChannel = await search.GetChannelByIdAsync(id, ct);

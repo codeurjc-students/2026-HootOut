@@ -1,9 +1,6 @@
-﻿using FluentValidation;
-using HootOut.CommonDomain.FileStorage;
-using HootOut.Contracts.MediaFile.Dtos;
+﻿using HootOut.CommonDomain.FileStorage;
 using HootOut.Contracts.MediaFile.Responses;
 using HootOut.HootOutAPI.Helpers;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 

@@ -1,6 +1,6 @@
 ﻿using HootOut.Contracts.Common.Saver;
 
-namespace HootOut.ChatMessages.ChatMessages
+namespace HootOut.ChatMessages.Entities
 {
     public class ChatMessage : Persistable
     {
