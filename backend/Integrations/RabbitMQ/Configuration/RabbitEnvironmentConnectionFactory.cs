@@ -13,7 +13,12 @@ namespace HootOut.RabbitMQ.Configuration
                 {
                     HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? throw new InvalidOperationException("Environment variable RABBITMQ_HOST is null"),
                     UserName = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_USER") ?? throw new InvalidOperationException("Environment variable RABBITMQ_DEFAULT_USER is null"),
-                    Password = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_PASS") ?? throw new InvalidOperationException("Environment variable RABBITMQ_DEFAULT_PASS is null")
+                    Password = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_PASS") ?? throw new InvalidOperationException("Environment variable RABBITMQ_DEFAULT_PASS is null"),
+                    Ssl = new SslOption
+                    {
+                        Enabled = true,
+                        ServerName = "rabbitmq"
+                    }
                 };
             }
 

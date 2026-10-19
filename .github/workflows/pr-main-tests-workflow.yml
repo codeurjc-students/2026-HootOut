@@ -98,7 +98,7 @@ jobs:
           mkdir -p certs
             openssl req -x509 -newkey rsa:2048 -nodes -days 7 \
             -keyout certs/key.pem -out certs/cert.pem \
-            -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+            -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,DNS:rustfs,IP:127.0.0.1,DNS:rabbitmq" \
             chmod 644 certs/*.pem
 
       - name: Docker Compose Backend
