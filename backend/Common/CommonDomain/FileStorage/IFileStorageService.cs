@@ -1,11 +1,10 @@
 ﻿using HootOut.Contracts.MediaFile.Dtos;
+using HootOut.Contracts.MediaFile.Responses;
 
 namespace HootOut.CommonDomain.FileStorage
 {
     public interface IFileStorageService
     {
-        Task<Guid> UploadFileAsync(string bucketName, string fileName, Stream fileStream, string contentType, Guid? uploader, CancellationToken ct = default);
-
-        Task<(Stream, string, string)> GetFileAsync(Guid id, CancellationToken ct = default);
+        Task<UploadFileResponse> UploadFileAsync(string fileName, Stream fileStream, string contentType, Guid? uploader, CancellationToken ct = default); 
     }
 }

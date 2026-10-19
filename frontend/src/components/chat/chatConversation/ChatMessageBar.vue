@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import FilePreview from "@/components/shared/filePreview/FilePreview.vue";
 import wsMessageService from "@/services/common/websocketsMesage/WebSocketsMessageService"
 import MediaFileService from "@/services/mediaFile/MediaFileService";
 import { serverInfoStore } from "@/stores/serverInfo";
-import type { ChatMessage, UploadFileResponse } from "@/types";
+import type { ChatMessage, MessageAttachment, UploadFileResponse } from "@/types";
 import { storeToRefs } from "pinia";
-import { computed, ref } from "vue";
+import { ref } from "vue";
 
 const serverInfo = serverInfoStore();
 const { currentChatChannel } = storeToRefs(serverInfo);
@@ -12,13 +13,14 @@ const { currentChatChannel } = storeToRefs(serverInfo);
 const message = ref("");
 const fileInput = ref<HTMLInputElement>();
 const imgTemp = ref<HTMLImageElement>();
-const uploadedImageTemp = ref<UploadFileResponse>();
+const attachments = ref<MessageAttachment[]>([])
 
 async function sendMessage() {
     if (!message.value)
         return;
-    const chatMessage = {
-        content: message.value
+    const chatMessage: ChatMessage = {
+        content: message.value,
+        attachments: attachments.value
     } as ChatMessage
     message.value = "";
 
@@ -28,6 +30,8 @@ async function sendMessage() {
 
     const wsMessage = await ackPromise.promise;
     serverInfo.confirmMessage(wsMessage)
+
+    attachments.value.length = 0;
 }
 
 async function selectFile() {
@@ -40,29 +44,26 @@ async function uploadFile() {
         return;
     }
 
-    uploadedImageTemp.value = await MediaFileService.uploadFile(files.item(0));
-    await showImage();
+    const response = await MediaFileService.uploadFile(files.item(0))
+    if (response)
+        attachments.value?.push({ mediaFileId: response.id, contentType: response.contentType, url: response.url });
 }
 
-async function showImage() {
-    if (!uploadedImageTemp?.value) return;
-    const blob = await MediaFileService.getBlob(uploadedImageTemp.value?.id);
-    const reader = new FileReader();
-
-    await new Promise((resolve, reject) => {
-        reader.onload = resolve;
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
-
-    imgTemp.value!.src = reader.result?.toString() ?? "";
-    return imgTemp.value?.src;
+function removeFile(file: MessageAttachment) {
+    attachments.value = attachments.value?.filter(x => x.id != file.id);
 }
 
 </script>
 
 <template>
-    <img v-if="uploadedImageTemp" ref="imgTemp" />
+    <div class="file-preview-list p-1">
+        <div v-for="attachment in attachments" class="file-preview-entry background-soft pointer" :key="attachment.id">
+            <FilePreview :file="attachment" />
+            <div class="material-symbols-sharp pointer inline-btn file-preview-close-btn"
+                @click="removeFile(attachment)">close
+            </div>
+        </div>
+    </div>
     <div id="message-input-bar">
         <div id="message-box" class="background-primary">
             <div id="message-box-icons">
@@ -109,5 +110,39 @@ async function showImage() {
 #message-box-icons {
     align-items: center;
     display: flex;
+}
+
+.file-preview-list {
+    display: flex;
+    width: 100%;
+    overflow: auto;
+    gap: 1rem;
+}
+
+.file-preview-entry {
+    display: flex;
+    justify-content: center;
+    border: 1px solid rgb(var(--color-border));
+    border-radius: .5rem;
+    padding: 1rem;
+    position: relative;
+}
+
+.file-preview-entry:hover::before {
+    content: '\A';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(var(--color-background-light), 0.2);
+    pointer-events: none;
+}
+
+.file-preview-close-btn {
+    position: absolute;
+    right: 0;
+    top: 0;
+    color: rgb(var(--color-warning-light))
 }
 </style>

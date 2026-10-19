@@ -2,6 +2,7 @@
 using HootOut.Authentication.Jwt;
 using HootOut.Authentication.Services;
 using HootOut.Contracts.Authentication.Services;
+using HootOut.FileStorage.Configuration;
 using HootOut.HootOutAPI.Schedulers;
 using HootOut.Infraestructure.DI;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -28,6 +29,7 @@ namespace HootOut.HootOutAPI
             var rsaKeyProvider = new DevelopmentRsaKeyProvider(jwt.PrivateKeysPath);
 
             services.Configure<JwtSettings>(Configuration.GetSection("Jwt"));
+            services.Configure<FileStorageSettings>(Configuration.GetSection("FileStorage"));
             services.AddSingleton<IRsaKeyProvider>(rsaKeyProvider);
 
             services.AddHostedService<RefreshTokenCleanupService>();
@@ -79,6 +81,7 @@ namespace HootOut.HootOutAPI
             services.AddControllers();
             services.AddOpenApi();
             services.AddSwaggerGen();
+            services.AddMemoryCache();
 
         }
 

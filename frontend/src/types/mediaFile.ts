@@ -3,4 +3,5 @@ export interface UploadFileResponse {
     contentType: string;
     fileName: string;
     bytesSize: string;
+    url: string;
 }

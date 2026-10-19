@@ -12,6 +12,7 @@ namespace HootOut.FileStorage
         {
             builder.RegisterType<S3ClientProvider>().As<IS3ClientProvider>().SingleInstance();
             builder.RegisterType<FileStorageService>().As<IFileStorageService>().SingleInstance();
+            builder.RegisterType<MediaUrlService>().As<IMediaUrlService>().SingleInstance();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using HootOut.CommonDomain.FileStorage;
 using HootOut.Contracts.MediaFile.Dtos;
+using HootOut.Contracts.MediaFile.Responses;
 using HootOut.HootOutAPI.Helpers;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,7 @@ namespace HootOut.HootOutAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<MediaFileDto>> Upload(IFormFile file, CancellationToken ct)
+        public async Task<ActionResult<UploadFileResponse>> Upload(IFormFile file, CancellationToken ct)
         {
             if (file == null || file.Length == 0)
             {
@@ -39,31 +40,10 @@ namespace HootOut.HootOutAPI.Controllers
 
             return await CommandLaunchHelper.LaunchAsync(
                 logger,
-                async () => await fileStorageService.UploadFileAsync("dev", Path.GetFileName(file.FileName), stream, file.ContentType, Guid.Parse(userId), ct),
+                async () => await fileStorageService.UploadFileAsync(Path.GetFileName(file.FileName), stream, file.ContentType, Guid.Parse(userId), ct),
                 BadRequest,
                 (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
             );
-        }
-
-        [HttpGet("{id:guid}")]
-        public async Task<IActionResult> DownloadFile(Guid id, CancellationToken ct)
-        {
-            try
-            {
-                var (stream, contentType, fileName) = await fileStorageService.GetFileAsync(id, ct);
-                if (stream == null)
-                    return NotFound();
-                return File(stream, contentType, fileName);
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Internal Server Error {Message}", ex.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error");
-            }
         }
     }
 }

@@ -9,6 +9,7 @@ using HootOut.FileStorage.Configuration;
 using HootOut.MediaFiles.Entities;
 using HootOut.MediaFiles.Mappers;
 using HootOut.MediaFiles.Search;
+using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 
 namespace HootOut.FileStorage.Services
@@ -17,26 +18,26 @@ namespace HootOut.FileStorage.Services
     {
         private readonly IS3ClientProvider s3ClientProvider;
         private readonly ISaver<MediaFile> saver;
-        private readonly IMediaFileSearch search;
+        private readonly IMediaUrlService mediaUrlService;
+        private readonly FileStorageSettings fileStorageSettings;
 
-        private const long maxFileSizeBytes = 30 * 1024 * 1024;
-
-        public FileStorageService(IS3ClientProvider s3ClientProvider, ISaver<MediaFile> saver, IMediaFileSearch search)
+        public FileStorageService(IS3ClientProvider s3ClientProvider, ISaver<MediaFile> saver, IMediaFileSearch search, IOptions<FileStorageSettings> options, IMediaUrlService mediaUrlService)
         {
             this.s3ClientProvider = s3ClientProvider ?? throw new ArgumentNullException(nameof(s3ClientProvider));
             this.saver = saver ?? throw new ArgumentNullException(nameof(saver));
-            this.search = search ?? throw new ArgumentNullException(nameof(search));
+            this.fileStorageSettings = options?.Value ?? throw new ArgumentNullException(nameof(options));
+            this.mediaUrlService = mediaUrlService ?? throw new ArgumentNullException(nameof(mediaUrlService));
         }
 
-        public async Task<UploadFileResponse> UploadFileAsync(string bucketName, string fileName, Stream fileStream, string contentType, Guid? uploader, CancellationToken ct = default)
+        public async Task<UploadFileResponse> UploadFileAsync(string fileName, Stream fileStream, string contentType, Guid? uploader, CancellationToken ct = default)
         {
             ArgumentNullException.ThrowIfNull(fileStream);
 
             var bytesSize = fileStream.Length;
 
-            if (bytesSize > maxFileSizeBytes)
+            if (bytesSize > fileStorageSettings.MaxFileBytes)
             {
-                throw new ValidationException($"File size exceeds {maxFileSizeBytes}");
+                throw new ValidationException($"File size exceeds {fileStorageSettings.MaxFileBytes}");
             }
 
             MediaFile newFile = Persistable.CreateNew<MediaFile>();
@@ -47,7 +48,7 @@ namespace HootOut.FileStorage.Services
 
             PutObjectRequest request = new PutObjectRequest
             {
-                BucketName = bucketName,
+                BucketName = fileStorageSettings.S3Bucket,
                 Key = newFile.Id.ToString(),
                 InputStream = fileStream,
                 ContentType = contentType,
@@ -56,14 +57,15 @@ namespace HootOut.FileStorage.Services
 
             var response = await s3ClientProvider.GetS3Client().PutObjectAsync(request, ct);
 
-            newFile.FileName = fileName;
-            newFile.Url = $"{bucketName}/{newFile.Id}";
+            newFile.FileName = fileName; 
             newFile.Checksum = hex;
             newFile.BytesSize = bytesSize;
             newFile.OwnerId = uploader;
             newFile.ContentType = contentType;
 
-            await saver.SaveAsync(newFile, ct); 
+            await saver.SaveAsync(newFile, ct);
+
+            string signedUrl = await mediaUrlService.GetDownloadUrlAsync(newFile.Id, newFile.ContentType) ?? throw new Exception($"Could not get signed url for file {newFile.Id}");
 
             return new UploadFileResponse
             {
@@ -71,29 +73,8 @@ namespace HootOut.FileStorage.Services
                 ContentType = newFile.ContentType,
                 BytesSize = bytesSize,
                 FileName = newFile.FileName,
+                Url = signedUrl
             };
-        }
-
-        public async Task<(Stream, string, string)> GetFileAsync(Guid id, CancellationToken ct = default)
-        {
-            //TO-DO Check if user can get that file...
-
-            var mediaFile = await search.GetMediaFileByIdAsync(id, ct);
-
-            if (mediaFile == null)
-            {
-                return (null, null, null);
-            }
-
-            GetObjectRequest request = new GetObjectRequest()
-            {
-                Key = mediaFile.Id.ToString(),
-                BucketName = mediaFile.Url.Split('/').FirstOrDefault()
-            };
-
-            var response = await s3ClientProvider.GetS3Client().GetObjectAsync(request, ct);
-
-            return (response.ResponseStream, mediaFile.ContentType, mediaFile.FileName);
         }
     }
 }

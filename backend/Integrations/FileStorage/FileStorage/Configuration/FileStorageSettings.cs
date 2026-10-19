@@ -1,0 +1,12 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace HootOut.FileStorage.Configuration
+{
+    public sealed class FileStorageSettings
+    {
+        public string S3Bucket { get; init; } = "dev";
+        public long MaxFileBytes { get; init; } = 30 * 1024 * 1024;
+    }
+}

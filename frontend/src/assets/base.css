@@ -25,27 +25,10 @@
 
   --c-red: 184, 0, 31;
   --c-red-soft: 212, 24, 55;
+  --c-red-light: 255 90 90;
 
   --border-radius: 0.2rem;
   --navbar-height: 3rem;
-}
-
-/* semantic color variables for this project */
-:root {
-  --color-background: var(--c-white);
-  --color-background-soft: var(--c-white-soft);
-  --color-background-mute: var(--c-white-mute);
-
-  --color-border: var(--c-divider-light-2);
-  --color-border-hover: var(--c-divider-light-1);
-
-  --color-heading: var(--c-text-light-1);
-  --color-text: var(--c-text-light-1);
-
-  --color-inverse: var(--c-dark);
-  --color-inverse-soft: var(--c-dark-soft);
-  --color-inverse-light: var(--c-dark-light);
-
   --section-gap: 160px;
 }
 
@@ -69,6 +52,7 @@
 
   --color-warning: var(--c-red);
   --color-warning-soft: var(--c-red-soft);
+  --color-warning-light: var(--c-red-light);
 }
 
 /* } */
