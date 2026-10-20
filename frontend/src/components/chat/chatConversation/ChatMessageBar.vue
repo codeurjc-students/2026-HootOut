@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import FilePreview from "@/components/shared/filePreview/FilePreview.vue";
+import FilePreviewList from "@/components/shared/filePreview/FilePreviewList.vue";
 import wsMessageService from "@/services/common/websocketsMesage/WebSocketsMessageService"
 import MediaFileService from "@/services/mediaFile/MediaFileService";
 import { serverInfoStore } from "@/stores/serverInfo";
-import type { ChatMessage, MessageAttachment, UploadFileResponse } from "@/types";
+import type { ChatMessage, MessageAttachment } from "@/types";
 import { storeToRefs } from "pinia";
 import { ref } from "vue";
 
@@ -45,7 +45,7 @@ async function uploadFile() {
 
     const response = await MediaFileService.uploadFile(files.item(0))
     if (response)
-        attachments.value?.push({ mediaFileId: response.id, contentType: response.contentType, url: response.url });
+        attachments.value?.push({ mediaFileId: response.id, contentType: response.contentType, url: response.url, fileName: response.fileName });
 }
 
 function removeFile(file: MessageAttachment) {
@@ -55,14 +55,7 @@ function removeFile(file: MessageAttachment) {
 </script>
 
 <template>
-    <div class="file-preview-list p-1">
-        <div v-for="attachment in attachments" class="file-preview-entry background-soft pointer" :key="attachment.id">
-            <FilePreview :file="attachment" />
-            <div class="material-symbols-sharp pointer inline-btn file-preview-close-btn"
-                @click="removeFile(attachment)">close
-            </div>
-        </div>
-    </div>
+    <FilePreviewList v-if="attachments.length > 0" :files="attachments" :canRemove="true" @remove="removeFile" />
     <div id="message-input-bar">
         <div id="message-box" class="background-primary">
             <div id="message-box-icons">
@@ -109,33 +102,6 @@ function removeFile(file: MessageAttachment) {
 #message-box-icons {
     align-items: center;
     display: flex;
-}
-
-.file-preview-list {
-    display: flex;
-    width: 100%;
-    overflow: auto;
-    gap: 1rem;
-}
-
-.file-preview-entry {
-    display: flex;
-    justify-content: center;
-    border: 1px solid rgb(var(--color-border));
-    border-radius: .5rem;
-    padding: 1rem;
-    position: relative;
-}
-
-.file-preview-entry:hover::before {
-    content: '\A';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(var(--color-background-light), 0.2);
-    pointer-events: none;
 }
 
 .file-preview-close-btn {

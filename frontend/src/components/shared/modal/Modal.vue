@@ -2,7 +2,8 @@
 import { ref } from 'vue';
 
 const props = defineProps({
-    title: String
+    title: String,
+    modalClass: String
 })
 
 const emit = defineEmits<{
@@ -29,7 +30,7 @@ defineExpose({
 <template>
     <Teleport to="body">
         <div v-if="show" class="modal-background" @click="close"></div>
-        <div v-if="show" class="modal custom-form-wrapper p-2">
+        <div v-if="show" class="modal custom-form-wrapper p-2" :class="modalClass">
             <div class="modal-title">
                 <h2>
                     {{ props.title }}
@@ -66,10 +67,17 @@ defineExpose({
     top: 20%;
     left: 50%;
     transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-title {
     display: flex;
+}
+
+.modal-body {
+    flex: 1;
+    max-height: 100%;
 }
 
 .modal-close {

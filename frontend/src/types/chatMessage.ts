@@ -14,6 +14,7 @@ export interface MessageAttachment {
   messageId?: string;
   mediaFileId: string;
   contentType?: string;
+  fileName?: string;
   url?: string;
 }
 
