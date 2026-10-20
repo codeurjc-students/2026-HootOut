@@ -55,26 +55,33 @@ function removeFile(file: MessageAttachment) {
 </script>
 
 <template>
-    <FilePreviewList v-if="attachments.length > 0" :files="attachments" :canRemove="true" @remove="removeFile" />
-    <div id="message-input-bar">
-        <div id="message-box" class="background-primary">
-            <div id="message-box-icons">
-                <div class="inline-btn material-symbols-sharp pointer" @click="selectFile">
-                    add
+    <div class="chat-message-bar">
+        <FilePreviewList v-if="attachments.length > 0" :files="attachments" :canRemove="true" @remove="removeFile" />
+        <div id="message-input-bar">
+            <div id="message-box" class="background-primary">
+                <div id="message-box-icons">
+                    <div class="inline-btn material-symbols-sharp pointer" @click="selectFile">
+                        add
+                    </div>
+                    <input id="file-input" ref="fileInput" type="file" hidden @change="uploadFile" />
                 </div>
-                <input id="file-input" ref="fileInput" type="file" hidden @change="uploadFile" />
-            </div>
-            <input v-model="message" type="text" id="message-input" @keyup.enter="sendMessage"
-                :placeholder="`Write a message to ${currentChatChannel?.name}`" autocomplete="off" />
-            <div class="inline-btn pointer material-symbols-sharp" type="button" @click="sendMessage"
-                id="wsmessage-btn">
-                send
+                <input v-model="message" type="text" id="message-input" @keyup.enter="sendMessage"
+                    :placeholder="`Write a message to ${currentChatChannel?.name}`" autocomplete="off" />
+                <div class="inline-btn pointer material-symbols-sharp" type="button" @click="sendMessage"
+                    id="wsmessage-btn">
+                    send
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <style>
+.chat-message-bar {
+    padding-top: .5rem;
+    border-top: 1px solid rgb(var(--color-border));
+}
+
 #message-input-bar {
     margin: 1rem;
     margin-top: 0;

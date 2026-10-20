@@ -14,6 +14,12 @@ const { file } = defineProps({
     <video v-else-if="file?.contentType.startsWith('video')" class="file-preview" :class="filePreviewClass"
         :src="file.url" controls preload="metadata" playsinline></video>
 
+    <audio v-else-if="file?.contentType.startsWith('audio')" class="file-preview" :class="filePreviewClass" controls
+        preload="metadata" playsinline>
+        <source :src="file.url" :type="file.contentType">
+    </audio>
+
+
     <div v-else class="generic-file-preview">
         <div class="material-symbols-sharp">attach_file</div>
     </div>

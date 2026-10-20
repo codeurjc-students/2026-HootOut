@@ -2,7 +2,7 @@
 import type { MessageAttachment } from '@/types';
 import FilePreview from './FilePreview.vue';
 import Modal from '../modal/Modal.vue';
-import { ref, useTemplateRef } from 'vue';
+import { computed, ref, useTemplateRef } from 'vue';
 
 const { files, canRemove } = defineProps({
     files: Array<any>,
@@ -28,6 +28,10 @@ function closePreview(): void {
     modalFile.value = undefined;
 }
 
+const modalFileTitle = computed(() =>
+    modalFile?.value?.fileName && modalFile?.value?.fileName.length > 60 ?
+        (modalFile?.value?.fileName.slice(0, 60) + "...") : modalFile?.value?.fileName);
+
 </script>
 
 <template>
@@ -39,7 +43,7 @@ function closePreview(): void {
                 @click.stop="emit('remove', file)">close
             </div>
         </div>
-        <Modal :title="modalFile?.fileName" ref="view-file-modal" @close="closePreview" modalClass="file-preview-modal">
+        <Modal :title="modalFileTitle" ref="view-file-modal" @close="closePreview" modalClass="file-preview-modal">
             <template v-slot:body>
                 <FilePreview :file="modalFile" filePreviewClass="modal-file-preview" />
             </template>
@@ -90,7 +94,7 @@ function closePreview(): void {
 
 .modal-file-preview {
     height: 100%;
-    max-height: 100%;
+    max-height: 95%;
     max-width: 100%;
     object-fit: contain;
 }

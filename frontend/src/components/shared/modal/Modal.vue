@@ -72,7 +72,8 @@ defineExpose({
 }
 
 .modal-title {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto;
 }
 
 .modal-body {
@@ -109,8 +110,9 @@ defineExpose({
         margin: 0;
     }
 
-    .modal-title>h2 {
-        margin: auto;
+    .modal-title {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
     }
 }
 </style>
