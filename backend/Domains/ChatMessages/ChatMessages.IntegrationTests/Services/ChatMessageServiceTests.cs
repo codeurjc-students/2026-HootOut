@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using FluentAssertions;
 using HootOut.CommonDomain.DefaultValues;
+using HootOut.CommonDomain.FileStorage;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.Contracts.ChatMessage.Dtos;
@@ -8,6 +9,9 @@ using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
 using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.Contracts.Users.Services;
+using HootOut.Users.Entities;
+using HootOut.Users.Search;
+using Moq;
 
 namespace HootOut.ChatMessages.IntegrationTests.Services
 {
@@ -21,7 +25,15 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
 
         public ChatMessageServiceTests(PostgresTestContainer postgressContainer)
         {
+            var mediaServiceMock = new Mock<IMediaUrlService>();
+
+            mediaServiceMock.Setup(
+                x => x.GetDownloadUrlAsync(It.IsAny<Guid>(), It.IsAny<string>()))
+                .Returns((Guid id, string _) => Task.FromResult(id.ToString() ?? null));
+
+
             var builder = postgressContainer.RegisterTestPersistenceProvider();
+            builder.RegisterInstance(mediaServiceMock.Object).As<IMediaUrlService>().SingleInstance();
             container = builder.Build();
 
             var testPersistenceProvider = container.Resolve<IPersistenceProvider>();

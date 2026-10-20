@@ -3,6 +3,7 @@ using HootOut.CommonDomain.FileStorage;
 using HootOut.FileStorage.Configuration;
 using HootOut.FileStorage.Services;
 using HootOut.Infraestructure.DI;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace HootOut.FileStorage
 {
@@ -13,6 +14,9 @@ namespace HootOut.FileStorage
             builder.RegisterType<S3ClientProvider>().As<IS3ClientProvider>().SingleInstance();
             builder.RegisterType<FileStorageService>().As<IFileStorageService>().SingleInstance();
             builder.RegisterType<MediaUrlService>().As<IMediaUrlService>().SingleInstance();
+
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            builder.RegisterInstance(memoryCache).As<IMemoryCache>().SingleInstance();
         }
     }
 }

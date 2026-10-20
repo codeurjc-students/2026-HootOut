@@ -80,8 +80,7 @@ namespace HootOut.HootOutAPI
 
             services.AddControllers();
             services.AddOpenApi();
-            services.AddSwaggerGen();
-            services.AddMemoryCache();
+            services.AddSwaggerGen(); 
 
         }
 

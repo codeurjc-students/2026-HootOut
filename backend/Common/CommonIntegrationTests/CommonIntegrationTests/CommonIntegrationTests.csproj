@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Infraestructure\Infraestructure\Infraestructure.csproj" />
+    <ProjectReference Include="..\..\..\Integrations\FileStorage\FileStorage\FileStorage.csproj" />
     <ProjectReference Include="..\..\..\Integrations\RabbitMQ\RabbitMQ.csproj" />
     <ProjectReference Include="..\..\CommonDomain\CommonDomain.csproj" />
   </ItemGroup>

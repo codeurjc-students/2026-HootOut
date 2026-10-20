@@ -9,27 +9,16 @@ using Moq;
 
 namespace HootOut.RabbitMQIntegrationTests.Services
 {
-    public class RabbitPubSubServiceTests : IAsyncLifetime
+    public class RabbitPubSubServiceTests : IClassFixture<TestContaineRabbitConnectionFactory>
     {
         private IQueuePubService pubSubService;
         private TestContaineRabbitConnectionFactory rabbitConnectionFactory { get; set; }
 
-        public RabbitPubSubServiceTests()
+        public RabbitPubSubServiceTests(TestContaineRabbitConnectionFactory factory)
         {
-            rabbitConnectionFactory = new TestContaineRabbitConnectionFactory();
+            rabbitConnectionFactory = factory;
             pubSubService = new RabbitPubSubService(new Mock<ILogger<RabbitPubSubService>>().Object, rabbitConnectionFactory);
-        }
-
-        public async ValueTask InitializeAsync()
-        {
-            await rabbitConnectionFactory.InitializeAsync();
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await rabbitConnectionFactory.DisposeAsync();
-            GC.SuppressFinalize(this);
-        }
+        } 
 
         [Fact]
         public async Task RabbitPubSubService_PublishSubscribe_OneSubscriber()

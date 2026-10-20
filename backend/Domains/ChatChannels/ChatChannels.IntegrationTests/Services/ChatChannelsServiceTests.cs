@@ -18,13 +18,13 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
 
         private IChatChannelsService chatChannelsService;
 
-        public ChatChannelsServiceTests(PostgresTestContainer postgressContainer)
+        public ChatChannelsServiceTests(PostgresTestContainer postgresContainer)
         {
-            var builder = postgressContainer.RegisterTestPersistenceProvider();
+            var builder = postgresContainer.RegisterTestPersistenceProvider();
             container = builder.Build();
 
             var testPersistenceProvider = container.Resolve<IPersistenceProvider>();
-            Assert.Same(postgressContainer.postgreSQLProvider, testPersistenceProvider);
+            Assert.Same(postgresContainer.postgreSQLProvider, testPersistenceProvider);
 
             clearTables = container.Resolve<ClearAllTables>();
             var defaultValues = container.Resolve<IEnumerable<IDefaultValues>>().OrderBy(x => x.Priority); ;

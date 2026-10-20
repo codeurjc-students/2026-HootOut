@@ -18,7 +18,7 @@ namespace HootOut.FileStorage.Services
         private readonly IMediaUrlService mediaUrlService;
         private readonly FileStorageSettings fileStorageSettings;
 
-        public FileStorageService(IS3ClientProvider s3ClientProvider, ISaver<MediaFile> saver, IMediaFileSearch search, IOptions<FileStorageSettings> options, IMediaUrlService mediaUrlService)
+        public FileStorageService(IS3ClientProvider s3ClientProvider, ISaver<MediaFile> saver, IOptions<FileStorageSettings> options, IMediaUrlService mediaUrlService)
         {
             this.s3ClientProvider = s3ClientProvider ?? throw new ArgumentNullException(nameof(s3ClientProvider));
             this.saver = saver ?? throw new ArgumentNullException(nameof(saver));

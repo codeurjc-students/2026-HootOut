@@ -10,12 +10,15 @@
     <PackageReference Include="AWSSDK.S3" Version="4.0.104.4" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.13" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.12" />
+	  <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.12" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Common\CommonDomain\CommonDomain.csproj" />
+    <ProjectReference Include="..\..\..\Domains\ChatMessages\ChatMessages\ChatMessages.csproj" />
     <ProjectReference Include="..\..\..\Domains\MediaFile\MediaFile\MediaFiles.csproj" />
     <ProjectReference Include="..\..\..\Infraestructure\Infraestructure\Infraestructure.csproj" />
+    <ProjectReference Include="..\..\PostgreSQL\PostgreSQL.csproj" />
   </ItemGroup>
 
 </Project>
