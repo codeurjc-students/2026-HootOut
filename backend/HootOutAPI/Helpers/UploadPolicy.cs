@@ -24,6 +24,7 @@
 
             // Audio
             "audio/mpeg",
+            "audio/mpeg3",
             "audio/mp4",
             "audio/mp3",
             "audio/ogg",

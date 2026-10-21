@@ -35,11 +35,14 @@ namespace HootOut.HootOutAPI.Controllers
 
             var userId = User.FindFirstValue("sub");
             if (userId is null)
-                return Unauthorized(); 
+                return Unauthorized();
 
             var mimeType = await fileClassifier.GetMimeTypeAsync(file, ct);
             if (mimeType is null || !UploadPolicy.AllowedTypes.TryGetValue(mimeType, out var allowedCategory))
-                return BadRequest("File type not allowed.");  
+            {
+                logger.LogWarning("Invalid file upload of type {mimetype} by user {userId}", mimeType, userId);
+                return BadRequest("File type not allowed.");
+            }
 
             await using var stream = file.OpenReadStream();
 
