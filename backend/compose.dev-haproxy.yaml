@@ -121,7 +121,7 @@ services:
     - ${HOOTOUTWEBSOCKETS_HTTPS_PORTS}:${HOOTOUTWEBSOCKETS_HTTPS_PORTS}
 
   rustfs:
-    image: rustfs/rustfs:latest
+    image: rustfs/rustfs:1.0.3
     ports: 
       - "${RUSTFS_PORT}:${RUSTFS_PORT}"
       - "9001:9001"
