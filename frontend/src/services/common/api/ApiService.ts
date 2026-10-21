@@ -25,8 +25,10 @@ function buildUrl(url: string, query: Query = {}): string {
 async function send(options: RequestOptions): Promise<Response> {
     const headers: Headers = { ...options.headers };
 
-    if (options.body !== undefined) {
+    let body: any = options?.body ?? undefined;
+    if (options.body !== undefined && !(options.body instanceof FormData)) {
         headers['Content-Type'] = 'application/json';
+        body = JSON.stringify(options.body);
     }
 
     const token = useAuthStore().accessToken;
@@ -43,11 +45,11 @@ async function send(options: RequestOptions): Promise<Response> {
         mode: 'cors',
         credentials: 'include',
         headers,
-        body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+        body: body,
     });
 }
 
-async function request<T>(options: RequestOptions): Promise<T> {
+async function request<T>(options: RequestOptions, isBlob: boolean = false): Promise<T> {
     let res = await send(options);
 
     // Expired access token: refresh once and retry once. No loops.
@@ -68,6 +70,11 @@ async function request<T>(options: RequestOptions): Promise<T> {
         throw new ApiError(res.status, errorBody?.message ?? `HTTP ${res.status}`);
     }
 
+    // Blob file returns the res blob.
+    if (isBlob) {
+        return await res.blob() as T;
+    }
+
     // Some endpoints (e.g. logout) answer 204 with no body.
     const text = await res.text();
     return (text ? JSON.parse(text) : undefined) as T;
@@ -75,6 +82,9 @@ async function request<T>(options: RequestOptions): Promise<T> {
 
 export const get = <T = unknown>(url: string, query: Query = {}, headers?: Headers) =>
     request<T>({ method: 'GET', url, query, headers });
+
+export const getBlob = <T = unknown>(url: string, query: Query = {}, headers?: Headers) =>
+    request<T>({ method: 'GET', url, query, headers }, true);
 
 export const post = <T = unknown>(url: string, body?: unknown, query: Query = {}, headers?: Headers) =>
     request<T>({ method: 'POST', url, body, query, headers });

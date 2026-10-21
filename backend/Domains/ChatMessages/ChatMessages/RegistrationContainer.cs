@@ -10,6 +10,7 @@ namespace HootOut.ChatMessages
         public void Register(ContainerBuilder builder)
         {
             builder.RegisterType<ChatMessageService>().As<IChatMessageService>().SingleInstance();
+            builder.RegisterType<ChatMessageAttachmentService>().As<IChatMessageAttachmentService>().SingleInstance();
         }
     }
 }

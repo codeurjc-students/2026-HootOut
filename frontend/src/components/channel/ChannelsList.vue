@@ -62,7 +62,7 @@ async function onChannelDeleted(id: string) {
 
 <style>
 .channel-name-row {
-    padding: 0.5rem 1rem;
+    padding: 0rem 1rem;
     border-bottom: 1px solid rgb(var(--color-background-light));
     display: flex;
     justify-content: space-between;
@@ -75,6 +75,7 @@ async function onChannelDeleted(id: string) {
 
 .channel-name {
     flex-grow: 1;
+    padding: .5rem 0;
 }
 
 .channel-settings {

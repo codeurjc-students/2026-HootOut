@@ -8,7 +8,7 @@ namespace HootOut.PostgreSQL.Savers.ChatServers
     public sealed class ChatServerSaver : ISaver<ChatServer>
     {
 
-        private IPersistenceProvider provider;
+        private readonly IPersistenceProvider provider;
 
         public ChatServerSaver(IPersistenceProvider provider)
         {

@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using HootOut.HootOutAPI.Helpers;
 using HootOut.Infraestructure.DI;
 
 namespace HootOut.HootOutAPI
@@ -7,6 +8,7 @@ namespace HootOut.HootOutAPI
     {
         public void Register(ContainerBuilder builder)
         {
+            builder.RegisterType<FileClassifier>().AsSelf().SingleInstance();
         }
     }
 }

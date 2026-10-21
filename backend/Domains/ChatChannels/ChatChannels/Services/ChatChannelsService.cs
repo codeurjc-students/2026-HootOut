@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using HootOut.ChatChannels.ChatChannels;
+using HootOut.ChatChannels.Entities;
 using HootOut.ChatChannels.Mappers;
 using HootOut.ChatChannels.Search;
 using HootOut.Contracts.ChatChannels.Dtos;

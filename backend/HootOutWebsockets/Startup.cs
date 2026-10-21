@@ -1,4 +1,5 @@
 using Autofac;
+using HootOut.FileStorage.Configuration;
 using HootOut.HootOutWebsockets.Schedulers;
 using HootOut.Infraestructure.DI;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -22,6 +23,8 @@ namespace HootOut.HootOutWebsockets
         {
             services.AddControllers();
             services.AddHostedService<PubSubQueueConsumerService>();
+
+            services.Configure<FileStorageSettings>(Configuration.GetSection("FileStorage"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

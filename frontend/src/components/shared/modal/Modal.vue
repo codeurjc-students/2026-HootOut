@@ -2,7 +2,8 @@
 import { ref } from 'vue';
 
 const props = defineProps({
-    title: String
+    title: String,
+    modalClass: String
 })
 
 const emit = defineEmits<{
@@ -29,15 +30,17 @@ defineExpose({
 <template>
     <Teleport to="body">
         <div v-if="show" class="modal-background" @click="close"></div>
-        <div v-if="show" class="modal custom-form-wrapper p-2">
+        <div v-if="show" class="modal custom-form-wrapper p-2" :class="modalClass">
             <div class="modal-title">
                 <h2>
                     {{ props.title }}
                 </h2>
-                <div class="modal-close pointer" @click="close">
-                    <span class="material-symbols-sharp">
+
+                <div class="modal-top pointer">
+                    <slot name="options"></slot>
+                    <div class="material-symbols-sharp modal-close" @click="close">
                         close
-                    </span>
+                    </div>
                 </div>
             </div>
             <div class="modal-body" @keyup.esc="close">
@@ -66,18 +69,26 @@ defineExpose({
     top: 20%;
     left: 50%;
     transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-title {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto;
 }
 
-.modal-close {
+.modal-body {
+    flex: 1;
+    max-height: 100%;
+}
+
+.modal-top {
     margin-left: auto;
     display: flex;
 }
 
-.modal-close>span {
+.modal-top>span {
     display: inline-block;
     align-self: center;
 }
@@ -94,15 +105,20 @@ defineExpose({
         overflow-y: auto;
     }
 
-    .modal-close {
+    .modal-top {
         top: 0;
         left: 0;
         order: -1;
         margin: 0;
     }
 
-    .modal-title>h2 {
-        margin: auto;
+    .modal-close {
+        order: -1;
+    }
+
+    .modal-title {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
     }
 }
 </style>

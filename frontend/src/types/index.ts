@@ -4,6 +4,7 @@ export * from './websocketMessage'
 export * from './chatMessage'
 export * from './chatChannel'
 export * from './chatServer'
+export * from './mediaFile'
 
 export class ApiError extends Error {
     constructor(public status: number, message: string) {

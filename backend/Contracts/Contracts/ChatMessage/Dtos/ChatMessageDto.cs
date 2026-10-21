@@ -10,5 +10,6 @@ namespace HootOut.Contracts.ChatMessage.Dtos
         public UserDto? Author { get; set; }
         public string? Content { get; set; }
         public Guid ChatChannelId { get; set; }
+        public IEnumerable<ChatMessageAttachmentDto> Attachments { get; set; } = Enumerable.Empty<ChatMessageAttachmentDto>();
     }
 }

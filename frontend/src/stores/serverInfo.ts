@@ -60,7 +60,6 @@ export const serverInfoStore = defineStore('serverInfo', () => {
   }
 
   async function unsubscribeFromChannels() {
-    await wsMessageService.connect(() => { });
     channels.value.forEach(channel => {
       wsMessageService.subscribe(channel.id, (message: WebSocketMessage) => {
         newMessage(message)
@@ -69,7 +68,6 @@ export const serverInfoStore = defineStore('serverInfo', () => {
   }
 
   async function subscribeToChannels() {
-    await wsMessageService.connect(() => { });
     channels.value.forEach(channel => {
       wsMessageService.subscribe(channel.id, (message: WebSocketMessage) => {
         newMessage(message)
@@ -99,7 +97,9 @@ export const serverInfoStore = defineStore('serverInfo', () => {
 
   async function setCurrentServer(chatServer: ChatServer): Promise<void> {
     currentServer.value = chatServer;
-    await fetchServerChannels(chatServer);
+    await wsMessageService.connect(async () => {
+      await fetchServerChannels(chatServer);
+    })
   }
 
   async function fetchServerChannels(chatServer: ChatServer): Promise<void> {

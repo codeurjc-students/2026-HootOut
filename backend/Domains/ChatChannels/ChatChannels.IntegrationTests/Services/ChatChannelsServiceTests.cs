@@ -4,6 +4,7 @@ using HootOut.ChatChannels.Search;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
+using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.ChatChannels.Dtos;
 using HootOut.Contracts.ChatChannels.Requests;
 using HootOut.Contracts.ChatChannels.Services;
@@ -11,20 +12,20 @@ using HootOut.Contracts.ChatChannels.Services;
 namespace HootOut.ChatChannels.IntegrationTests.Services
 {
     [Collection("IntegrationTests")]
-    public class ChatChannelsServiceTests : IClassFixture<PostgresTestContainer>, IAsyncLifetime
+    public class ChatChannelsServiceTests : IClassFixture<PostgresTestContainer>, IClassFixture<TestS3Container>, IAsyncLifetime
     {
         private IContainer container;
         private ClearAllTables clearTables;
 
         private IChatChannelsService chatChannelsService;
 
-        public ChatChannelsServiceTests(PostgresTestContainer postgressContainer)
+        public ChatChannelsServiceTests(PostgresTestContainer postgresContainer)
         {
-            var builder = postgressContainer.RegisterTestPersistenceProvider();
+            var builder = postgresContainer.RegisterTestPersistenceProvider();
             container = builder.Build();
 
             var testPersistenceProvider = container.Resolve<IPersistenceProvider>();
-            Assert.Same(postgressContainer.postgreSQLProvider, testPersistenceProvider);
+            Assert.Same(postgresContainer.postgreSQLProvider, testPersistenceProvider);
 
             clearTables = container.Resolve<ClearAllTables>();
             var defaultValues = container.Resolve<IEnumerable<IDefaultValues>>().OrderBy(x => x.Priority); ;
@@ -125,7 +126,7 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
             IChatChannelSearch search = container.Resolve<IChatChannelSearch>();
             var channel = await search.GetChannelByIdAsync(newChannel.Id, ct);
 
-            var id = await chatChannelsService.DeleteChatChannelAsync(channel.Id, ct);
+            var id = await chatChannelsService.DeleteChatChannelAsync(channel!.Id, ct);
             id.Should().Be(channel.Id);
 
             var deletedChannel = await search.GetChannelByIdAsync(id, ct);

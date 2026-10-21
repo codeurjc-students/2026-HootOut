@@ -1,4 +1,4 @@
-﻿using HootOut.ChatMessages.ChatMessages;
+﻿using HootOut.ChatMessages.Entities;
 using HootOut.Contracts.ChatMessage.Dtos;
 
 namespace HootOut.ChatMessages.Mappers

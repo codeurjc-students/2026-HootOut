@@ -70,6 +70,12 @@ jobs:
       POSTGRES_PORT: 5432
       HOOTOUTAPI_HTTPS_PORTS: 1234 
       HOOTOUTWEBSOCKETS_HTTPS_PORTS: 4321
+      RABBIT_HOSTNAME: hootout
+      RABBITMQ_USER: rabbit_user
+      RABBITMQ_PASSOWRD: rabbit_test_123 
+      RUSTFS_PORT: 9000
+      RUSTFS_ACCESS_KEY: hootout_s3
+      RUSTFS_SECRET_KEY: rustfs_test_123 
       TLS_CERT: ../certs/cert.pem
       TLS_KEY: ../certs/key.pem
     steps:
@@ -96,10 +102,12 @@ jobs:
         working-directory: .
         run: |
           mkdir -p certs
-            openssl req -x509 -newkey rsa:2048 -nodes -days 7 \
+          openssl req -x509 -newkey rsa:2048 -nodes -days 7 \
             -keyout certs/key.pem -out certs/cert.pem \
-            -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
-            chmod 644 certs/*.pem
+            -subj "/CN=localhost" \
+            -addext "subjectAltName=DNS:localhost,DNS:rustfs,DNS:rabbitmq,IP:127.0.0.1"
+          cp certs/cert.pem certs/ca.pem   # self-signed: it is its own CA (SSL_CERT_FILE, RabbitMQ cacertfile)
+          chmod 644 certs/*.pem
 
       - name: Docker Compose Backend
         run: docker compose -f ../backend/compose.dev.yaml up -d --build --wait

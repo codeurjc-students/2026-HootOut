@@ -24,6 +24,10 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSOWRD}
+      S3_URL: "https://rustfs:${RUSTFS_PORT}"
+      S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
+      S3_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      SSL_CERT_FILE: /certs/ca.pem
       LOGS_FOLDER: /var/logs
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
@@ -56,6 +60,10 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSOWRD}
+      S3_Public_URL: "https://localhost:${RUSTFS_PORT}"
+      S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
+      S3_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      SSL_CERT_FILE: /certs/ca.pem
       LOGS_FOLDER: /var/logs
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
@@ -93,6 +101,8 @@ services:
     volumes:
       - rabbitmq:/var/lib/rabbitmq/
       - rabbitmq:/var/log/rabbitmq
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ../certs:/certs:ro
 
     healthcheck:
       test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
@@ -110,9 +120,27 @@ services:
     - ${HOOTOUTAPI_HTTPS_PORTS}:${HOOTOUTAPI_HTTPS_PORTS}
     - ${HOOTOUTWEBSOCKETS_HTTPS_PORTS}:${HOOTOUTWEBSOCKETS_HTTPS_PORTS}
 
+  rustfs:
+    image: rustfs/rustfs:1.0.3
+    ports: 
+      - "${RUSTFS_PORT}:${RUSTFS_PORT}"
+      - "9001:9001"
+    environment:
+      RUSTFS_TLS_PATH: /opt/tls
+      RUSTFS_ACCESS_KEY:  ${RUSTFS_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      RUSTFS_ADDRESS: ":${RUSTFS_PORT}"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
+    volumes:
+      - ../certs/cert.pem:/opt/tls/rustfs_cert.pem:ro
+      - ../certs/key.pem:/opt/tls/rustfs_key.pem:ro
+      - s3-data:/data
+
 
 volumes:
   pgdata:
+  s3-data:
   logs:
   rabbitmq:
     driver: local

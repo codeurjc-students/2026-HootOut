@@ -18,7 +18,7 @@ By using mkcert as it suggests:
 ```sh
 mkcert -install
 mkdir -p certs
-mkcert -cert-file certs/cert.pem -key-file certs/key.pem localhost 127.0.0.1 ::1
+mkcert -cert-file certs/cert.pem -key-file certs/key.pem localhost 127.0.0.1 ::1 rustfs rabbitmq
 ```
 
 ### Environment variables:

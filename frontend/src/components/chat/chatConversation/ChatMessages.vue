@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import FilePreview from "@/components/shared/filePreview/FilePreview.vue";
+import FilePreviewList from "@/components/shared/filePreview/FilePreviewList.vue";
 import { serverInfoStore } from "@/stores/serverInfo"
 import { userInfoStore } from "@/stores/userInfo";
 import { storeToRefs } from "pinia";
@@ -42,6 +44,8 @@ function convertDate(date_string: string) {
             <div>
                 {{ message.author.username }} --- {{ convertDate(message.createdAt!) }}
             </div>
+
+            <FilePreviewList v-if="message.attachments.length > 0" :files="message.attachments" />
             <div>
                 {{ message.content }}
             </div>

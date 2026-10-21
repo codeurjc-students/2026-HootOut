@@ -62,6 +62,16 @@ namespace HootOut.HootOutAPI.IntegrationTests.Common
             return await httpClient!.SendAsync(request, ct);
         }
 
+        protected async Task<HttpResponseMessage> SendAuthorizeHttpRequestFile(HttpMethod method, string url, MultipartFormDataContent formData, string accessToken, CancellationToken ct)
+        {
+            using var request = new HttpRequestMessage(method, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            request.Content = formData;
+
+            return await httpClient!.SendAsync(request, ct);
+        }
+
         protected async Task<HttpResponseMessage> SendAuthorizeHttpRequest(HttpMethod method, string url, string accessToken, CancellationToken ct)
         {
             return await SendAuthorizeHttpRequest<object>(method, url, null, accessToken, ct);

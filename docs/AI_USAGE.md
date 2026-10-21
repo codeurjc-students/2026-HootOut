@@ -51,3 +51,15 @@ We want to authenticate Users in the application using JWT. Since the backend is
 ##### Usage:
 Chat with Claude to see what options there are to authenticate on a WebSocket server with the JWT generated on the Rest API. We discussed some alternatives (like sending the jwt on the ws connection request, or having a ticket-based system).After some research on my own of the topic, I went with the proposed solution of having a "ticket"-based authentication system, as it is also recommended by Heroku: https://devcenter.heroku.com/articles/websocket-security. Basically, after the User successfully authenticates on the Rest API, it makes a request to it and the Rest API stores a short lived "ticket" to the DB and returns it to the client. Then the client connects to the WebSocket Server with that ticket, and the WebSocket Server validates it.
 We iterated on User registration and Authentication classes and tests on the Backend so it can compatible with JWT and the ticket-based system.
+
+#### Objective: Get images and videos from S3 having authentication and preventing server load.
+##### Date:
+19/10/2026
+##### Tool:
+Claude Chat, Opus 5.5 Medium
+##### Problem to solve:
+We have user authentication via JWT. Users can upload files and they will be saved to an S3-compatible file service (in this case, RustFS). But native html elements (img, video) doesn't allow modifying the request headers, so we can't use the Bearer token. Also we don't want to add much overhead to the server when serving files, ideally most of the load goes to S3.
+
+##### Usage:
+Chat with Claude to see posssible solutions and alternatives. We landed on using S3 signed Urls. When the backend gives urls of resources stored on S3, it will generate a signed url that can be used to retrieve that file from S3. The backend will know if the user have access to that resource, and generate the signed url depending on it. The signed url will also have a valid lifetime (by default 1 hour) and can only be used to get the resource associated to it.
+Claude also helped setting up RustFS with docker-compose using HTTPS

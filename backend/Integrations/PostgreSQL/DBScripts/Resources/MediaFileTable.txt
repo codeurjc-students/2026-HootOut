@@ -1,0 +1,39 @@
+DO $$
+BEGIN
+
+if NOT EXISTS  (
+SELECT  schema_name
+FROM	information_schema.schemata
+WHERE	schema_name = 'HootOut' )
+then 
+	CREATE SCHEMA "HootOut";
+end if;
+
+end $$; 
+
+-- MEDIA FILE TABLE ---------------------------------------------------------------
+----------------------------------------------------------------------------------
+
+DO $$
+BEGIN
+if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
+				WHERE TABLE_SCHEMA = 'HootOut'
+				AND   TABLE_NAME = 'MediaFile')
+then
+	CREATE TABLE "HootOut"."MediaFile"(
+		"Id" UUID NOT NULL PRIMARY KEY , 
+		"FileName" TEXT NOT NULL,
+		"Checksum" TEXT NOT NULL,
+		"BytesSize" BIGINT NOT NULL,
+		"OwnerId" UUID NOT NULL, 
+		"Url" TEXT NOT NULL,
+		"ContentType" TEXT NOT NULL,
+		"Deleted" boolean NOT NULL DEFAULT false,
+		"CreatedAt" timestamptz  NOT NULL,
+		"ModifiedAt" timestamptz NOT NULL 
+	);
+
+end if;
+ 
+
+end $$;

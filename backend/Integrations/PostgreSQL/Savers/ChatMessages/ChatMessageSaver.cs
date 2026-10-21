@@ -1,5 +1,5 @@
 ﻿using Dapper;
-using HootOut.ChatMessages.ChatMessages;
+using HootOut.ChatMessages.Entities;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common.Saver;
 
