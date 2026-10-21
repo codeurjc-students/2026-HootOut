@@ -1,11 +1,8 @@
-﻿using Amazon.S3;
+﻿using Amazon.Runtime;
 using Amazon.S3.Model;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.FileStorage.Configuration;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.FileStorage
 {
@@ -25,10 +22,21 @@ namespace HootOut.FileStorage
             var client = s3ClientProvider.GetS3Client();
             ArgumentNullException.ThrowIfNull(client);
 
-            await client.PutBucketAsync(new PutBucketRequest
+            for (var attempt = 1; ; attempt++)
             {
-                BucketName = settings.S3Bucket
-            }, ct);
+                try
+                {
+                    await client.PutBucketAsync(new PutBucketRequest
+                    {
+                        BucketName = settings.S3Bucket
+                    }, ct);
+                    return;
+                }
+                catch (Exception ex) when (attempt < 10 && ex is HttpRequestException or AmazonServiceException)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1), ct);
+                }
+            }
         }
     }
 }
