@@ -20,7 +20,7 @@ const { file } = defineProps({
     </audio>
 
 
-    <div v-else class="generic-file-preview">
+    <div v-else class="generic-file-preview" :class="filePreviewClass">
         <div class="material-symbols-sharp">attach_file</div>
     </div>
     <div class="file-preview-name">

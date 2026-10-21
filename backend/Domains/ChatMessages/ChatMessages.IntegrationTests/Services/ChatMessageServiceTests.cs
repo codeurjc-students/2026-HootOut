@@ -27,8 +27,11 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
             var mediaServiceMock = new Mock<IMediaUrlService>();
 
             mediaServiceMock.Setup(
-                x => x.GetDownloadUrlAsync(It.IsAny<Guid>(), It.IsAny<string>()))
-                .Returns((Guid id, string _) => Task.FromResult(id.ToString() ?? null)); 
+                x => x.GetDownloadUrlAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Returns((Guid id, string _, string _) => Task.FromResult(id.ToString() ?? null));
+            mediaServiceMock.Setup(
+                x => x.GetViewUrlAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Returns((Guid id, string _, string _) => Task.FromResult(id.ToString() ?? null));
 
             var builder = postgressContainer.RegisterTestPersistenceProvider();
             builder.RegisterInstance(mediaServiceMock.Object).As<IMediaUrlService>().SingleInstance();

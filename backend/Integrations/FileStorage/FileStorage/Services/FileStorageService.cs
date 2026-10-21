@@ -61,7 +61,8 @@ namespace HootOut.FileStorage.Services
 
             await saver.SaveAsync(newFile, ct);
 
-            string signedUrl = await mediaUrlService.GetDownloadUrlAsync(newFile.Id, newFile.ContentType) ?? throw new Exception($"Could not get signed url for file {newFile.Id}");
+            string signedUrl = await mediaUrlService.GetViewUrlAsync(newFile.Id, newFile.ContentType, newFile.FileName) ?? throw new Exception($"Could not get view signed url for file {newFile.Id}");
+            string downloadUrl = await mediaUrlService.GetDownloadUrlAsync(newFile.Id, newFile.ContentType, newFile.FileName) ?? throw new Exception($"Could not download get signed url for file {newFile.Id}");
 
             return new UploadFileResponse
             {
@@ -69,7 +70,8 @@ namespace HootOut.FileStorage.Services
                 ContentType = newFile.ContentType,
                 BytesSize = bytesSize,
                 FileName = newFile.FileName,
-                Url = signedUrl
+                Url = signedUrl,
+                DownloadUrl = downloadUrl
             };
         }
     }

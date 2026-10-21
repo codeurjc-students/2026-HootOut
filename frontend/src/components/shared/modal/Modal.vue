@@ -35,10 +35,12 @@ defineExpose({
                 <h2>
                     {{ props.title }}
                 </h2>
-                <div class="modal-close pointer" @click="close">
-                    <span class="material-symbols-sharp">
+
+                <div class="modal-top pointer">
+                    <slot name="options"></slot>
+                    <div class="material-symbols-sharp modal-close" @click="close">
                         close
-                    </span>
+                    </div>
                 </div>
             </div>
             <div class="modal-body" @keyup.esc="close">
@@ -81,12 +83,12 @@ defineExpose({
     max-height: 100%;
 }
 
-.modal-close {
+.modal-top {
     margin-left: auto;
     display: flex;
 }
 
-.modal-close>span {
+.modal-top>span {
     display: inline-block;
     align-self: center;
 }
@@ -103,11 +105,15 @@ defineExpose({
         overflow-y: auto;
     }
 
-    .modal-close {
+    .modal-top {
         top: 0;
         left: 0;
         order: -1;
         margin: 0;
+    }
+
+    .modal-close {
+        order: -1;
     }
 
     .modal-title {

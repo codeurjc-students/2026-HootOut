@@ -8,23 +8,7 @@ const MediaFileService = {
         const formData = new FormData();
         formData.append('file', file)
 
-        return post('file', formData);
-    },
-
-    getBlob: async function (id: string): Promise<Blob> {
-        return getBlob(`file/${id}`);
-    },
-
-    blobToBase64: async function (blob: Blob): Promise<string | undefined> {
-        const reader = new FileReader();
-
-        await new Promise((resolve, reject) => {
-            reader.onload = resolve;
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
-
-        return reader.result?.toString();
+        return post('files', formData);
     }
 }
 

@@ -16,6 +16,7 @@ export interface MessageAttachment {
   contentType?: string;
   fileName?: string;
   url?: string;
+  downloadUrl?: string;
 }
 
 export interface CreateChatMessage {

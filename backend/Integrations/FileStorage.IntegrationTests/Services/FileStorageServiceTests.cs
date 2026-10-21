@@ -86,9 +86,11 @@ namespace HootOut.FileStorage.IntegrationTests.Services
             fileDb.Should().NotBeNull();
             fileDb.Id.Should().Be(result.Id);
 
-            var signedUrl = await container.Resolve<IMediaUrlService>().GetDownloadUrlAsync(result.Id, result.ContentType);
+            var signedUrl = await container.Resolve<IMediaUrlService>().GetViewUrlAsync(result.Id, result.ContentType, result.FileName);
+            var downloadUrl = await container.Resolve<IMediaUrlService>().GetDownloadUrlAsync(result.Id, result.ContentType, result.FileName);
             signedUrl.Should().NotBeNullOrEmpty();
             result.Url.Should().Be(signedUrl);
+            result.DownloadUrl.Should().Be(downloadUrl);
         }
     }
 }

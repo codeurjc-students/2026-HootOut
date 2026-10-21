@@ -253,10 +253,13 @@ body {
 .custom-form-link {
   text-align: left;
   margin-top: .5rem;
+  text-decoration: underline;
 }
 
-.custom-form-link>a {
+a {
   color: rgb(var(--color-text));
+  font-size: 15px;
+  text-decoration: none;
 }
 
 .background-primary {

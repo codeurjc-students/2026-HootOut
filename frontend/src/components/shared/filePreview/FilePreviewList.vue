@@ -3,6 +3,7 @@ import type { MessageAttachment } from '@/types';
 import FilePreview from './FilePreview.vue';
 import Modal from '../modal/Modal.vue';
 import { computed, ref, useTemplateRef } from 'vue';
+import { getBlob } from '@/services/common/api/ApiService.ts';
 
 const { files, canRemove } = defineProps({
     files: Array<any>,
@@ -44,6 +45,11 @@ const modalFileTitle = computed(() =>
             </div>
         </div>
         <Modal :title="modalFileTitle" ref="view-file-modal" @close="closePreview" modalClass="file-preview-modal">
+            <template v-slot:options>
+                <a class="material-symbols-sharp file-download" :href=modalFile?.downloadUrl download>
+                    download
+                </a>
+            </template>
             <template v-slot:body>
                 <FilePreview :file="modalFile" filePreviewClass="modal-file-preview" />
             </template>
@@ -84,6 +90,10 @@ const modalFileTitle = computed(() =>
     max-width: 80vw;
     height: 80vh;
     top: 10vh;
+}
+
+.file-download {
+    padding: 0 .25rem;
 }
 
 @media(max-width: 520px) {

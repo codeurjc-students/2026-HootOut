@@ -44,7 +44,8 @@ namespace HootOut.ChatMessages.Services
 
             foreach (var attachment in result)
             {
-                attachment.Url = await mediaUrlService.GetDownloadUrlAsync(attachment.MediaFileId, attachment.ContentType) ?? "";
+                attachment.Url = await mediaUrlService.GetViewUrlAsync(attachment.MediaFileId, attachment.ContentType, attachment.FileName) ?? "";
+                attachment.DownloadUrl = await mediaUrlService.GetDownloadUrlAsync(attachment.MediaFileId, attachment.ContentType, attachment.FileName) ?? "";
             }
 
             return result;
