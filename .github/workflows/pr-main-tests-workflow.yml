@@ -102,10 +102,12 @@ jobs:
         working-directory: .
         run: |
           mkdir -p certs
-            openssl req -x509 -newkey rsa:2048 -nodes -days 7 \
+          openssl req -x509 -newkey rsa:2048 -nodes -days 7 \
             -keyout certs/key.pem -out certs/cert.pem \
-            -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,DNS:rustfs,IP:127.0.0.1,DNS:rabbitmq" \
-            chmod 644 certs/*.pem
+            -subj "/CN=localhost" \
+            -addext "subjectAltName=DNS:localhost,DNS:rustfs,DNS:rabbitmq,IP:127.0.0.1"
+          cp certs/cert.pem certs/ca.pem   # self-signed: it is its own CA (SSL_CERT_FILE, RabbitMQ cacertfile)
+          chmod 644 certs/*.pem
 
       - name: Docker Compose Backend
         run: docker compose -f ../backend/compose.dev.yaml up -d --build --wait
