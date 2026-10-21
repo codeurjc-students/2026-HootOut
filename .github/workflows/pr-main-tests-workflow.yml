@@ -70,6 +70,12 @@ jobs:
       POSTGRES_PORT: 5432
       HOOTOUTAPI_HTTPS_PORTS: 1234 
       HOOTOUTWEBSOCKETS_HTTPS_PORTS: 4321
+      RABBIT_HOSTNAME: hootout
+      RABBITMQ_USER: rabbit_user
+      RABBITMQ_PASSOWRD: rabbit_test_123 
+      RUSTFS_PORT: 9000
+      RUSTFS_ACCESS_KEY: hootout_s3
+      RUSTFS_SECRET_KEY: rustfs_test_123 
       TLS_CERT: ../certs/cert.pem
       TLS_KEY: ../certs/key.pem
     steps:
