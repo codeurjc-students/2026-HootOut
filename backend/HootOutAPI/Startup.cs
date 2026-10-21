@@ -49,8 +49,8 @@ namespace HootOut.HootOutAPI
                 }.Build()
             }.Build());
 
-            services.AddSingleton<IRsaKeyProvider>(rsaKeyProvider); 
-            services.AddHostedService<RefreshTokenCleanupService>(); 
+            services.AddSingleton<IRsaKeyProvider>(rsaKeyProvider);
+            services.AddHostedService<RefreshTokenCleanupService>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).
                 AddJwtBearer(options =>
                 {
@@ -97,7 +97,7 @@ namespace HootOut.HootOutAPI
 
             services.AddControllers();
             services.AddOpenApi();
-            services.AddSwaggerGen(); 
+            services.AddSwaggerGen();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

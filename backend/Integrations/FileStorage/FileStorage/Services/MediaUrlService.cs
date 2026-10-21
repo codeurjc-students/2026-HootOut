@@ -23,8 +23,8 @@ namespace HootOut.FileStorage.Services
         }
 
         public async Task<string?> GetViewUrlAsync(Guid fileId, string contentType, string fileName) => await GetUrlAsync(fileId, contentType, fileName, "view", "inline");
-                                
-        public async Task<string?> GetDownloadUrlAsync(Guid fileId, string contentType, string fileName) => await GetUrlAsync(fileId, contentType, fileName, "download", AttachmentDisposition(fileName)); 
+
+        public async Task<string?> GetDownloadUrlAsync(Guid fileId, string contentType, string fileName) => await GetUrlAsync(fileId, contentType, fileName, "download", AttachmentDisposition(fileName));
 
         private async Task<string?> GetUrlAsync(Guid fileId, string contentType, string fileName, string kind, string disposition)
         {

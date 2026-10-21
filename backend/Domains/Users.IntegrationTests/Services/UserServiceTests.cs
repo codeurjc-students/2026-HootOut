@@ -7,9 +7,7 @@ using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.Contracts.Users.Services;
-using HootOut.FileStorage.Configuration;
 using HootOut.Infraestructure.DI;
-using Moq;
 
 namespace HootOut.Users.IntegrationTests.Services
 {
@@ -26,7 +24,7 @@ namespace HootOut.Users.IntegrationTests.Services
         {
             var builder = new ContainerBuilder();
             new RegistrationManager().RegisterAllAssemblies(builder);
-            builder.RegisterInstance(postgressContainer.postgreSQLProvider!).As<IPersistenceProvider>().SingleInstance(); 
+            builder.RegisterInstance(postgressContainer.postgreSQLProvider!).As<IPersistenceProvider>().SingleInstance();
             container = builder.Build();
 
             var testPersistenceProvider = container.Resolve<IPersistenceProvider>();

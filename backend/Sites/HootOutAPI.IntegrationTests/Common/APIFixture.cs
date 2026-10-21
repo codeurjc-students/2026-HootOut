@@ -25,7 +25,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Common
             TestRegistrationManager testRegistrationManager = new TestRegistrationManager();
             testRegistrationManager.RegisterTest = (builder) =>
             {
-                builder?.RegisterInstance(PostgreSQLProvider!).As<IPersistenceProvider>().SingleInstance(); 
+                builder?.RegisterInstance(PostgreSQLProvider!).As<IPersistenceProvider>().SingleInstance();
 
                 var optionsMock = new Mock<IOptions<FileStorageSettings>>();
                 optionsMock.Setup(x => x.Value).Returns(new FileStorageSettings
@@ -65,7 +65,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Common
         protected override IHost CreateHost(IHostBuilder builder)
         {
             return base.CreateHost(builder);
-        } 
+        }
 
         public async ValueTask InitializeAsync()
         {

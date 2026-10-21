@@ -67,7 +67,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Common
             using var request = new HttpRequestMessage(method, url);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-            request.Content = formData;            
+            request.Content = formData;
 
             return await httpClient!.SendAsync(request, ct);
         }

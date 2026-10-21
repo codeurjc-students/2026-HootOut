@@ -15,7 +15,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
     {
         public ILifetimeScope AutofacRoot => Services.GetAutofacRoot();
         public TestContainerPostgreSQLProvider? PostgreSQLProvider { get; set; }
-        public TestS3Container? TestS3Container { get; set;  }
+        public TestS3Container? TestS3Container { get; set; }
 
         public Action<ContainerBuilder?>? RegisterDependencies;
         protected override IHostBuilder CreateHostBuilder()
@@ -68,6 +68,6 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
             await PostgreSQLProvider!.DisposeAsync();
             await TestS3Container!.DisposeAsync();
             GC.SuppressFinalize(this);
-        } 
+        }
     }
 }

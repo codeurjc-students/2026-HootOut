@@ -1,5 +1,4 @@
-﻿using Amazon.S3.Model;
-using Autofac;
+﻿using Autofac;
 using FluentAssertions;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.FileStorage;

@@ -42,7 +42,7 @@
             "text/csv",
 
             // Compressed
-            "application/zip", 
+            "application/zip",
             "application/gzip",
             "application/x-7z-compressed",
             "application/vnd.rar"

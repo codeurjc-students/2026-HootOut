@@ -4,16 +4,12 @@ using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.Contracts.Authentication.Responses;
-using HootOut.Contracts.ChatChannels.Dtos;
-using HootOut.Contracts.ChatServers.Requests;
 using HootOut.Contracts.MediaFile.Responses;
-using HootOut.HootOutAPI.IntegrationTests.Common; 
-using System;
-using System.Collections.Generic;
+using HootOut.HootOutAPI.IntegrationTests.Common;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text; 
+using System.Text;
 
 namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 {
@@ -66,7 +62,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var bytes = Encoding.UTF8.GetBytes(text);
             var form = new MultipartFormDataContent();
             var content = new ByteArrayContent(bytes);
-            content.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data"); 
+            content.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
 
             form.Add(content, "file", fileName);
 
@@ -77,7 +73,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var fileUploadResponse = await response.Content.ReadFromJsonAsync<UploadFileResponse>(ct);
             fileUploadResponse.Should().NotBeNull();
             fileUploadResponse.FileName.Should().Be(fileName);
-            fileUploadResponse.BytesSize.Should().Be(bytes.LongLength); 
+            fileUploadResponse.BytesSize.Should().Be(bytes.LongLength);
         }
 
         [Fact]
@@ -102,7 +98,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var response = await SendAuthorizeHttpRequestFile(
                HttpMethod.Post, "/api/v1/files", form, auth!.AccessToken!, ct);
 
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest); 
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         public void Dispose()
