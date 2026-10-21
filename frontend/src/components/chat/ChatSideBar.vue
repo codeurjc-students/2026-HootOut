@@ -15,7 +15,7 @@ function openModal() {
 
 function onCreateServerSuccess(server: ChatServer) {
     serverstore.addChatServer(server)
-    serverstore.setCurrentServer(server);
+    serverstore.setCurrentServer(server.id);
     createServerFormModal.value?.close();
 }
 

@@ -1,10 +1,29 @@
 <script setup lang="ts">
+import ChatServerService from '@/services/chatServer/ChatServerService.ts';
 import ChatConversationView from './ChatConversationView.vue';
 import ChatLeftBar from './ChatLeftBar.vue';
 import { serverInfoStore } from "@/stores/serverInfo.ts"
 import { storeToRefs } from 'pinia';
+import { watch } from 'vue';
+import { useRoute } from 'vue-router';
 
+const route = useRoute();
+const serverInfo = serverInfoStore();
 const { currentChatChannel } = storeToRefs(serverInfoStore())
+
+watch(() => route.params.id,
+    async newId => {
+        if (serverInfo.servers.length == 0) {
+            await serverInfo.getChatServers();
+        }
+
+        if (newId)
+            serverInfo.setCurrentServer(newId as string);
+    },
+    {
+        immediate: true
+    }
+)
 
 </script>
 

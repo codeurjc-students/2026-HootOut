@@ -59,20 +59,13 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     newChannels.forEach(c => addNewChannel(c));
   }
 
-  async function unsubscribeFromChannels() {
-    channels.value.forEach(channel => {
-      wsMessageService.subscribe(channel.id, (message: WebSocketMessage) => {
+  async function unsubscribeFromCurrentChannel() {
+    const currentChannel = currentChatChannel.value;
+    if (currentChannel) {
+      await wsMessageService.unsubscribe(currentChannel.id, (message: WebSocketMessage) => {
         newMessage(message)
       });
-    })
-  }
-
-  async function subscribeToChannels() {
-    channels.value.forEach(channel => {
-      wsMessageService.subscribe(channel.id, (message: WebSocketMessage) => {
-        newMessage(message)
-      });
-    })
+    }
   }
 
   function setChannelMessages(channel: ChatChannel, messages: ChatMessage[]) {
@@ -81,6 +74,10 @@ export const serverInfoStore = defineStore('serverInfo', () => {
   }
 
   async function selectChannel(channel: ChatChannel) {
+    wsMessageService.subscribe(channel.id, (message: WebSocketMessage) => {
+      newMessage(message)
+    });
+
     const messages = await ChatMessageService.getMessagesByChannelId(channel.id);
     setChannelMessages(channel, messages)
     setCurrentChatChannel(channel);
@@ -95,22 +92,24 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     servers.value.push(chatServer);
   }
 
-  async function setCurrentServer(chatServer: ChatServer): Promise<void> {
-    currentServer.value = chatServer;
-    await wsMessageService.connect(async () => {
-      await fetchServerChannels(chatServer);
-    })
+  async function setCurrentServer(id: string): Promise<void> {
+    currentServer.value = servers.value.filter(x => x.id == id).at(0);
+    if (currentServer?.value) {
+      await wsMessageService.connect(async () => {
+        if (currentServer?.value)
+          await fetchServerChannels(currentServer.value);
+      });
+    }
   }
 
   async function fetchServerChannels(chatServer: ChatServer): Promise<void> {
     const channels = await ChatChannelService.getChannelsByServerId(chatServer.id);
-    await unsubscribeFromChannels();
+    await unsubscribeFromCurrentChannel();
     clearChannels();
     setServerChannels(channels);
     currentChatChannel.value = undefined;
 
     if (channels && channels.length > 0) {
-      await subscribeToChannels();
       await selectChannel(channels[0]!)
     }
   }
