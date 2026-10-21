@@ -20,6 +20,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
     /// Cookie header by hand. That avoids the test HttpClient dropping Secure cookies over http://localhost
     /// and lets the tests replay old cookie values on purpose.
     /// </summary>
+    [Collection("IntegrationTests")]
     public class AuthCookieControllerTests : IClassFixture<APIFixture>, IDisposable, IAsyncLifetime
     {
         private const string CookieName = "refresh_token";
