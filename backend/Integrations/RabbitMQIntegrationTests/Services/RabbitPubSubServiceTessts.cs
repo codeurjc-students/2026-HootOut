@@ -18,7 +18,7 @@ namespace HootOut.RabbitMQIntegrationTests.Services
         {
             rabbitConnectionFactory = factory;
             pubSubService = new RabbitPubSubService(new Mock<ILogger<RabbitPubSubService>>().Object, rabbitConnectionFactory);
-        } 
+        }
 
         [Fact]
         public async Task RabbitPubSubService_PublishSubscribe_OneSubscriber()

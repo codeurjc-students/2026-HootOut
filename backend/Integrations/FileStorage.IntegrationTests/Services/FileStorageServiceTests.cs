@@ -6,26 +6,19 @@ using HootOut.CommonDomain.FileStorage;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.CommonIntegrationTests.S3;
-using HootOut.Contracts.ChatChannels.Services;
-using HootOut.Contracts.Common.Saver;
 using HootOut.FileStorage.Configuration;
-using HootOut.FileStorage.Services;
-using HootOut.MediaFiles.Entities;
 using HootOut.MediaFiles.Search;
-using HootOut.RabbitMQ.Services;
 using Microsoft.Extensions.Options;
 using Moq;
-using System;
-using System.Collections.Generic;
 using System.Net.Mime;
 using System.Text;
 
 namespace HootOut.FileStorage.IntegrationTests.Services
 {
     [Collection("IntegrationTests")]
-    public class FileStorageServiceTests :IClassFixture<TestS3Container>, IClassFixture<PostgresTestContainer>, IAsyncLifetime
+    public class FileStorageServiceTests : IClassFixture<TestS3Container>, IClassFixture<PostgresTestContainer>, IAsyncLifetime
     {
-        TestS3Container s3Container; 
+        TestS3Container s3Container;
         private IContainer container;
         private ClearAllTables clearTables;
         private IFileStorageService fileStorageService;
@@ -60,15 +53,10 @@ namespace HootOut.FileStorage.IntegrationTests.Services
             }
 
             this.fileStorageService = container.Resolve<IFileStorageService>();
-        } 
+        }
         public async ValueTask InitializeAsync()
         {
             await clearTables.ClearTablesAsync();
-            var client = container.Resolve<IS3ClientProvider>();
-            await client.GetS3Client().PutBucketAsync(new PutBucketRequest
-            {
-                BucketName = bucketName
-            });
         }
 
         public async ValueTask DisposeAsync()
@@ -85,7 +73,7 @@ namespace HootOut.FileStorage.IntegrationTests.Services
             var fileName = "test_file";
             var contentType = new ContentType().ToString();
 
-            var fileStream = new MemoryStream(Encoding.UTF8.GetBytes(text)); 
+            var fileStream = new MemoryStream(Encoding.UTF8.GetBytes(text));
             var result = await fileStorageService.UploadFileAsync(fileName, fileStream, contentType, Guid.NewGuid(), ct);
 
             result.Should().NotBeNull();

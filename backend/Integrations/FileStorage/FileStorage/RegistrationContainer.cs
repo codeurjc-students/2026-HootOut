@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.FileStorage;
 using HootOut.FileStorage.Configuration;
 using HootOut.FileStorage.Services;
@@ -11,6 +12,7 @@ namespace HootOut.FileStorage
     {
         public void Register(ContainerBuilder builder)
         {
+            builder.RegisterType<BucketsInit>().As<IDefaultValues>().SingleInstance();
             builder.RegisterType<S3ClientProvider>().As<IS3ClientProvider>().SingleInstance();
             builder.RegisterType<FileStorageService>().As<IFileStorageService>().SingleInstance();
             builder.RegisterType<MediaUrlService>().As<IMediaUrlService>().SingleInstance();

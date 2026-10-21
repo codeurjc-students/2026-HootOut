@@ -1,8 +1,5 @@
 ﻿using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.Contracts.ChatMessage.Services
 {

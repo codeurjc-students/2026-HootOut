@@ -7,8 +7,11 @@ using HootOut.HootOutAPI.Schedulers;
 using HootOut.Infraestructure.DI;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
+using MimeDetective;
+using MimeDetective.Definitions;
 
 namespace HootOut.HootOutAPI
 {
@@ -25,15 +28,29 @@ namespace HootOut.HootOutAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var jwt = Configuration.GetSection("Jwt").Get<JwtSettings>() ?? throw new InvalidOperationException("Missing 'Jwt' configuration section.");
+            var jwtConfig = Configuration.GetSection("Jwt");
+            var jwt = jwtConfig.Get<JwtSettings>() ?? throw new InvalidOperationException("Missing 'Jwt' configuration section.");
             var rsaKeyProvider = new DevelopmentRsaKeyProvider(jwt.PrivateKeysPath);
 
-            services.Configure<JwtSettings>(Configuration.GetSection("Jwt"));
-            services.Configure<FileStorageSettings>(Configuration.GetSection("FileStorage"));
-            services.AddSingleton<IRsaKeyProvider>(rsaKeyProvider);
+            services.Configure<JwtSettings>(jwtConfig);
 
-            services.AddHostedService<RefreshTokenCleanupService>();
+            var fileStorageConfig = Configuration.GetSection("FileStorage");
+            services.Configure<FileStorageSettings>(fileStorageConfig);
+            services.Configure<FormOptions>(options =>
+            {
+                options.MultipartBodyLengthLimit = fileStorageConfig?.Get<FileStorageSettings>()?.MaxFileBytes ?? 20 * 1024 * 1024; //Max 20MB
+            });
 
+            services.AddSingleton(new ContentInspectorBuilder
+            {
+                Definitions = new CondensedBuilder
+                {
+                    UsageType = MimeDetective.Definitions.Licensing.UsageType.PersonalNonCommercial
+                }.Build()
+            }.Build());
+
+            services.AddSingleton<IRsaKeyProvider>(rsaKeyProvider); 
+            services.AddHostedService<RefreshTokenCleanupService>(); 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).
                 AddJwtBearer(options =>
                 {
@@ -81,7 +98,6 @@ namespace HootOut.HootOutAPI
             services.AddControllers();
             services.AddOpenApi();
             services.AddSwaggerGen(); 
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

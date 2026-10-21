@@ -5,7 +5,6 @@ using HootOut.Contracts.Common.Saver;
 using HootOut.Contracts.MediaFile.Responses;
 using HootOut.FileStorage.Configuration;
 using HootOut.MediaFiles.Entities;
-using HootOut.MediaFiles.Search;
 using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 

@@ -1,5 +1,4 @@
 ﻿using HootOut.ChatMessages.Entities;
-using HootOut.ChatMessages.Mappers;
 using HootOut.ChatMessages.Searchs;
 using HootOut.CommonDomain.FileStorage;
 using HootOut.Contracts.ChatMessage.Dtos;
@@ -35,7 +34,7 @@ namespace HootOut.ChatMessages.Services
                 return newAttachment;
             }).ToList();
 
-            await saver.SaveManyAsync(attachments, ct); 
+            await saver.SaveManyAsync(attachments, ct);
             return await GetMessageAttachmentDtos(messageId, ct);
         }
 

@@ -4,6 +4,7 @@ using HootOut.ChatChannels.Search;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
+using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.ChatChannels.Dtos;
 using HootOut.Contracts.ChatChannels.Requests;
 using HootOut.Contracts.ChatChannels.Services;
@@ -11,7 +12,7 @@ using HootOut.Contracts.ChatChannels.Services;
 namespace HootOut.ChatChannels.IntegrationTests.Services
 {
     [Collection("IntegrationTests")]
-    public class ChatChannelsServiceTests : IClassFixture<PostgresTestContainer>, IAsyncLifetime
+    public class ChatChannelsServiceTests : IClassFixture<PostgresTestContainer>, IClassFixture<TestS3Container>, IAsyncLifetime
     {
         private IContainer container;
         private ClearAllTables clearTables;

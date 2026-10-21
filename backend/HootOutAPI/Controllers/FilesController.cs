@@ -8,17 +8,21 @@ namespace HootOut.HootOutAPI.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class FileController : ControllerBase
+    public class FilesController : ControllerBase
     {
-        private readonly ILogger<FileController> logger;
+        private readonly ILogger<FilesController> logger;
         private readonly IFileStorageService fileStorageService;
 
-        public FileController(
-            ILogger<FileController> logger,
-            IFileStorageService fileStorageService)
+        private readonly FileClassifier fileClassifier;
+
+        public FilesController(
+            ILogger<FilesController> logger,
+            IFileStorageService fileStorageService,
+            FileClassifier fileClassifier)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.fileStorageService = fileStorageService ?? throw new ArgumentNullException(nameof(fileStorageService));
+            this.fileClassifier = fileClassifier ?? throw new ArgumentNullException(nameof(fileClassifier));
         }
 
         [HttpPost]
@@ -31,7 +35,11 @@ namespace HootOut.HootOutAPI.Controllers
 
             var userId = User.FindFirstValue("sub");
             if (userId is null)
-                return Unauthorized();
+                return Unauthorized(); 
+
+            var mimeType = await fileClassifier.GetMimeTypeAsync(file, ct);
+            if (mimeType is null || !UploadPolicy.AllowedTypes.TryGetValue(mimeType, out var allowedCategory))
+                return BadRequest("File type not allowed.");  
 
             await using var stream = file.OpenReadStream();
 

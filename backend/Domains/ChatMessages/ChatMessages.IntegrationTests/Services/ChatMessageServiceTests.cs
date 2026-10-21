@@ -4,19 +4,18 @@ using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.FileStorage;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
+using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
 using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.Contracts.Users.Services;
-using HootOut.Users.Entities;
-using HootOut.Users.Search;
 using Moq;
 
 namespace HootOut.ChatMessages.IntegrationTests.Services
 {
     [Collection("IntegrationTests")]
-    public class ChatMessageServiceTests : IClassFixture<PostgresTestContainer>, IAsyncLifetime
+    public class ChatMessageServiceTests : IClassFixture<PostgresTestContainer>, IClassFixture<TestS3Container>, IAsyncLifetime
     {
         private IContainer container;
         private ClearAllTables clearTables;
@@ -29,8 +28,7 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
 
             mediaServiceMock.Setup(
                 x => x.GetDownloadUrlAsync(It.IsAny<Guid>(), It.IsAny<string>()))
-                .Returns((Guid id, string _) => Task.FromResult(id.ToString() ?? null));
-
+                .Returns((Guid id, string _) => Task.FromResult(id.ToString() ?? null)); 
 
             var builder = postgressContainer.RegisterTestPersistenceProvider();
             builder.RegisterInstance(mediaServiceMock.Object).As<IMediaUrlService>().SingleInstance();

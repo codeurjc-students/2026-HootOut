@@ -2,11 +2,6 @@
 using HootOut.ChatMessages.Searchs;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.ChatMessage.Dtos;
-using HootOut.Contracts.Users.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Channels;
 
 namespace HootOut.PostgreSQL.Searchs.ChatMessages
 {
@@ -29,7 +24,7 @@ namespace HootOut.PostgreSQL.Searchs.ChatMessages
             INNER JOIN "HootOut"."MediaFile" AS mediaFile
                 ON attachment."MediaFileId" = mediaFile."Id"
             WHERE attachment."MessageId" = @MessageId
-            """; 
+            """;
 
         public async Task<IEnumerable<ChatMessageAttachmentDto>> GetChatMessageAttachmentDtos(Guid messageId, CancellationToken ct = default)
         {

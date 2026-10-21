@@ -41,7 +41,7 @@ namespace HootOut.HootOutWebsockets.Controllers
                 {
                     HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     return;
-                } 
+                }
 
                 var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
                 var connectionId = await connectionManager.AddConnectionAsync(webSocket, user);
