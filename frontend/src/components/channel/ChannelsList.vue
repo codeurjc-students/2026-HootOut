@@ -5,6 +5,9 @@ import { storeToRefs } from 'pinia';
 import UpdateChannelForm from './UpdateChannelForm.vue';
 import { ref, useTemplateRef } from 'vue';
 import Modal from '../shared/modal/Modal.vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const serverInfo = serverInfoStore();
 const { channels, currentChatChannel, currentServer } = storeToRefs(serverInfo) as any
@@ -13,7 +16,7 @@ const channelToEdit = ref<ChatChannel>();
 const updateChannelModal = useTemplateRef('update-channel-form-modal')
 
 async function selectChannel(channel: ChatChannel) {
-    serverInfo.selectChannel(channel);
+    router.push({ name: 'channel', params: { serverId: currentServer.id, channelId: channel.id } })
 }
 
 async function onUpdatedChannelSuccess(channel: ChatChannel) {
@@ -61,6 +64,10 @@ async function onChannelDeleted(id: string) {
 </template>
 
 <style>
+.channel-list {
+    overflow-y: auto;
+}
+
 .channel-name-row {
     padding: 0rem 1rem;
     border-bottom: 1px solid rgb(var(--color-background-light));

@@ -11,7 +11,7 @@ const serverInfo = serverInfoStore()
 const { servers, currentServer } = storeToRefs(serverInfo)
 
 function setCurrentServer(server: ChatServer) {
-    router.push({ name: 'server', params: { id: server.id } })
+    router.push({ name: 'server', params: { serverId: server.id } })
 }
 
 </script>

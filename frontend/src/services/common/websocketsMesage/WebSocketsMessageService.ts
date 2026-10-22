@@ -52,7 +52,6 @@ export class WebSocketMessageService {
     }
 
     onClose() {
-
         this.connected.value = false;
         // fail everything still waiting, so nothing hangs forever
         for (const [id, p] of this.pending) {
@@ -97,6 +96,8 @@ export class WebSocketMessageService {
     }
 
     sendMessage(chatChannel: ChatChannel, payload: any, timeoutMs = 5000): AckPromise {
+
+
         const message: WebSocketMessage = { channel: chatChannel.id, payload: JSON.stringify(payload), type: WSMessageType.ChatMessage };
         return this.sendWithAck(message, timeoutMs);
     }
@@ -116,6 +117,13 @@ export class WebSocketMessageService {
     onMessage(message: WebSocketMessage) {
         const key = message.channel;
         this.subscriptions[key!]?.(message);
+    }
+
+    tryReconnect() {
+        for (const channel of Object.keys(this.subscriptions)) {
+            const message: WebSocketMessage = { channel, type: WSMessageType.Subscribe };
+
+        }
     }
 }
 const wsMessageService = new WebSocketMessageService()

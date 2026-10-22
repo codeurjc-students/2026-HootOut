@@ -80,6 +80,7 @@ function removeFile(file: MessageAttachment) {
 .chat-message-bar {
     padding-top: .5rem;
     border-top: 1px solid rgb(var(--color-border));
+    max-width: 100vw;
 }
 
 #message-input-bar {
@@ -91,7 +92,6 @@ function removeFile(file: MessageAttachment) {
     border: 1px solid rgb(var(--color-border));
     border-radius: 10px;
     height: 3rem;
-    width: 100%;
     display: flex;
     align-items: center;
     max-width: 80%;
@@ -116,5 +116,13 @@ function removeFile(file: MessageAttachment) {
     right: 0;
     top: 0;
     color: rgb(var(--color-warning-light))
+}
+
+@media(max-width: 520px) {
+    #message-box {
+        margin: 0;
+        max-width: 100%;
+    }
+
 }
 </style>

@@ -73,12 +73,16 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     pendingMessages.value[channel.id] = {};
   }
 
-  async function selectChannel(channel: ChatChannel) {
-    wsMessageService.subscribe(channel.id, (message: WebSocketMessage) => {
-      newMessage(message)
-    });
+  async function selectChannel(channelId: string) {
+    const channel = channels.value.filter(x => x.id == channelId).at(0);
+    if (!channel)
+      return;
 
-    const messages = await ChatMessageService.getMessagesByChannelId(channel.id);
+    // wsMessageService.subscribe(channelId, (message: WebSocketMessage) => {
+    //   newMessage(message)
+    // });
+
+    const messages = await ChatMessageService.getMessagesByChannelId(channelId);
     setChannelMessages(channel, messages)
     setCurrentChatChannel(channel);
   }
@@ -94,24 +98,16 @@ export const serverInfoStore = defineStore('serverInfo', () => {
 
   async function setCurrentServer(id: string): Promise<void> {
     currentServer.value = servers.value.filter(x => x.id == id).at(0);
-    if (currentServer?.value) {
-      await wsMessageService.connect(async () => {
-        if (currentServer?.value)
-          await fetchServerChannels(currentServer.value);
-      });
-    }
+    if (currentServer?.value)
+      await fetchServerChannels(currentServer.value);
   }
 
   async function fetchServerChannels(chatServer: ChatServer): Promise<void> {
     const channels = await ChatChannelService.getChannelsByServerId(chatServer.id);
-    await unsubscribeFromCurrentChannel();
+    //await unsubscribeFromCurrentChannel();
     clearChannels();
     setServerChannels(channels);
     currentChatChannel.value = undefined;
-
-    if (channels && channels.length > 0) {
-      await selectChannel(channels[0]!)
-    }
   }
 
   return { currentChatChannel, selectChannel, channels, addPendingMessage, confirmMessage, channelMessages, pendingMessages, setCurrentChatChannel, addNewChannel, newMessage, setServerChannels, setChannelMessages, getChatServers, addChatServer, servers, setCurrentServer, currentServer, fetchServerChannels }

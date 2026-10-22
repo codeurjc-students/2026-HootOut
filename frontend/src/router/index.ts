@@ -29,8 +29,14 @@ const router = createRouter({
       meta: { layout: 'MainLayout' }
     },
     {
-      path: '/chat/server/:id',
+      path: '/chat/server/:serverId?',
       name: 'server',
+      component: () => import('@/views/ChatView.vue'),
+      meta: { layout: 'MainLayout' }
+    },
+    {
+      path: '/chat/server/:serverId/channel/:channelId',
+      name: 'channel',
       component: () => import('@/views/ChatView.vue'),
       meta: { layout: 'MainLayout' }
     },
@@ -45,7 +51,7 @@ router.beforeEach(async (to) => {
   if (to.meta.guestOnly && auth.isAuthenticated) return { name: 'chat' }
 
   if (!to.meta.public && !auth.isAuthenticated && to.name !== 'home') {
-    return { name: 'home', query: { redirect: to.fullPath } }
+    return { name: 'home' }
   }
 })
 
