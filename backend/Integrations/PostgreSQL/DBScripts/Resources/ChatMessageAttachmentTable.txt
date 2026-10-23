@@ -31,5 +31,9 @@ then
 
 end if;
 
+CREATE INDEX IF NOT EXISTS ix_chat_message_attachment_message
+ON "HootOut"."ChatMessageAttachment" ("MessageId")
+WHERE "Deleted" = false;
+
 
 end $$;

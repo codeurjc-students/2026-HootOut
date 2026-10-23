@@ -192,10 +192,10 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 
             IChatMessageService chatMessageService = container.Resolve<IChatMessageService>();
 
-            var messages = await chatMessageService.GetMessagesByChannelAsync(channelId, ct);
-            messages.Should().NotBeNullOrEmpty();
-            messages.Should().HaveCount(1);
-            var message1 = messages.Single();
+            var messages = await chatMessageService.GetMessagesByChannelAsync(channelId, ct: ct);
+            messages.Items.Should().NotBeNullOrEmpty();
+            messages.Items.Should().HaveCount(1);
+            var message1 = messages.Items.Single();
             message1.Should().NotBeNull();
             message1.Author.Should().NotBeNull();
             message1.Author.Id.Should().Be(userId1);

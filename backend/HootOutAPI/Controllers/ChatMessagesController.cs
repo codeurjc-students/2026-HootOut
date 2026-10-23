@@ -1,7 +1,9 @@
 ﻿using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Services;
+using HootOut.Contracts.Common;
 using HootOut.HootOutAPI.Helpers;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace HootOut.HootOutAPI.Controllers
 {
@@ -21,16 +23,15 @@ namespace HootOut.HootOutAPI.Controllers
             this.chatMessageService = chatMessageService ?? throw new ArgumentNullException(nameof(chatMessageService));
         }
 
-        [HttpGet("getByChannelId")]
-        public async Task<ActionResult<IEnumerable<ChatMessageDto>>> GetChatMessagesByChannelIdAsync(Guid channelId, CancellationToken ct)
+        [HttpGet("channelMessages")]
+        public async Task<ActionResult<PageResult<ChatMessageDto>>> GetChatMessagesByChannelIdAsync([FromQuery] Guid channelId, [FromQuery] Guid? next, [FromQuery] int? pageSize, CancellationToken ct)
         {
             return await CommandLaunchHelper.LaunchAsync(
                 logger,
-                async () => await chatMessageService.GetMessagesByChannelAsync(channelId, ct),
+                async () => await chatMessageService.GetMessagesByChannelAsync(channelId, next, pageSize ?? 10, ct),
                 BadRequest,
                 (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
                 );
-        }
-
+        } 
     }
 }

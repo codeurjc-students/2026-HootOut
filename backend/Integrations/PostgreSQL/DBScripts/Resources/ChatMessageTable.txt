@@ -28,9 +28,13 @@ then
 		"Deleted" boolean NOT NULL DEFAULT false,
 		"CreatedAt" timestamptz  NOT NULL,
 		"ModifiedAt" timestamptz NOT NULL
-	);
+	); 
 
 end if;
+
+CREATE INDEX IF NOT EXISTS ix_chat_message_channel_created
+ON "HootOut"."ChatMessage" ("ChatChannelId", "CreatedAt" DESC, "Id" DESC)
+WHERE "Deleted" = false; 
  
 
 end $$;
