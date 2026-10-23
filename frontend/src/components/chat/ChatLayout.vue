@@ -8,6 +8,7 @@ import { useRoute } from 'vue-router';
 import { serverInfoStore } from '@/stores/serverInfo.ts';
 import ChatLeftBar from './ChatLeftBar.vue';
 import ChatConversationView from './ChatConversationView.vue';
+import wsMessageService from '@/services/common/websocketsMesage/WebSocketsMessageService.ts';
 
 const serverInfo = serverInfoStore();
 
@@ -17,6 +18,8 @@ const route = useRoute();
 onMounted(async () => {
     const user = await get<UserInfo>('users/me');
     userInfo.setUser(user);
+
+    await wsMessageService.tryReconnect();
 })
 
 const mobileClass = ref("view-channels");

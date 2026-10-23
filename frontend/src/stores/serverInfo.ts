@@ -78,9 +78,15 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     if (!channel)
       return;
 
-    // wsMessageService.subscribe(channelId, (message: WebSocketMessage) => {
-    //   newMessage(message)
-    // });
+    try {
+      wsMessageService.subscribe(channelId, (message: WebSocketMessage) => {
+        newMessage(message)
+      });
+    } catch (error) {
+      wsMessageService.addPendingSubscription(channelId, (message: WebSocketMessage) => {
+        newMessage(message)
+      });
+    }
 
     const messages = await ChatMessageService.getMessagesByChannelId(channelId);
     setChannelMessages(channel, messages)

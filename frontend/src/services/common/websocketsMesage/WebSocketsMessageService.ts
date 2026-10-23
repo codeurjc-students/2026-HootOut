@@ -1,7 +1,7 @@
 import type { WebSocketService } from "@/services/common/websockets/WebSocketService";
 import webSocketService from '@/services/common/websockets/WebSocketService';
 import { WSMessageType, type ChatChannel, type WebSocketMessage, type WSTicketRespone } from "@/types";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { newId } from "../utils";
 import { post } from "../api/ApiService";
 
@@ -20,14 +20,15 @@ const wssUrl = import.meta.env.VITE_WSS_URL;
 
 export class WebSocketMessageService {
     private webSocketService: WebSocketService = webSocketService;
-    private connected = ref(false);
+    public connected = ref(false);
+    public isActive = false;
 
     private subscriptions: Record<string, (payload: WebSocketMessage) => void> = {};
-
+    private pendingSubscriptions: Record<string, (payload: WebSocketMessage) => void> = {};
     private pending = new Map<string, Pending>();
 
     async connect(onOnpen: () => Promise<void>) {
-
+        this.isActive = true;
         if (this.webSocketService.isConnected()) {
             await onOnpen();
             return;
@@ -49,6 +50,10 @@ export class WebSocketMessageService {
                 }
             },
         });
+    }
+
+    disconnect() {
+        this.webSocketService.close();
     }
 
     onClose() {
@@ -96,8 +101,6 @@ export class WebSocketMessageService {
     }
 
     sendMessage(chatChannel: ChatChannel, payload: any, timeoutMs = 5000): AckPromise {
-
-
         const message: WebSocketMessage = { channel: chatChannel.id, payload: JSON.stringify(payload), type: WSMessageType.ChatMessage };
         return this.sendWithAck(message, timeoutMs);
     }
@@ -119,12 +122,52 @@ export class WebSocketMessageService {
         this.subscriptions[key!]?.(message);
     }
 
-    tryReconnect() {
+    addPendingSubscription(channel: string, callback: (payload: WebSocketMessage) => void): void {
+        this.pendingSubscriptions[channel] = callback
+    }
+
+    subscribePendingSubscriptions(): void {
         for (const channel of Object.keys(this.subscriptions)) {
             const message: WebSocketMessage = { channel, type: WSMessageType.Subscribe };
+            this.webSocketService.send(JSON.stringify(message));
+            delete this.pendingSubscriptions[channel];
+        }
 
+        for (const channel of Object.keys(this.pendingSubscriptions)) {
+            const message: WebSocketMessage = { channel, type: WSMessageType.Subscribe };
+            this.webSocketService.send(JSON.stringify(message));
+        }
+        this.pendingSubscriptions = {};
+    }
+
+    async tryReconnect(): Promise<void> {
+        if (!this.connected.value) {
+            await this.connect(async () => {
+                this.subscribePendingSubscriptions();
+            });
         }
     }
 }
-const wsMessageService = new WebSocketMessageService()
+
+const wsMessageService = new WebSocketMessageService();
+const recconnectInterval = 3000;
+
+let reconnectTimer: number | undefined = undefined;
+
+watch(wsMessageService.connected, async (connected) => {
+    if (connected || !wsMessageService.isActive) {
+        if (reconnectTimer) {
+            clearInterval(reconnectTimer);
+            reconnectTimer = undefined;
+        }
+        return;
+    }
+
+    if (!reconnectTimer) {
+        reconnectTimer = setInterval(async () => {
+            await wsMessageService.tryReconnect();
+        }, recconnectInterval);
+    }
+});
+
 export default wsMessageService;
