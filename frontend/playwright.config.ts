@@ -1,11 +1,30 @@
 import process from 'node:process'
 import { defineConfig, devices } from '@playwright/test'
+import path from 'node:path'
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// require('dotenv').config();
+const coverageReporter = [
+  'monocart-reporter',
+  {
+    name: 'E2E',
+    outputFile: './monocart-report/index.html',
+    coverage: {
+      outputDir: path.resolve('coverage/e2e'),
+      reports: ['v8', 'lcovonly'],
+      entryFilter: (entry: { url: string }) =>
+        entry.url.startsWith('https://localhost:5173')
+        && !entry.url.includes('/node_modules/')
+        && !entry.url.includes('/@vite/')
+        && !entry.url.includes('/@id/')
+        && !entry.url.includes('type=style')
+        && !entry.url.endsWith('.css'),
+      sourceFilter: (p: string) => {
+        const path = p.replace(/\\/g, '/')
+        return /(^|\/)src\/.+\.(vue|ts|js)$/.test(path) && !path.includes('node_modules')
+      },
+      sourcePath: (p: string) => p.replace(/\\/g, '/').replace(/^.*?(?=src\/)/, ''),
+    },
+  },
+] as const
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -28,7 +47,9 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: process.env.E2E_COVERAGE
+    ? [['html'], coverageReporter]
+    : 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */

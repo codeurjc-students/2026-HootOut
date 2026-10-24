@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures.js';
 
 // test('test temporalData user list', async ({ page }) => {
 //     await page.goto('/temporalData');
@@ -35,6 +35,11 @@ test('test load home', async ({ page }) => {
     page.on('requestfailed', req => console.log('FAILED REQUEST:', req.url(), req.failure()?.errorText));
 
     const title = page.locator('h1');
-
     await expect(title).toHaveText("HootOut");
+
+    const h2 = page.locator('h2');
+    await expect(h2).toBeVisible();
+
+    const image = page.locator('img');
+    await expect(image).toHaveAttribute('src', '/jeremy-hynes-cE6r38Mj7gA-unsplash.jpg')
 })

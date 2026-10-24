@@ -491,3 +491,6 @@ test-results/
 playwright-report/
 
 .scannerwork
+monocart-report/
+coverage/ 
+frontend/playwright/.auth

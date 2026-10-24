@@ -34,6 +34,10 @@ export default defineConfig(({ mode, command }) => {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
       },
     },
+    build: {
+      sourcemap: mode === 'test',
+      minify: mode !== 'test',
+    },
     server: { https, proxy, port: 5173, strictPort: true },
     preview: { https, proxy, port: 5173, strictPort: true },
     test: {

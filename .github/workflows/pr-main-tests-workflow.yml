@@ -87,13 +87,13 @@ jobs:
           node-version: '24.12.0'
 
       - name: Install npm dependencies
-        run: npm ci 
-      
-      - name: npm Build
-        run: npm run build:test
+        run: npm ci  
 
       - name: Unit Tests
         run: npm run test:unit:coverage
+
+      - name: npm Build
+        run: npm run build:test
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
@@ -113,7 +113,9 @@ jobs:
         run: docker compose -f ../backend/compose.dev.yaml up -d --build --wait
 
       - name: Run Playwright tests
-        run: npm run test:e2e
+        env:
+          E2E_COVERAGE: true
+        run: npm run test:e2e:coverage
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -130,7 +132,10 @@ jobs:
             -Dsonar.organization=hootout
             -Dsonar.sources=frontend
             -Dsonar.projectName=HootOutFrontend
-            -Dsonar.javascript.lcov.reportPaths=frontend/coverage/vitest/lcov.info
+            -Dsonar.tests=frontend/src,frontend/e2e
+            -Dsonar.javascript.lcov.reportPaths=frontend/coverage/vitest/lcov.info,frontend/coverage/e2e/lcov.info
+            -Dsonar.exclusions=**/*.test.ts,**/*.spec.ts,**/__tests__/**,**/mocks/**
+            -Dsonar.test.inclusions=**/*.test.ts,**/*.spec.ts,**/__tests__/**,e2e/**
             -Dsonar.coverage.exclusions=e2e/**,**/*.test.ts,**/*.spec.ts
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_FRONTEND_TOKEN }}  
