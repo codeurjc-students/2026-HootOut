@@ -15,6 +15,10 @@ export const serverInfoStore = defineStore('serverInfo', () => {
   const currentServer = ref<ChatServer>()
   const lastPage = ref<PageResult<ChatMessage>>()
 
+  function setCurrentChatChannel(channel: ChatChannel | undefined) {
+    currentChatChannel.value = channel
+  }
+
   function addNewChannel(channel: ChatChannel) {
     if (channels.value.includes(channel))
       return false;
@@ -86,7 +90,7 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     const pageResult = await ChatMessageService.getMessagesByChannelId(channelId);
     lastPage.value = pageResult;
     setChannelMessages(channel, pageResult.items)
-    currentChatChannel.value = channel
+    setCurrentChatChannel(channel);
   }
 
   async function getNextMessages() {
@@ -118,8 +122,8 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     const channels = await ChatChannelService.getChannelsByServerId(chatServer.id);
     clearChannels();
     setServerChannels(channels);
-    currentChatChannel.value = undefined;
+    setCurrentChatChannel(undefined);
   }
 
-  return { currentChatChannel, selectChannel, channels, lastPage, addPendingMessage, confirmMessage, channelMessages, pendingMessages, newMessage, setServerChannels, setChannelMessages, getChatServers, addChatServer, servers, setCurrentServer, currentServer, fetchServerChannels, getNextMessages }
+  return { currentChatChannel, setCurrentChatChannel, addNewChannel, selectChannel, channels, lastPage, addPendingMessage, confirmMessage, channelMessages, pendingMessages, newMessage, setServerChannels, setChannelMessages, getChatServers, addChatServer, servers, setCurrentServer, currentServer, fetchServerChannels, getNextMessages }
 })
