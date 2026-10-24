@@ -1,0 +1,132 @@
+services:
+  hootoutapi:
+    image: hootoutapi 
+    build:
+      context: .
+      dockerfile: HootOutAPI/Dockerfile
+      args:
+        - configuration=Debug
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports: 
+      - ${HOOTOUTAPI_HTTPS_PORTS}:${HOOTOUTAPI_HTTPS_PORTS}
+    environment: 
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: https://+:${HOOTOUTAPI_HTTPS_PORTS}   # the only listener, so there is no HTTP port to use
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /certs/cert.pem
+      ASPNETCORE_Kestrel__Certificates__Default__KeyPath: /certs/key.pem
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSOWRD}
+      S3_URL: "https://rustfs:${RUSTFS_PORT}"
+      S3_Public_URL: "https://localhost:${RUSTFS_PORT}"
+      S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
+      S3_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      SSL_CERT_FILE: /certs/ca.pem
+      LOGS_FOLDER: /var/logs
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+      - ./keys:/app/keys:rw
+      - ../certs:/certs:ro
+      - logs-test:/var/logs
+
+  hootoutwebsockets:
+    image: hootoutwebsockets 
+    build:
+      context: .
+      dockerfile: HootOutWebsockets/Dockerfile
+      args:
+        - configuration=Debug
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports: 
+      - ${HOOTOUTWEBSOCKETS_HTTPS_PORTS}:${HOOTOUTWEBSOCKETS_HTTPS_PORTS}
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: https://+:${HOOTOUTWEBSOCKETS_HTTPS_PORTS}
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /certs/cert.pem
+      ASPNETCORE_Kestrel__Certificates__Default__KeyPath: /certs/key.pem 
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSOWRD}
+      S3_Public_URL: "https://localhost:${RUSTFS_PORT}"
+      S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
+      S3_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      SSL_CERT_FILE: /certs/ca.pem
+      LOGS_FOLDER: /var/logs
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+      - ../certs:/certs:ro
+      - logs-test:/var/logs
+
+  postgres:
+    image: postgres:18.6-trixie
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - pgdata-test:/var/lib/postgresql
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq: 
+    image: rabbitmq:4.3.6-management
+    restart: unless-stopped
+    ports: 
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_HOST: ${RABBIT_HOSTNAME}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSOWRD}
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq/
+      - rabbitmq:/var/log/rabbitmq
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ../certs:/certs:ro
+
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
+      retries: 3
+      timeout: 5s
+      interval: 30s  
+
+  rustfs:
+    image: rustfs/rustfs:1.0.3
+    ports: 
+      - "${RUSTFS_PORT}:${RUSTFS_PORT}"
+      - "9001:9001"
+    environment:
+      RUSTFS_TLS_PATH: /opt/tls
+      RUSTFS_ACCESS_KEY:  ${RUSTFS_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      RUSTFS_ADDRESS: ":${RUSTFS_PORT}"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
+    volumes:
+      - ../certs/cert.pem:/opt/tls/rustfs_cert.pem:ro
+      - ../certs/key.pem:/opt/tls/rustfs_key.pem:ro
+      - s3-data-test:/data
+
+volumes:
+  pgdata-test:
+  s3-data-test:
+  logs-test:
+  rabbitmq:
+    driver: local

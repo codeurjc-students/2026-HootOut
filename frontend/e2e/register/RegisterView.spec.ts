@@ -1,4 +1,3 @@
-import { A } from 'vue-router/dist/index-u4XkZVDG.js';
 import { test, expect, acquireAccount } from '../fixtures.js';
 
 // Reset storage state for this file to avoid being authenticated
@@ -54,7 +53,7 @@ test('test register user bad request', async ({ page }) => {
 
 test('test login link', async ({ page }) => {
     await page.goto('/register');
-    const link = page.getByRole('link', { name: 'Log In' })
+    const link = page.locator("#register").getByRole('link', { name: 'Log In' })
     link.click();
 
     await page.waitForURL(`/login`);

@@ -19,7 +19,7 @@ export default defineConfig(({ mode, command }) => {
 
   const proxy = {
     '/api': {
-      target: env.API_PROXY_TARGET ?? 'https://localhost:8443',
+      target: env.VITE_API_PROXY_TARGET ?? 'https://localhost:8443',
       changeOrigin: true,
       secure: false
     },

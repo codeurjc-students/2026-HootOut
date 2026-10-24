@@ -3,7 +3,9 @@
 ## [0.0.2] - Unreleased
 
 #### Added
-
+- Messages are retrieved paginated on the frontend, and the user can request more if there are any.
+- Users can preview the attachments on the chat view, open them in a modal and download those files.
+- Users can send images, gifs, videos, audio and document files as message attachments.
 - Users can Create, Edit and Delete Channels inside Servers. Channels have only a name. 
 - Users can Create Servers with a Name and Description.
 - Added RabbitMQ to the Backend, so we can have multiple WSServices running at the same time
