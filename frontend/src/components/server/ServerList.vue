@@ -3,17 +3,15 @@ import { serverInfoStore } from '@/stores/serverInfo';
 import type { ChatServer } from '@/types';
 import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 
 const serverInfo = serverInfoStore()
 const { servers, currentServer } = storeToRefs(serverInfo)
 
-onMounted(async () => {
-    await serverInfo.getChatServers();
-})
-
 function setCurrentServer(server: ChatServer) {
-    serverInfo.setCurrentServer(server);
+    router.push({ name: 'server', params: { serverId: server.id } })
 }
 
 </script>

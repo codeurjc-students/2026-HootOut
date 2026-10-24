@@ -15,14 +15,14 @@ function openModal() {
 
 function onCreateServerSuccess(server: ChatServer) {
     serverstore.addChatServer(server)
-    serverstore.setCurrentServer(server);
+    serverstore.setCurrentServer(server.id);
     createServerFormModal.value?.close();
 }
 
 </script>
 
 <template>
-    <aside id="side-bar">
+    <aside class="side-bar">
         <div id=""></div>
         <div id="server-list">
             <ServerList />
@@ -40,7 +40,7 @@ function onCreateServerSuccess(server: ChatServer) {
 </template>
 
 <style>
-#side-bar {
+.side-bar {
     height: 100%;
     max-height: calc(100vh - var(--navbar-height));
     display: grid;

@@ -24,3 +24,9 @@ export interface ValidationErrorEntry {
     errorCode?: string | null,
     formattedMessagePlaceholderValues?: any
 }
+
+export interface PageResult<T> {
+    items: T[]
+    next?: string | undefined,
+    pageSize: number
+}

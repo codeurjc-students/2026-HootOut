@@ -9,15 +9,9 @@ const { currentServer } = storeToRefs(serverInfoStore())
 </script>
 
 <template>
-    <div id="left-bar">
-        <div v-if="currentServer">
-            <ServerChannelsBar />
-        </div>
-        <div v-else class="p-1">
-            Select a Server First
-        </div>
+    <ServerChannelsBar v-if="currentServer" />
+    <div v-else class="p-1">
+        Select a Server First
     </div>
 
 </template>
-
-<style></style>

@@ -7,6 +7,7 @@ using HootOut.Contracts.Authentication.Responses;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
+using HootOut.Contracts.Common;
 using HootOut.HootOutAPI.IntegrationTests.Common;
 using System.Net;
 using System.Net.Http.Json;
@@ -59,16 +60,16 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             Guid channelId = Guid.NewGuid();
             var response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get,
-                $"/api/v1/chatMessages/getByChannelId?channelId={channelId.ToString()}",
+                $"/api/v1/chatMessages/channelMessages?channelId={channelId.ToString()}",
                 auth?.AccessToken!,
                 ct
             );
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var messages = await response.Content.ReadFromJsonAsync<IEnumerable<ChatMessageDto>>(ct);
+            var messages = await response.Content.ReadFromJsonAsync<PageResult<ChatMessageDto>>(ct);
             messages.Should().NotBeNull();
-            messages.Should().BeEmpty();
+            messages.Items.Should().BeEmpty();
         }
 
         [Fact]
@@ -105,14 +106,17 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 
             var response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get,
-                $"/api/v1/chatMessages/getByChannelId?channelId={channelId.ToString()}",
+                $"/api/v1/chatMessages/channelMessages?channelId={channelId.ToString()}",
                 auth?.AccessToken!,
                 ct
             );
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var messages = await response.Content.ReadFromJsonAsync<IEnumerable<ChatMessageDto>>(ct);
+            var result = await response.Content.ReadFromJsonAsync<PageResult<ChatMessageDto>>(ct);
+            result.Should().NotBeNull();
+
+            var messages = result.Items;
             messages.Should().NotBeNullOrEmpty();
             messages.Count().Should().Be(1);
 
@@ -125,14 +129,17 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 
             response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get,
-                $"/api/v1/chatMessages/getByChannelId?channelId={Guid.NewGuid().ToString()}",
+                $"/api/v1/chatMessages/channelMessages?channelId={Guid.NewGuid().ToString()}",
                 auth?.AccessToken!,
                 ct
             );
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            messages = await response.Content.ReadFromJsonAsync<IEnumerable<ChatMessageDto>>(ct);
+            result = await response.Content.ReadFromJsonAsync<PageResult<ChatMessageDto>>(ct);
+            result.Should().NotBeNull();
+
+            messages = result.Items;
             messages.Should().NotBeNull();
             messages.Should().BeEmpty();
         }

@@ -18,7 +18,7 @@ const { user } = storeToRefs(userInfo)
                 {{ user.username }}
             </div>
         </nav>
-        <section id="content">
+        <section id="main-content">
             <slot />
         </section>
     </div>
@@ -47,7 +47,13 @@ const { user } = storeToRefs(userInfo)
     margin-left: auto;
 }
 
-#content {
-    height: 100%;
+@media(max-width: 520px) {
+    #main-layout {
+        max-width: 100vw;
+    }
+
+    #navbar {
+        width: 100vw;
+    }
 }
 </style>

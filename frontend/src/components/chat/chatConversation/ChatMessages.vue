@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import FilePreview from "@/components/shared/filePreview/FilePreview.vue";
 import FilePreviewList from "@/components/shared/filePreview/FilePreviewList.vue";
 import { serverInfoStore } from "@/stores/serverInfo"
 import { userInfoStore } from "@/stores/userInfo";
@@ -8,12 +7,9 @@ import { computed } from "vue";
 
 const serverInfo = serverInfoStore();
 
-const { channelMessages, currentChatChannel, pendingMessages } = storeToRefs(serverInfo);
+const { channelMessages, currentChatChannel, pendingMessages, lastPage } = storeToRefs(serverInfo);
 const { user } = storeToRefs(userInfoStore());
 
-const messages = computed(() => {
-    return channelMessages.value[currentChatChannel.value!.id];
-})
 
 const pendingMessagesList = computed(() => {
     return pendingMessages?.value[currentChatChannel.value!.id];
@@ -30,6 +26,7 @@ function convertDate(date_string: string) {
 
 <template>
     <div id="messages-list">
+
         <div class="message-entry pending" v-for='(message, index) in pendingMessagesList' :key='message.id'>
             <div>
                 {{ user.username }} --- {{ convertDate(message.createdAt!) }}
@@ -39,7 +36,7 @@ function convertDate(date_string: string) {
             </div>
         </div>
 
-        <div class="message-entry" v-for='(message, index) in messages' :key='message.id'
+        <div v-for='(message, index) in channelMessages' :key='message.id'
             :class="{ 'background-soft': message.author.username == user.username }">
             <div>
                 {{ message.author.username }} --- {{ convertDate(message.createdAt!) }}
@@ -50,13 +47,16 @@ function convertDate(date_string: string) {
                 {{ message.content }}
             </div>
         </div>
+        <div @click="serverInfo.getNextMessages" v-if="lastPage?.next"
+            class="get-more-messages-btn background-soft pointer">
+            Get Older Messages
+        </div>
     </div>
 </template>
 
 <style>
 #messages-list {
     min-height: 100%;
-    max-height: 100ch;
     overflow-y: auto;
     padding: 0 1rem;
     display: flex;
@@ -64,6 +64,17 @@ function convertDate(date_string: string) {
 }
 
 .message-entry.pending {
-    color: rgba(0, 0, 0, .3);
+    opacity: 0.3;
+}
+
+.get-more-messages-btn {
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    margin: 0.5rem 0;
+    border: 1px solid rgb(var(--color-border))
+}
+
+.get-more-messages-btn:hover {
+    background-color: rgb(var(--color-background-light));
 }
 </style>

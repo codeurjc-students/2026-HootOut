@@ -16,7 +16,7 @@ interface RequestOptions {
 
 function buildUrl(url: string, query: Query = {}): string {
     const qs = new URLSearchParams(
-        Object.entries(query).map(([key, value]) => [key, String(value)])
+        Object.entries(query).filter(([key, value]) => value).map(([key, value]) => [key, String(value)])
     ).toString();
     return `${apiUrl}/${apiVersion}/${url}${qs ? `?${qs}` : ''}`;
 }

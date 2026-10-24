@@ -8,6 +8,7 @@ using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
+using HootOut.Contracts.Common;
 using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.Contracts.Users.Services;
 using Moq;
@@ -65,7 +66,7 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
         public async Task GetChatMessages_Empty()
         {
             var ct = TestContext.Current.CancellationToken;
-            (await chatMessageService.GetMessagesByChannelAsync(Guid.NewGuid(), ct)).Should().BeEmpty();
+            (await chatMessageService.GetMessagesByChannelAsync(Guid.NewGuid(), ct: ct)).Items.Should().BeEmpty();
         }
 
         [Fact]
@@ -90,9 +91,9 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
                 Content = content
             }, ct);
 
-            IEnumerable<ChatMessageDto> result = await chatMessageService.GetMessagesByChannelAsync(channelId, ct);
-            result.Should().HaveCount(1);
-            ChatMessageDto chatMessage = result.Single();
+            PageResult<ChatMessageDto> result = await chatMessageService.GetMessagesByChannelAsync(channelId, ct: ct);
+            result.Items.Should().HaveCount(1);
+            ChatMessageDto chatMessage = result.Items.Single();
 
             chatMessage.Id.Should().NotBeEmpty();
             chatMessage.ChatChannelId.Should().Be(channelId);
@@ -101,8 +102,8 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
             chatMessage.Content.Should().Be(content);
             chatMessage.CreatedAt.Should().NotBe(default);
 
-            result = await chatMessageService.GetMessagesByChannelAsync(Guid.NewGuid(), ct);
-            result.Should().BeEmpty();
+            result = await chatMessageService.GetMessagesByChannelAsync(Guid.NewGuid(), ct:ct);
+            result.Items.Should().BeEmpty();
         }
 
         [Fact]
@@ -120,7 +121,7 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
             await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatChannelId = Guid.NewGuid(), AuthorId = Guid.NewGuid(), Content = "test" }, ct);
             await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatChannelId = Guid.NewGuid(), AuthorId = Guid.NewGuid(), Content = "test" }, ct);
 
-            (await chatMessageService.GetMessagesByChannelAsync(channelId, ct)).Should().HaveCount(4);
+            (await chatMessageService.GetMessagesByChannelAsync(channelId, ct: ct)).Items.Should().HaveCount(4);
         }
     }
 }

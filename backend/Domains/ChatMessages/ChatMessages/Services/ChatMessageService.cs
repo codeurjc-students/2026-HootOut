@@ -2,10 +2,13 @@
 using HootOut.ChatMessages.Entities;
 using HootOut.ChatMessages.Mappers;
 using HootOut.ChatMessages.Searchs;
+using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
+using HootOut.Contracts.Common;
 using HootOut.Contracts.Common.Saver;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace HootOut.ChatMessages.Services
 {
@@ -25,17 +28,19 @@ namespace HootOut.ChatMessages.Services
             this.search = search ?? throw new ArgumentNullException(nameof(search));
             this.attachmentService = attachmentService ?? throw new ArgumentNullException(nameof(attachmentService));
         }
-        public async Task<IEnumerable<ChatMessageDto>> GetMessagesByChannelAsync(Guid channelId, CancellationToken ct = default)
+        public async Task<PageResult<ChatMessageDto>> GetMessagesByChannelAsync(Guid channelId, Guid? next, int pageSize = 10, CancellationToken ct = default)
         {
             if (Guid.Empty == channelId)
             {
                 throw new ArgumentNullException(nameof(channelId)); //TO-DO proper parameter validation
             }
-            var messages = await search.GetMessagesByChannelIdAsync(channelId, ct);
-            foreach (var message in messages)
+            var messages = await search.SearchMessagesByChannelIdAsync(channelId, next, pageSize, ct);
+
+            foreach (var message in messages.Items)
             {
-                message.Attachments = await attachmentService.GetMessageAttachmentDtos(message.Id, ct);
+                await attachmentService.SetAttachmentsUrl(message.Attachments, ct);
             }
+
             return messages;
         }
 
@@ -56,7 +61,7 @@ namespace HootOut.ChatMessages.Services
 
             if (request != null && request.Attachments.Any())
             {
-                messageDto.Attachments = await attachmentService.CreateMessageAttachments(chatMessage.Id, request.Attachments, ct);
+                messageDto.Attachments = (await attachmentService.CreateMessageAttachments(chatMessage.Id, request.Attachments, ct)).ToList();
             }
 
             return messageDto;

@@ -14,17 +14,29 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('@/views/LoginView.vue'),
-      meta: { layout: 'HomeLayout', public: true, guestOnly: false }
+      meta: { layout: 'HomeLayout', public: true, guestOnly: true }
     },
     {
       path: '/register',
       name: 'register',
       component: () => import('@/views/RegisterView.vue'),
-      meta: { layout: 'HomeLayout', public: true, guestOnly: false }
+      meta: { layout: 'HomeLayout', public: true, guestOnly: true }
     },
     {
       path: '/chat',
       name: 'chat',
+      component: () => import('@/views/ChatView.vue'),
+      meta: { layout: 'MainLayout' }
+    },
+    {
+      path: '/chat/server/:serverId?',
+      name: 'server',
+      component: () => import('@/views/ChatView.vue'),
+      meta: { layout: 'MainLayout' }
+    },
+    {
+      path: '/chat/server/:serverId/channel/:channelId',
+      name: 'channel',
       component: () => import('@/views/ChatView.vue'),
       meta: { layout: 'MainLayout' }
     },
@@ -36,10 +48,10 @@ router.beforeEach(async (to) => {
 
   if (!auth.ready) await auth.init()
 
-  if (to.meta.guestOnly && auth.isAuthenticated) return { name: 'home' }
+  if (to.meta.guestOnly && auth.isAuthenticated) return { name: 'chat' }
 
   if (!to.meta.public && !auth.isAuthenticated && to.name !== 'home') {
-    return { name: 'home', query: { redirect: to.fullPath } }
+    return { name: 'home' }
   }
 })
 

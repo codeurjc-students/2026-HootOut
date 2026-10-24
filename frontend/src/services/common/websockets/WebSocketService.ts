@@ -33,7 +33,7 @@ export class WebSocketService {
     }
 
     isConnected(): boolean {
-        return this.socket == null ? false : this.socket?.OPEN == WebSocket.OPEN;
+        return this.socket == null ? false : this.socket?.readyState == WebSocket.OPEN;
     }
 }
 

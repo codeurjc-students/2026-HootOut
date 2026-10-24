@@ -42,13 +42,18 @@ namespace HootOut.ChatMessages.Services
         {
             var result = await chatMessageAttachmentSearch.GetChatMessageAttachmentDtos(messageId, ct);
 
-            foreach (var attachment in result)
-            {
-                attachment.Url = await mediaUrlService.GetViewUrlAsync(attachment.MediaFileId, attachment.ContentType, attachment.FileName) ?? "";
-                attachment.DownloadUrl = await mediaUrlService.GetDownloadUrlAsync(attachment.MediaFileId, attachment.ContentType, attachment.FileName) ?? "";
-            }
+            await SetAttachmentsUrl(result, ct);
 
             return result;
+        }
+
+        public async Task SetAttachmentsUrl(IEnumerable<ChatMessageAttachmentDto> attachments, CancellationToken ct)
+        {
+            foreach (var item in attachments)
+            {
+                item.Url = await mediaUrlService.GetViewUrlAsync(item.MediaFileId, item.ContentType, item.FileName) ?? "";
+                item.DownloadUrl = await mediaUrlService.GetDownloadUrlAsync(item.MediaFileId, item.ContentType, item.FileName) ?? "";
+            }
         }
     }
 }

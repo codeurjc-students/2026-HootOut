@@ -6,9 +6,9 @@ import { RouterLink } from 'vue-router';
 
 <template>
     <div id="home-layout">
-        <nav id="navbar" class="background-primary">
+        <nav id="home-navbar" class="background-primary">
             <RouterLink to="/" class="pointer">
-                <img id="navbar-logo" :src="navbarLogo" alt="HootOutLogo" />
+                <img id="home-navbar-logo" :src="navbarLogo" alt="HootOutLogo" />
             </RouterLink>
 
             <div id="login-register-btns">
@@ -16,7 +16,7 @@ import { RouterLink } from 'vue-router';
                 <RouterLink to="/register" class="button-action"> Register </RouterLink>
             </div>
         </nav>
-        <section id="content">
+        <section id="home-content">
             <slot />
         </section>
     </div>
@@ -32,7 +32,7 @@ import { RouterLink } from 'vue-router';
     grid-template-rows: 5rem 1fr;
 }
 
-#navbar {
+#home-navbar {
     display: flex;
     align-items: center;
     align-content: space-between;
@@ -40,11 +40,11 @@ import { RouterLink } from 'vue-router';
     max-height: 5rem;
 }
 
-#navbar-logo {
+#home-navbar-logo {
     height: 2.5rem;
 }
 
-#content {
+#home-content {
     height: 100%;
 }
 
