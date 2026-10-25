@@ -83,7 +83,7 @@ async function cleanForm() {
         </div>
         <div class="custom-form-row">
             <div class="custom-form-label-wrapper">
-                <label for="server-description">Server description</label>
+                <label for="server-description">Server Description</label>
             </div>
             <div class="custom-form-input-wrapper">
                 <input id="server-description" class="custom-form-text-input" type="text" v-model="form.description"

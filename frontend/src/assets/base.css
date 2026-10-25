@@ -289,3 +289,16 @@ a {
 .p-3 {
   padding: 3rem;
 }
+
+.v-tooltip {
+  position: fixed;
+  z-index: 9999;
+  max-width: 260px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgb(var(--color-background-light));
+  color: rgb(var(--color-text));
+  font-size: 13px;
+  line-height: 1.4;
+  pointer-events: none
+}

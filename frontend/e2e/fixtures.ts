@@ -34,7 +34,9 @@ function attachSourceMaps(entries: Array<{ url: string, sourceMap?: unknown }>) 
     }
 }
 
-export const test = base.extend<{ autoCoverage: void }, { workerStorageState: string }>({
+type Account = Awaited<ReturnType<typeof acquireAccount>>
+
+export const test = base.extend<{ autoCoverage: void }, { workerAccount: Account }>({
     autoCoverage: [
         async ({ page, browserName }, use, testInfo) => {
             const enabled = !!process.env.E2E_COVERAGE && browserName === 'chromium'
@@ -52,52 +54,38 @@ export const test = base.extend<{ autoCoverage: void }, { workerStorageState: st
         },
         { auto: true },
     ],
-    // Use the same storage state for all tests in this worker.
-    storageState: ({ workerStorageState }, use) => use(workerStorageState),
-
-    // Authenticate once per worker with a worker-scoped fixture.
-    workerStorageState: [async ({ browser }, use) => {
-        // Use parallelIndex as a unique identifier for each worker.
-        const id = test.info().parallelIndex;
-        const fileName = path.resolve(test.info().project.outputDir, `.auth/${id}.json`);
-
-        if (fs.existsSync(fileName)) {
-            // Reuse existing authentication state if any.
-            await use(fileName);
-            return;
-        }
-
-        // Important: make sure we authenticate in a clean environment by unsetting storage state.
-        const page = await browser.newPage({ storageState: undefined });
+    workerAccount: [async ({ browser }, use) => {
+        const id = test.info().parallelIndex
+        const account = acquireAccount(id)
         const baseUrl = test.info().project.use.baseURL
 
-        // Acquire a unique account, for example create a new one.
-        // Alternatively, you can have a list of precreated accounts for testing.
-        // Make sure that accounts are unique, so that multiple team members
-        // can run tests at the same time without interference.
-        const account = await acquireAccount(id);
-
-        // Perform authentication steps. Replace these actions with your own.
-        await page.goto(`${baseUrl}/register`);
-        await page.getByLabel('Username').fill(account.username);
-        await page.getByLabel('Email').fill(account.email);
-        await page.getByLabel('Password', { exact: true }).fill(account.password);
-        await page.getByLabel('Confirm Password', { exact: true }).fill(account.password);
-        await page.getByRole('button', { name: 'Create Account' }).click();
-        // Wait until the page receives the cookies.
-        //
-        // Sometimes login flow sets cookies in the process of several redirects.
-        // Wait for the final URL to ensure that the cookies are actually set.
-        await page.waitForURL(`${baseUrl}/chat`);
-        // Alternatively, you can wait until the page reaches a state where all cookies are set.
+        const page = await browser.newPage({ storageState: undefined })
+        await page.goto(`${baseUrl}/register`)
+        await page.getByLabel('Username').fill(account.username)
+        await page.getByLabel('Email').fill(account.email)
+        await page.getByLabel('Password', { exact: true }).fill(account.password)
+        await page.getByLabel('Confirm Password', { exact: true }).fill(account.password)
+        await page.getByRole('button', { name: 'Create Account' }).click()
+        await page.waitForURL(`${baseUrl}/chat`)
         await expect(page.locator('.chat-left-bar')).toHaveText('Select a Server First');
+        await page.close()
 
-        // End of authentication steps.
-
-        await page.context().storageState({ path: fileName });
-        await page.close();
-        await use(fileName);
+        await use(account)
     }, { scope: 'worker' }],
+    //A new session for each test, with a call to the login api
+    storageState: async ({ workerAccount, playwright }, use, testInfo) => {
+        const api = await playwright.request.newContext({ baseURL: testInfo.project.use.baseURL, ignoreHTTPSErrors: testInfo.project.use.ignoreHTTPSErrors })
+        const res = await api.post('/api/v1/auth/login', {
+            headers: { 'X-Token-Delivery': 'cookie' },
+            data: { email: workerAccount.email, password: workerAccount.password },
+        })
+        expect(res.ok(), `Failed Login: ${res.status()} ${await res.text()}`).toBeTruthy()
+
+        const file = testInfo.outputPath('auth.json')
+        await api.storageState({ path: file })
+        await api.dispose()
+        await use(file)
+    },
 });
 
 export { expect } from '@playwright/test'
