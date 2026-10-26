@@ -34,16 +34,19 @@ function attachSourceMaps(entries: Array<{ url: string, sourceMap?: unknown }>) 
     }
 }
 
-async function register(browser: Browser, account: Account, baseUrl: string) {
-    const page = await browser.newPage({ storageState: undefined })
-    await page.goto(`${baseUrl}/register`)
-    await page.getByLabel('Username').fill(account.username)
-    await page.getByLabel('Email').fill(account.email)
-    await page.getByLabel('Password', { exact: true }).fill(account.password)
-    await page.getByLabel('Confirm Password', { exact: true }).fill(account.password)
-    await page.getByRole('button', { name: 'Create Account' }).click()
-    await page.waitForURL(`${baseUrl}/chat`)
-    await page.close()
+async function register(browser: Browser, account: Account, testInfo: TestInfo, baseUrl: string) {
+    const page = await browser.newPage({ ignoreHTTPSErrors: testInfo.project.use.ignoreHTTPSErrors })
+    try {
+        await page.goto(`${baseUrl}/register`)
+        await page.getByLabel('Username').fill(account.username)
+        await page.getByLabel('Email').fill(account.email)
+        await page.getByLabel('Password', { exact: true }).fill(account.password)
+        await page.getByLabel('Confirm Password', { exact: true }).fill(account.password)
+        await page.getByRole('button', { name: 'Create Account' }).click()
+        await page.waitForURL(`${baseUrl}/chat`)
+    } finally {
+        await page.close()
+    }
 }
 
 async function login(
@@ -89,14 +92,14 @@ export const test = base.extend<{ autoCoverage: void, secondUserState: string },
     ],
     workerAccount: [async ({ browser }, use) => {
         const account = await acquireAccount(test.info().parallelIndex)
-        await register(browser, account, test.info().project.use.baseURL!)
+        await register(browser, account, test.info(), test.info().project.use.baseURL!)
         await use(account)
     }, { scope: 'worker' }],
 
     //  Only registered if used
     secondAccount: [async ({ browser }, use) => {
         const account = await acquireAccount(test.info().parallelIndex)
-        await register(browser, account, test.info().project.use.baseURL!)
+        await register(browser, account, test.info(), test.info().project.use.baseURL!)
         await use(account)
     }, { scope: 'worker' }],
 
