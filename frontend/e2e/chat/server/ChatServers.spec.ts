@@ -1,14 +1,14 @@
 import { test, expect } from '../../fixtures.js';
 
 test('test close server modal', async ({ page }) => {
-    await page.goto('/chat'); 
+    await page.goto('/chat');
     await page.locator('#new-server-btn').click();
 
     const modal = page.locator('.modal')
     await expect(modal).toBeVisible();
     await expect(page.locator('.modal-title')).toContainText('Create New Server');
 
-    const closeBtn = page.locator('.modal-close'); 
+    const closeBtn = page.locator('.modal-close');
     await closeBtn.click();
 
     await expect(modal).not.toBeVisible();
@@ -26,14 +26,14 @@ test('test create and enter server', async ({ page }) => {
     await expect(submitBtn).toBeDisabled();
 
     const responsePromise = page.waitForResponse(
-    (res) => res.url().includes('/api/v1/chatServers') && res.request().method() === 'POST'
-  )
+        (res) => res.url().includes('/api/v1/chatServers') && res.request().method() === 'POST'
+    )
 
     const server = {
         name: 'playwright-test',
         description: 'test'
     };
-    
+
     await page.getByLabel('Server Name').fill(server.name);
     await page.getByLabel('Server Description', { exact: true }).fill(server.description);
 
@@ -50,26 +50,21 @@ test('test create and enter server', async ({ page }) => {
     expect(body.description).toBe(server.description);
 
     await expect(page.locator('.modal')).not.toBeVisible();
-    
+
     const serverList = page.locator('#server-list');
     const serverbtn = serverList.locator(`[server-id="${id}"]`)
 
     expect(serverbtn).not.toBeNull();
 
     await (serverbtn).click();
-    
+
     await expect(page).toHaveURL(`/chat/server/${id}`);
     await expect(page).toHaveURL(new RegExp(`.*/chat/server/${id}`));
 });
 
-// test('test create and enter channel', async ({ page }) => {
-//     await page.goto('/server/1111');
- 
-// });
 
-// test('test send messages in a channel', async ({ page }) => {
-//     await page.goto('/server/11111/channel/2222'); 
-// });
+
+
 
 
 

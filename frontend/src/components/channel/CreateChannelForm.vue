@@ -67,8 +67,8 @@ async function cleanForm() {
 
 <template>
 
-    <form class="custom-form" id="create-server-form" novalidate @submit.prevent="onSubmit">
-        <p class="custom-form-row"> Server: {{ props.server?.name }}</p>
+    <form class="custom-form" id="create-channel-form" novalidate @submit.prevent="onSubmit">
+        <p class="custom-form-row" :aria-label="props.server?.name"> Server: {{ props.server?.name }}</p>
         <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
         <div class="custom-form-row">
             <div class="custom-form-label-wrapper">

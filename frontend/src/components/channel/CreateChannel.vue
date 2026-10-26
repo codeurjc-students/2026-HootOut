@@ -7,10 +7,16 @@ import { storeToRefs } from 'pinia';
 import wsMessageService from '@/services/common/websocketsMesage/WebSocketsMessageService.ts';
 import type { ChatChannel } from '@/types/chatChannel.ts';
 import type { WebSocketMessage } from '@/types/websocketMessage.ts';
+import { useRouter } from 'vue-router';
 
 const createChannelFormModal = useTemplateRef('create-channel-form-modal');
 const serverInfo = serverInfoStore();
 const { currentServer } = storeToRefs(serverInfo)
+const router = useRouter();
+
+async function selectChannel(channel: ChatChannel) {
+    router.push({ name: 'channel', params: { serverId: currentServer.value?.id, channelId: channel.id } })
+}
 
 async function onCreateChannelSuccess(newChannel: ChatChannel) {
 
@@ -18,13 +24,14 @@ async function onCreateChannelSuccess(newChannel: ChatChannel) {
         return;
     }
 
-    wsMessageService.subscribe(newChannel.id, (message: WebSocketMessage) => {
+    wsMessageService.addPendingSubscription(newChannel.id, (message: WebSocketMessage) => {
         serverInfo.newMessage(message)
     });
 
     serverInfo.setCurrentChatChannel(newChannel);
 
     createChannelFormModal.value?.close();
+    selectChannel(newChannel);
 }
 
 function openCreateChannelModal() {
