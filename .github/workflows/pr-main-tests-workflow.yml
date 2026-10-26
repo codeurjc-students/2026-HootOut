@@ -115,7 +115,18 @@ jobs:
       - name: Run Playwright tests
         env:
           E2E_COVERAGE: true
+          DEBUG: pw:webserver
         run: npm run test:e2e:coverage
+
+      - name: Upload Playwright reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-reports
+          path: |
+            playwright-report/
+            monocart-report/
+            test-results/
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
