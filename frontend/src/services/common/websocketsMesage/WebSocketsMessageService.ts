@@ -164,6 +164,7 @@ watch(wsMessageService.connected, async (connected) => {
     }
 
     if (!reconnectTimer) {
+        await wsMessageService.tryReconnect();
         reconnectTimer = setInterval(async () => {
             await wsMessageService.tryReconnect();
         }, recconnectInterval);
