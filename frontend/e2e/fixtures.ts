@@ -1,7 +1,7 @@
 import process from 'node:process'
 import fs from 'fs';
 import path from 'path';
-import { test as base, expect, type Browser, type TestInfo, type PlaywrightWorkerArgs } from '@playwright/test'
+import { test as base, expect, type Browser, type TestInfo, type PlaywrightWorkerArgs, WorkerInfo } from '@playwright/test'
 import { addCoverageReport } from 'monocart-reporter'
 import { randomUUID } from 'node:crypto';
 
@@ -34,8 +34,11 @@ function attachSourceMaps(entries: Array<{ url: string, sourceMap?: unknown }>) 
     }
 }
 
-async function register(browser: Browser, account: Account, testInfo: TestInfo, baseUrl: string) {
-    const page = await browser.newPage({ ignoreHTTPSErrors: testInfo.project.use.ignoreHTTPSErrors })
+async function register(browser: Browser, account: Account, workerInfo: WorkerInfo, baseUrl: string) {
+    const page = await browser.newPage({
+        ignoreHTTPSErrors: workerInfo.project.use.ignoreHTTPSErrors,
+        storageState: { cookies: [], origins: [] }
+    })
     try {
         await page.goto(`${baseUrl}/register`)
         await page.getByLabel('Username').fill(account.username)
@@ -90,16 +93,16 @@ export const test = base.extend<{ autoCoverage: void, secondUserState: string },
         },
         { auto: true },
     ],
-    workerAccount: [async ({ browser }, use) => {
-        const account = await acquireAccount(test.info().parallelIndex)
-        await register(browser, account, test.info(), test.info().project.use.baseURL!)
+    workerAccount: [async ({ browser }, use, workerInfo) => {
+        const account = acquireAccount(test.info().parallelIndex)
+        await register(browser, account, workerInfo, workerInfo.project.use.baseURL!)
         await use(account)
     }, { scope: 'worker' }],
 
     //  Only registered if used
-    secondAccount: [async ({ browser }, use) => {
-        const account = await acquireAccount(test.info().parallelIndex)
-        await register(browser, account, test.info(), test.info().project.use.baseURL!)
+    secondAccount: [async ({ browser }, use, workerInfo) => {
+        const account = acquireAccount(test.info().parallelIndex)
+        await register(browser, account, workerInfo, workerInfo.project.use.baseURL!)
         await use(account)
     }, { scope: 'worker' }],
 
