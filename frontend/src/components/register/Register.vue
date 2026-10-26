@@ -60,7 +60,7 @@ async function onSubmit() {
                     </div>
                     <div class="custom-form-input-wrapper">
                         <input id="username" class="custom-form-text-input" v-model="form.username" type="text"
-                            autocomplete="username" autofocus required placeholder="Username" />
+                            autocomplete="username" required placeholder="Username" />
                     </div>
                 </div>
                 <div class="custom-form-row">

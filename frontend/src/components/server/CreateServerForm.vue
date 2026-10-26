@@ -16,9 +16,6 @@ const form = reactive({ name: '', description: '' })
 const submitting = ref(false)
 const error = ref('');
 
-const firstinput = ref<HTMLElement>();
-onMounted(() => firstinput?.value?.focus())
-
 const canSubmit = computed(
     () =>
         !submitting.value &&
@@ -72,8 +69,8 @@ async function cleanForm() {
                 <label for="server-name">Server Name *</label>
             </div>
             <div class="custom-form-input-wrapper">
-                <input id="server-name" ref="firstinput" class="custom-form-text-input" v-model="form.name" type="text"
-                    required placeholder="Server name" minlength="5" maxlength="50" autofocus autocomplete="off" />
+                <input id="server-name" class="custom-form-text-input" v-model="form.name" type="text" required
+                    placeholder="Server name" minlength="5" maxlength="50" autocomplete="off" />
             </div>
 
             <p v-for="err in formErrors.get('Name')?.values()" :key="err" class="custom-form-field-error">
