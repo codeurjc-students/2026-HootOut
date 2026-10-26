@@ -118,6 +118,15 @@ jobs:
           DEBUG: pw:webserver
         run: npm run test:e2e:coverage
 
+      - name: Backend status and logs
+        if: always()
+        run: |
+          docker compose -f ../backend/compose.dev.yaml ps -a
+          echo "===== hootoutapi ====="
+          docker compose -f ../backend/compose.dev.yaml logs --no-color hootoutapi
+          echo "===== ports ====="
+          ss -ltnp | grep -E '1234|4321' || echo "nothing listening on 1234/4321"
+
       - name: Upload Playwright reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -128,26 +137,31 @@ jobs:
             monocart-report/
             test-results/
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload Playwright reports
         if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
-          path: frontend/playwright-report/
+          name: playwright-reports
           retention-days: 5
+          path: |
+            frontend/playwright-report/
+            frontend/monocart-report/
+            frontend/test-results/
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v8
         with:
+          projectBaseDir: frontend
           args: >
             -Dsonar.projectKey=hootout_hootoutfrontend
             -Dsonar.organization=hootout
             -Dsonar.sources=frontend
             -Dsonar.projectName=HootOutFrontend
-            -Dsonar.tests=frontend/src,frontend/e2e
-            -Dsonar.javascript.lcov.reportPaths=frontend/coverage/vitest/lcov.info,frontend/coverage/e2e/lcov.info
+            -Dsonar.sources=src
+            -Dsonar.tests=src,e2e
             -Dsonar.exclusions=**/*.test.ts,**/*.spec.ts,**/__tests__/**,**/mocks/**
             -Dsonar.test.inclusions=**/*.test.ts,**/*.spec.ts,**/__tests__/**,e2e/**
-            -Dsonar.coverage.exclusions=e2e/**,**/*.test.ts,**/*.spec.ts
+            -Dsonar.javascript.lcov.reportPaths=coverage/vitest/lcov.info,coverage/e2e/lcov.info
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_FRONTEND_TOKEN }}  
 
