@@ -109,8 +109,27 @@ jobs:
           cp certs/cert.pem certs/ca.pem   # self-signed: it is its own CA (SSL_CERT_FILE, RabbitMQ cacertfile)
           chmod 644 certs/*.pem
 
+      - name: Prepare backend keys folder
+        working-directory: ./backend
+        run: |
+          mkdir -p keys
+          chmod 777 keys
+
       - name: Docker Compose Backend
         run: docker compose -f ../backend/compose.dev.yaml up -d --build --wait
+
+      - name: Wait for API
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sk -o /dev/null https://localhost:1234/; then
+              echo "API up"; exit 0
+            fi
+            sleep 2
+          done
+          echo "API not reachable on :1234"
+          docker compose -f ../backend/compose.dev.yaml ps -a
+          docker compose -f ../backend/compose.dev.yaml logs --no-color hootoutapi
+          exit 1
 
       - name: Run Playwright tests
         env:
