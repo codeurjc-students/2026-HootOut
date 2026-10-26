@@ -23,6 +23,7 @@ async function onUpdatedChannelSuccess(channel: ChatChannel) {
     updateChannelModal.value?.close();
     if (channelToEdit?.value)
         channelToEdit.value.name = channel.name;
+    selectChannel(channel);
 }
 
 function openUpdateChannelModal(channel: ChatChannel) {

@@ -59,7 +59,16 @@ We iterated on User registration and Authentication classes and tests on the Bac
 Claude Chat, Opus 5.5 Medium
 ##### Problem to solve:
 We have user authentication via JWT. Users can upload files and they will be saved to an S3-compatible file service (in this case, RustFS). But native html elements (img, video) doesn't allow modifying the request headers, so we can't use the Bearer token. Also we don't want to add much overhead to the server when serving files, ideally most of the load goes to S3.
-
 ##### Usage:
 Chat with Claude to see posssible solutions and alternatives. We landed on using S3 signed Urls. When the backend gives urls of resources stored on S3, it will generate a signed url that can be used to retrieve that file from S3. The backend will know if the user have access to that resource, and generate the signed url depending on it. The signed url will also have a valid lifetime (by default 1 hour) and can only be used to get the resource associated to it.
 Claude also helped setting up RustFS with docker-compose using HTTPS
+
+#### Objective: Include Playwright tests in sonar code coverage
+##### Date:
+24/10/2026
+##### Tool:
+Claude Chat, Opus 5.5 Medium
+##### Problem to solve:
+In the frontend, we had setup vitests to generate code coverage results, and then it was uploaded to sonar. But Playwright tests were not included in that coverage. We want to include them on the same sonar project.
+##### Usage:
+Chat with Claude code trying to set up the code coverage with Playwright, and then uploading both vitest and playwright code coverage to Sonar. We will add monocart-reporter as a dependency to generate the test coverage, using a test fixture to link the .vue components to their build files using their js.map files. Since we use v8 as our test coverage provider, this only works on playwright runners using chromium-based browsers, but that shouldn't affect test coverage. 

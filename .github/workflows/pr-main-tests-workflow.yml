@@ -81,22 +81,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Use Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: '24.12.0'
-
-      - name: Install npm dependencies
-        run: npm ci 
-      
-      - name: npm Build
-        run: npm run build:test
-
-      - name: Unit Tests
-        run: npm run test:unit:coverage
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+     
 
       - name: Create self signed certificate for https connections
         working-directory: .
@@ -109,29 +94,97 @@ jobs:
           cp certs/cert.pem certs/ca.pem   # self-signed: it is its own CA (SSL_CERT_FILE, RabbitMQ cacertfile)
           chmod 644 certs/*.pem
 
+      - name: Prepare backend keys folder
+        working-directory: ./backend
+        run: |
+          mkdir -p keys
+          chmod 777 keys
+
       - name: Docker Compose Backend
-        run: docker compose -f ../backend/compose.dev.yaml up -d --build --wait
+        run: docker compose -f ../backend/compose.dev.yaml up -d --build
+
+      - name: Use Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24.12.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install npm dependencies
+        run: npm ci  
+
+      - name: Unit Tests
+        run: npm run test:unit:coverage
+
+      - name: npm Build
+        run: npm run build:test
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium firefox
+
+      - name: Wait for API
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sk -o /dev/null https://localhost:1234/; then
+              echo "API up"; exit 0
+            fi
+            sleep 2
+          done
+          echo "API not reachable on :1234"
+          docker compose -f ../backend/compose.dev.yaml ps -a
+          docker compose -f ../backend/compose.dev.yaml logs --no-color hootoutapi
+          exit 1
 
       - name: Run Playwright tests
-        run: npm run test:e2e
+        env:
+          E2E_COVERAGE: true
+          DEBUG: pw:webserver
+        run: npm run test:e2e:coverage
 
-      - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
+      - name: Backend status and logs
+        if: always()
+        run: |
+          docker compose -f ../backend/compose.dev.yaml ps -a
+          echo "===== hootoutapi ====="
+          docker compose -f ../backend/compose.dev.yaml logs --no-color hootoutapi
+          echo "===== ports ====="
+          ss -ltnp | grep -E '1234|4321' || echo "nothing listening on 1234/4321"
+
+      - name: Upload Playwright reports
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
-          path: frontend/playwright-report/
+          name: playwright-reports
+          path: |
+            playwright-report/
+            monocart-report/
+            test-results/
+
+      - name: Upload Playwright reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-reports
           retention-days: 5
+          path: |
+            frontend/playwright-report/
+            frontend/monocart-report/
+            frontend/test-results/
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v8
         with:
+          projectBaseDir: frontend
           args: >
             -Dsonar.projectKey=hootout_hootoutfrontend
             -Dsonar.organization=hootout
             -Dsonar.sources=frontend
             -Dsonar.projectName=HootOutFrontend
-            -Dsonar.javascript.lcov.reportPaths=frontend/coverage/vitest/lcov.info
-            -Dsonar.coverage.exclusions=e2e/**,**/*.test.ts,**/*.spec.ts
+            -Dsonar.sources=src
+            -Dsonar.tests=src,e2e
+            -Dsonar.exclusions=**/*.test.ts,**/*.spec.ts,**/__tests__/**,**/mocks/**
+            -Dsonar.test.inclusions=**/*.test.ts,**/*.spec.ts,**/__tests__/**,e2e/**
+            -Dsonar.javascript.lcov.reportPaths=coverage/vitest/lcov.info,coverage/e2e/lcov.info
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_FRONTEND_TOKEN }}  
 

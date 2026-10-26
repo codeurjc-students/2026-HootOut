@@ -38,7 +38,7 @@ defineExpose({
 
                 <div class="modal-top pointer">
                     <slot name="options"></slot>
-                    <div class="material-symbols-sharp modal-close" @click="close">
+                    <div class="material-symbols-sharp modal-close" @click="close" aria-label="close">
                         close
                     </div>
                 </div>

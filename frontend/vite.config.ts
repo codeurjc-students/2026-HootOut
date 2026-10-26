@@ -19,7 +19,7 @@ export default defineConfig(({ mode, command }) => {
 
   const proxy = {
     '/api': {
-      target: env.API_PROXY_TARGET ?? 'https://localhost:8443',
+      target: env.VITE_API_PROXY_TARGET ?? 'https://localhost:8443',
       changeOrigin: true,
       secure: false
     },
@@ -33,6 +33,10 @@ export default defineConfig(({ mode, command }) => {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
       },
+    },
+    build: {
+      sourcemap: mode === 'test',
+      minify: mode !== 'test',
     },
     server: { https, proxy, port: 5173, strictPort: true },
     preview: { https, proxy, port: 5173, strictPort: true },

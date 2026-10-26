@@ -60,7 +60,10 @@ npm install -g @sonar/scan
 ```sh
 
 npm run test:unit:coverage
-sonar-scanner-npm -Dsonar.token=<sonar-token> -Dsonar.projectKey=<sonar-project-key> -Dsonar.organization=<sonar-organization-key> -Dsonar.javascript.lcov.reportPaths=coverage/vitest/lcov.info -Dsonar.coverage.exclusions=e2e/**,**/*.test.ts,**/*.spec.ts
+npm run build:test
+npm run test:e2e:coverage 
+
+sonar-scanner-npm -Dsonar.token=<sonar-token> -Dsonar.projectKey=<sonar-project-key> -Dsonar.organization=<sonar-organization-key> -Dsonar.javascript.lcov.reportPaths=coverage/vitest/lcov.info,coverage/e2e/lcov.info -Dsonar.exclusions=**/*.test.ts,**/*.spec.ts,**/__tests__/**,**/mocks/** -Dsonar.test.inclusions=**/*.test.ts,**/*.spec.ts,**/__tests__/**,e2e/** -Dsonar.coverage.exclusions=e2e/**,**/*.test.ts,**/*.spec.ts
 ```
 
 ## Icons:

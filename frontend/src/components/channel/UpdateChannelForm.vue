@@ -22,9 +22,6 @@ const form = reactive({ name: props.channel?.name })
 const submitting = ref(false)
 const error = ref('')
 
-const firstinput = ref<HTMLElement>();
-onMounted(() => firstinput?.value?.focus())
-
 const canSubmit = computed(
     () =>
         !submitting.value &&
@@ -82,16 +79,16 @@ async function deleteChannel() {
 
 <template>
 
-    <form class="custom-form" id="create-server-form" novalidate @submit.prevent="onSubmit">
-        <p class="custom-form-row"> Server: {{ props.server?.name }}</p>
+    <form class="custom-form" id="update-channel-form" novalidate @submit.prevent="onSubmit">
+        <p class="custom-form-row" :aria-label="props.server?.name"> Server: {{ props.server?.name }}</p>
         <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
         <div class="custom-form-row">
             <div class="custom-form-label-wrapper">
                 <label for="server-name">Channel Name *</label>
             </div>
             <div class="custom-form-input-wrapper">
-                <input id="server-name" ref="firstinput" class="custom-form-text-input" v-model="form.name" type="text"
-                    required placeholder="Server name" minlength="3" maxlength="50" autofocus autocomplete="off" />
+                <input id="server-name" class="custom-form-text-input" v-model="form.name" type="text" required
+                    placeholder="Server name" minlength="3" maxlength="50" autocomplete="off" />
             </div>
 
             <p v-for="err in formErrors.get('Name')?.values()" :key="err" class="custom-form-field-error">

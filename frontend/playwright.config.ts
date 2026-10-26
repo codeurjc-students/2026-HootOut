@@ -1,11 +1,30 @@
 import process from 'node:process'
 import { defineConfig, devices } from '@playwright/test'
+import path from 'node:path'
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// require('dotenv').config();
+const coverageReporter = [
+  'monocart-reporter',
+  {
+    name: 'E2E',
+    outputFile: './monocart-report/index.html',
+    coverage: {
+      outputDir: path.resolve('coverage/e2e'),
+      reports: ['v8', 'lcovonly'],
+      entryFilter: (entry: { url: string }) =>
+        entry.url.startsWith('https://localhost:5173')
+        && !entry.url.includes('/node_modules/')
+        && !entry.url.includes('/@vite/')
+        && !entry.url.includes('/@id/')
+        && !entry.url.includes('type=style')
+        && !entry.url.endsWith('.css'),
+      sourceFilter: (p: string) => {
+        const path = p.replace(/\\/g, '/')
+        return /(^|\/)src\/.+\.(vue|ts|js)$/.test(path) && !path.includes('node_modules')
+      },
+      sourcePath: (p: string) => p.replace(/\\/g, '/').replace(/^.*?(?=src\/)/, ''),
+    },
+  },
+] as const
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -19,7 +38,7 @@ export default defineConfig({
      * Maximum time expect() should wait for the condition to be met.
      * For example in `await expect(locator).toHaveText();`
      */
-    timeout: 1000,
+    timeout: 3000,
   },
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
@@ -28,7 +47,9 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: process.env.E2E_COVERAGE
+    ? [['list'], ['html'], coverageReporter]
+    : 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
@@ -39,8 +60,7 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
 
-    /* Only on CI systems run the tests headless */
-    headless: !!process.env.CI,
+    headless: true,
 
     ignoreHTTPSErrors: true,
   },
@@ -105,10 +125,10 @@ export default defineConfig({
      * Use the preview server on CI for more realistic testing.
      * Playwright will re-use the local server if there is already a dev-server running.
      */
-    command: process.env.CI ? 'npm run preview -- --mode test' : 'npm run dev',
+    command: process.env.CI ? 'npm run preview -- --mode test' : 'npm run dev -- --mode test',
     url: 'https://localhost:5173',
     ignoreHTTPSErrors: true,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     stdout: 'pipe',
     stderr: 'pipe',
   },

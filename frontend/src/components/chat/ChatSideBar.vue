@@ -2,21 +2,29 @@
 import type { ChatServer } from '@/types';
 import Modal from '../shared/modal/Modal.vue';
 import CreateServerForm from '../server/CreateServerForm.vue';
-import { ref, useTemplateRef } from 'vue';
+import { useTemplateRef } from 'vue';
 import ServerList from '../server/ServerList.vue';
 import { serverInfoStore } from '@/stores/serverInfo.ts';
+import { useRouter } from 'vue-router';
 
 const createServerFormModal = useTemplateRef('create-server-form-modal');
 const serverstore = serverInfoStore();
+const router = useRouter();
 
 function openModal() {
     createServerFormModal.value?.open();
+}
+
+function setCurrentServer(server: ChatServer) {
+    router.push({ name: 'server', params: { serverId: server.id } })
 }
 
 function onCreateServerSuccess(server: ChatServer) {
     serverstore.addChatServer(server)
     serverstore.setCurrentServer(server.id);
     createServerFormModal.value?.close();
+
+    setCurrentServer(server);
 }
 
 </script>

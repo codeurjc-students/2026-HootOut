@@ -438,7 +438,7 @@ FodyWeavers.xsd
 /backend/HootOutAPI/api-docs.yaml
 /backend/HootOutAPI/api-docs.html
 /backend/sonar-run.bat
-
+backend/.env.test
 backend/.sonarqube/
 
 keys/
@@ -491,3 +491,6 @@ test-results/
 playwright-report/
 
 .scannerwork
+monocart-report/
+coverage/ 
+frontend/playwright/.auth 
