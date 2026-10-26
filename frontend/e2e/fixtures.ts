@@ -3,12 +3,12 @@ import fs from 'fs';
 import path from 'path';
 import { test as base, expect, type Browser, type TestInfo, type PlaywrightWorkerArgs } from '@playwright/test'
 import { addCoverageReport } from 'monocart-reporter'
-import { randomUUIDv7 } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 
 const distDir = path.resolve('dist')
 
 export function acquireAccount(id: number = 0) {
-    const uuid = randomUUIDv7()
+    const uuid = randomUUID()
     const account = {
         username: `${id}playwright${uuid}`,
         email: `${uuid}@hootout.test`,
