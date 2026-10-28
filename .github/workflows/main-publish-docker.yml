@@ -1,0 +1,27 @@
+jobs:
+  on:
+    push:
+    workflow_dispatch:
+
+  build-docker-dev:
+    runs-on: ubuntu-latest 
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Generate API Project Docker image
+        run: docker build -f docker/ApiDockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/hootout_api:dev .
+
+      - name: Generate Websockets Project Docker image
+        run: docker build -f docker/WsDocketfile -t ${{ secrets.DOCKERHUB_USERNAME }}/hootout_websockets:dev .
+
+      - name: Login to Dockerhub
+        run: docker login
+          -u "${{ secrets.DOCKERHUB_USERNAME }}" -p "${{ secrets.DOCKERHUB_TOKEN }}"
+      
+      - name: Push API image to DockerHub
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/hootout_api:dev
+      
+      - name: Push Websockets image to DockerHub
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/hootout_websockets:dev
