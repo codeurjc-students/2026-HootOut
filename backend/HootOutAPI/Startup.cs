@@ -98,15 +98,20 @@ namespace HootOut.HootOutAPI
             services.AddControllers();
             services.AddOpenApi();
             services.AddSwaggerGen();
+            services.AddHealthChecks();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            var fwd = new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-            });
+            };
+
+            fwd.KnownIPNetworks.Clear();
+            fwd.KnownProxies.Clear();
+            app.UseForwardedHeaders(fwd);
 
             if (!env.IsDevelopment())
                 app.UseHsts();
@@ -123,22 +128,35 @@ namespace HootOut.HootOutAPI
                 await next();
             });
 
-            app.UseRouting();
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
 
-            app.UseCors();
+            app.UseRouting(); 
+            app.UseCors();  
 
             app.UseAuthentication();
-            app.UseAuthorization();
+            app.UseAuthorization(); 
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHealthChecks("/health").AllowAnonymous();
                 if (env.IsDevelopment())
                 {
                     endpoints.MapOpenApi();
                     endpoints.MapSwagger();
                     endpoints.MapSwaggerUI();
                 }
+
+                // 404 for /api that doesnt exist
+                endpoints.Map("/api/{**rest}", ctx =>
+                {
+                    ctx.Response.StatusCode = StatusCodes.Status404NotFound;
+                    return Task.CompletedTask;
+                }).AllowAnonymous();
+
+                // Any other route returns the index.html
+                endpoints.MapFallbackToFile("index.html").AllowAnonymous();
             });
         }
 

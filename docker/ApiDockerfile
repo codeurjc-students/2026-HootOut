@@ -1,0 +1,38 @@
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+RUN mkdir -p /var/logs && chown -R $APP_UID /var/logs
+USER $APP_UID
+WORKDIR /app 
+EXPOSE ${ASPNETCORE_HTTPS_PORTS}
+
+# This stage is used to build the service project
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["./backend/HootOutAPI/HootOutAPI.csproj", "HootOutAPI/"]
+RUN dotnet restore "./HootOutAPI/HootOutAPI.csproj"
+COPY ./backend .
+RUN dotnet tool restore
+WORKDIR "/src/HootOutAPI" 
+RUN dotnet tool restore
+RUN dotnet build "./HootOutAPI.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# This stage is used to publish the service project to be copied to the final stage
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./HootOutAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+# This stage builds the frontend
+FROM node:22-alpine AS frontend
+WORKDIR /app 
+COPY ./frontend/package*.json ./
+RUN npm ci
+COPY ./frontend . 
+RUN npm run build:production
+
+# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+# Copy the frontend to the dist 
+COPY --from=frontend /app/dist ./wwwroot 
+ENTRYPOINT ["dotnet", "HootOut.HootOutAPI.dll"]

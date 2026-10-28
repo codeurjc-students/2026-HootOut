@@ -494,3 +494,4 @@ playwright-report/
 monocart-report/
 coverage/ 
 frontend/playwright/.auth 
+docker/.env.test

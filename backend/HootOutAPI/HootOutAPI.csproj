@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild> 
+    <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,6 +32,10 @@
     <ProjectReference Include="..\Integrations\Authentication\Authentication.csproj" />
     <ProjectReference Include="..\Integrations\FileStorage\FileStorage\FileStorage.csproj" />
     <ProjectReference Include="..\Integrations\PostgreSQL\PostgreSQL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 <Target Name="PreBuild" BeforeTargets="Build">

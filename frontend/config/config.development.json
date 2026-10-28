@@ -1,0 +1,4 @@
+{
+    "API_URL": "/api",
+    "WSS_URL": "wss://localhost:8444/ws"
+}

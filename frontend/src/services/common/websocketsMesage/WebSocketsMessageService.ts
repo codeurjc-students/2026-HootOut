@@ -4,6 +4,7 @@ import { WSMessageType, type ChatChannel, type WebSocketMessage, type WSTicketRe
 import { ref, watch } from "vue";
 import { newId } from "../utils";
 import { post } from "../api/ApiService";
+import { getConfig } from "@/config";
 
 type Pending = {
     resolve: (m: WebSocketMessage) => void;
@@ -15,8 +16,6 @@ export type AckPromise = {
     id: string,
     promise: Promise<WebSocketMessage>
 };
-
-const wssUrl = import.meta.env.VITE_WSS_URL;
 
 export class WebSocketMessageService {
     private webSocketService: WebSocketService = webSocketService;
@@ -36,8 +35,7 @@ export class WebSocketMessageService {
 
         const { ticket } = await post<WSTicketRespone>('auth/ws-ticket');
 
-        const url = new URL(wssUrl)
-        url.searchParams.set('ticket', ticket)
+        const url = `${getConfig().WSS_URL}?ticket=${ticket}`;
 
         this.webSocketService.connect(url, {
             onOpen: async () => { this.connected.value = true; await onOnpen(); },

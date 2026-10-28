@@ -32,7 +32,7 @@ describe('WebSocketService', () => {
     it('connect creates a new coket and calls onOpen', () => {
         const onOpen = vi.fn();
 
-        service.connect(new URL('wss://test'), { onOpen });
+        service.connect(new URL('wss://test').toString(), { onOpen });
 
         const instance = FakeWebSocket.instances[0];
 
@@ -46,7 +46,7 @@ describe('WebSocketService', () => {
 
     it('on message when receives an event', () => {
         const onMessage = vi.fn();
-        service.connect(new URL('wss://test'), { onMessage });
+        service.connect(new URL('wss://test').toString(), { onMessage });
 
         const instance = FakeWebSocket.instances[0];
         expect(instance).not.toBeNullable();
@@ -58,7 +58,7 @@ describe('WebSocketService', () => {
     });
 
     it('send message when connected', () => {
-        service.connect(new URL('wss://test'));
+        service.connect(new URL('wss://test').toString());
         const instance = FakeWebSocket.instances[0];
 
         service.send('hello');
@@ -71,7 +71,7 @@ describe('WebSocketService', () => {
     });
 
     it('close the socket', () => {
-        service.connect(new URL('wss://test'));
+        service.connect(new URL('wss://test').toString());
         const instance = FakeWebSocket.instances[0];
 
         service.close();

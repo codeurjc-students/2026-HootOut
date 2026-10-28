@@ -23,7 +23,7 @@ services:
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSOWRD}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
       S3_URL: "https://rustfs:${RUSTFS_PORT}"
       S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
       S3_SECRET_KEY: ${RUSTFS_SECRET_KEY}
@@ -59,7 +59,7 @@ services:
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSOWRD}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
       S3_Public_URL: "https://localhost:${RUSTFS_PORT}"
       S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
       S3_SECRET_KEY: ${RUSTFS_SECRET_KEY}
@@ -97,7 +97,7 @@ services:
     environment:
       RABBITMQ_HOST: ${RABBIT_HOSTNAME}
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSOWRD}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     volumes:
       - rabbitmq:/var/lib/rabbitmq/
       - rabbitmq:/var/log/rabbitmq

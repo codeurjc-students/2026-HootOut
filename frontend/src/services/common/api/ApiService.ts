@@ -1,6 +1,7 @@
+import { getConfig } from "@/config";
 import { useAuthStore } from "@/stores/auth";
 import { ApiError, ValidationError } from "@/types";
-const apiUrl = import.meta.env.VITE_API_URL;
+
 const apiVersion = 'v1';
 
 type Query = Record<string, unknown>;
@@ -18,7 +19,7 @@ function buildUrl(url: string, query: Query = {}): string {
     const qs = new URLSearchParams(
         Object.entries(query).filter(([key, value]) => value).map(([key, value]) => [key, String(value)])
     ).toString();
-    return `${apiUrl}/${apiVersion}/${url}${qs ? `?${qs}` : ''}`;
+    return `${getConfig().API_URL}/${apiVersion}/${url}${qs ? `?${qs}` : ''}`;
 }
 
 // One attempt. Headers are rebuilt every time so a retry picks up the new access token.

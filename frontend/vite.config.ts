@@ -1,9 +1,35 @@
 import { fileURLToPath, URL } from 'node:url'
-
+import fs from 'node:fs'
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import { readFileSync } from 'node:fs'
+import path from 'node:path'
+
+function runtimeConfig(mode: string) {
+  const file = path.resolve(__dirname, `config/config.${mode}.json`)
+  if (!fs.existsSync(file)) {
+    throw new Error(`Missing config file ${file} for mode "${mode}"`)
+  }
+  return {
+    name: 'runtime-config',
+    // npm run dev writes the config to ./config.json (dev)
+    configureServer(server: any) {
+      server.middlewares.use('/config.json', (_req: any, res: any) => {
+        res.setHeader('Content-Type', 'application/json')
+        res.end(fs.readFileSync(file))
+      })
+    },
+    // npm run build: writes the config on ./dist/config.json
+    generateBundle(this: any) {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'config.json',
+        source: fs.readFileSync(file, 'utf-8'),
+      })
+    },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig(({ mode, command }) => {
@@ -28,6 +54,7 @@ export default defineConfig(({ mode, command }) => {
     plugins: [
       vue(),
       vueDevTools(),
+      runtimeConfig(mode),
     ],
     resolve: {
       alias: {
