@@ -27,4 +27,4 @@ jobs:
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/hootout_websockets:dev
 
       - name: Publish Docker compose file
-        run: docker compose -f docker/compose.dev.yaml --env-file docker\.env.example publish ${{ secrets.DOCKERHUB_USERNAME }}/hootout-compose:dev 
+        run: docker compose -f docker/compose.dev.yaml --env-file docker/.env.example publish ${{ secrets.DOCKERHUB_USERNAME }}/hootout-compose:dev 
