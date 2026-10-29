@@ -3,7 +3,8 @@ name: backend_full_tests
 on:
   workflow_call:
 
-backend_full_tests:
+jobs:
+  backend_full_tests:
     runs-on: ubuntu-latest
     defaults:
         run:
