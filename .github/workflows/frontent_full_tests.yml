@@ -1,0 +1,29 @@
+name: frontend_full_tests
+
+on:
+  workflow_call:
+
+jobs:
+  frontend_full_tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    env:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_pwd
+      POSTGRES_DB: test_db
+      POSTGRES_PORT: 5432
+      HOOTOUTAPI_HTTPS_PORTS: 1234 
+      HOOTOUTWEBSOCKETS_HTTPS_PORTS: 4321
+      RABBIT_HOSTNAME: hootout
+      RABBITMQ_USER: rabbit_user
+      RABBITMQ_PASSWORD: rabbit_test_123 
+      RUSTFS_PORT: 9000
+      RUSTFS_ACCESS_KEY: hootout_s3
+      RUSTFS_SECRET_KEY: rustfs_test_123 
+      TLS_CERT: ../certs/cert.pem
+      TLS_KEY: ../certs/key.pem
+    steps:
+      - name: This is a test
+        run: echo "test"

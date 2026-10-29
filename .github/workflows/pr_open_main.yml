@@ -1,0 +1,21 @@
+name: pr_open_main
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+on: 
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main 
+
+jobs:
+  backend_full_tests:
+    uses: ./.github/workflows/backend_full_tests.yml
+    secrets: inherit
+
+  frontend_full_tests:
+    uses: ./.github/workflows/frontend_full_tests.yml
+    secrets: inherit

@@ -1,0 +1,28 @@
+name: release-trigger
+
+on:
+  release:
+    types: [published] 
+
+jobs:
+  backend_full_tests:
+    uses: ./.github/workflows/backend_full_tests.yml
+    secrets: inherit
+
+  frontend_full_tests:
+    uses: ./.github/workflows/frontend_full_tests.yml
+    secrets: inherit
+
+  docker_publish_tag:
+    needs: [backend_full_tests, frontend_full_tests]
+    uses: ./.github/workflows/publish_docker_tag.yml
+    with:
+      tag: ${{ github.event.release.tag_name }}
+    secrets: inherit
+
+  docker_publish_latest:
+    needs: [backend_full_tests, frontend_full_tests]
+    uses: ./.github/workflows/publish_docker_tag.yml
+    with:
+      tag: 'latest' 
+    secrets: inherit 
