@@ -21,6 +21,13 @@ mkdir -p certs
 mkcert -cert-file certs/cert.pem -key-file certs/key.pem localhost 127.0.0.1 ::1 rustfs rabbitmq
 ```
 
+### Haproxy certificates:
+After generating the certificates, for Haproxy you need to need to combine cert.pm and key.pm. 
+You can copy and paste the contents of the files in a text editor or use the following command:
+```sh
+cat cert.pem key.pem > hootout.pem
+```
+
 ### Environment variables:
 
 Before running docker compose, create a .env file, following the .env.example file, and update the variables with your own.

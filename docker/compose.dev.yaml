@@ -1,0 +1,184 @@
+services:
+  hootoutapi:
+    image: ivanmotos/hootout_api:dev
+    deploy:
+      replicas: 2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment: 
+      ASPNETCORE_ENVIRONMENT: Release
+      ASPNETCORE_URLS: http://+:8080  
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-hootout};Username=${POSTGRES_USER:?Define POSTGRES_USER};Password=${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}"
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?Define RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Define RABBITMQ_PASSWORD}
+      S3_URL: "https://rustfs:9000"
+      S3_Public_URL: ${S3_PUBLIC_URL:-https://localhost:9000}
+      S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?Define RUSTFS_ACCESS_KEY}
+      S3_SECRET_KEY: ${RUSTFS_SECRET_KEY:?Define RUSTFS_SECRET_KEY}
+      SSL_CERT_FILE: /certs/ca.pem
+      LOGS_FOLDER: /var/logs
+    volumes:
+      - ${KEYS_DIR:?Define KEYS_DIR}:/app/keys:rw
+      - ${CERTS_DIR:?Define CERTS_DIR}:/certs:ro
+      - logs:/var/logs
+
+  hootoutwebsockets:
+    image: ivanmotos/hootout_websockets:dev
+    deploy:
+      replicas: 2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy 
+    environment:
+      ASPNETCORE_ENVIRONMENT: Release
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER:?Define POSTGRES_USER};Password=${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}"
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      S3_Public_URL: "https://localhost:${RUSTFS_PORT:-9000}"
+      S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?Define RUSTFS_ACCESS_KEY}
+      S3_SECRET_KEY: ${RUSTFS_SECRET_KEY:?Define RUSTFS_SECRET_KEY}
+      SSL_CERT_FILE: /certs/ca.pem
+      LOGS_FOLDER: /var/logs
+    volumes: 
+      - ${CERTS_DIR:-./certs}:/certs:ro
+      - logs:/var/logs
+
+  postgres:
+    image: postgres:18.6-trixie
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Define POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-hootout}
+    volumes:
+      - pgdata:/var/lib/postgresql
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:?Define POSTGRES_USER} -d ${POSTGRES_DB:-hootout}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq: 
+    image: rabbitmq:4.3.6
+    restart: unless-stopped 
+    environment:
+      RABBITMQ_HOST: ${RABBIT_HOSTNAME:-hootout}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?Define RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Define RABBITMQ_PASSWORD}
+    configs:
+      - source: rabbitmq_cfg
+        target: /etc/rabbitmq/rabbitmq.conf
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq/ 
+      - ${CERTS_DIR:?Define CERTS_DIR}:/certs:ro
+
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
+      retries: 3
+      timeout: 5s
+      interval: 30s  
+
+  rustfs:
+    image: rustfs/rustfs:1.0.3
+    ports: 
+      - "9000:9000"
+    environment:
+      RUSTFS_TLS_PATH: /opt/tls
+      RUSTFS_ACCESS_KEY:  ${RUSTFS_ACCESS_KEY:?Define RUSTFS_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:?Define RUSTFS_SECRET_KEY}
+      RUSTFS_ADDRESS: ":9000"
+    volumes:
+      - ${CERTS_DIR:?Define CERTS_DIR}/cert.pem:/opt/tls/rustfs_cert.pem:ro
+      - ${CERTS_DIR:?Define CERTS_DIR}/key.pem:/opt/tls/rustfs_key.pem:ro
+      - s3-data:/data
+
+  haproxy:
+    image: haproxy:3.4
+    restart: unless-stopped
+    depends_on:
+      - hootoutapi
+      - hootoutwebsockets
+    configs:
+      - source: haproxy_cfg
+        target: /usr/local/etc/haproxy/haproxy.cfg
+    volumes: 
+      - ${CERTS_DIR:?Define CERTS_DIR}/hootout.pem:/usr/local/etc/haproxy/certs/hootout.pem:ro
+    ports:
+      - "80:80"
+      - "443:443"
+
+configs:
+  haproxy_cfg:
+    content: |
+      global
+        log stdout format raw daemon
+      resolvers docker
+        nameserver dns1 127.0.0.11:53
+        resolve_retries 3
+        timeout resolve 1s
+        timeout retry   1s
+        hold valid      10s
+
+      defaults
+        mode http
+        log global
+        option httplog
+        timeout connect 5s
+        timeout client 30s
+        timeout server 30s
+        timeout http-request 10s
+        timeout tunnel 30m
+
+      frontend fe_http
+        bind *:80
+        http-request redirect scheme https code 301
+
+      frontend fe_https
+        bind *:443 ssl crt /usr/local/etc/haproxy/certs/hootout.pem
+        option forwardfor
+        http-request set-header X-Forwarded-Proto https
+
+        acl is_ws path_beg /ws
+        use_backend be_ws if is_ws
+        default_backend be_api
+
+      backend be_api
+        balance roundrobin
+        option httpchk
+        http-check send meth GET uri /health ver HTTP/1.1 hdr Host localhost hdr X-Forwarded-Proto https
+        http-check expect status 200
+        server-template api 2 hootoutapi:8080  check inter 10s fastinter 2s downinter 5s rise 2 fall 3 resolvers docker init-addr none
+
+      backend be_ws
+        balance leastconn
+        option httpchk
+        http-check send meth GET uri /health ver HTTP/1.1 hdr Host localhost hdr X-Forwarded-Proto https
+        http-check expect status 200
+        server-template ws 2 hootoutwebsockets:8080  check inter 4s fastinter 2s downinter 5s rise 2 fall 3 resolvers docker init-addr none
+
+  rabbitmq_cfg:
+    content: |
+      listeners.tcp = none
+      listeners.ssl.default = 5671 
+      ssl_options.cacertfile = /certs/ca.pem
+      ssl_options.certfile   = /certs/cert.pem
+      ssl_options.keyfile    = /certs/key.pem
+      ssl_options.verify     = verify_none
+      ssl_options.fail_if_no_peer_cert = false
+
+
+volumes:
+  pgdata:
+  s3-data:
+  logs:
+  rabbitmq:
+    driver: local

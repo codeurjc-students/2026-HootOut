@@ -1,0 +1,4 @@
+{
+    "VITE_API_URL=https": "https://localhost:8443/api",
+    "VITE_WSS_URL=https": "https://localhost:8444/ws"
+}

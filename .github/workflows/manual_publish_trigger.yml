@@ -1,0 +1,41 @@
+name: manual_publish
+
+on: 
+  workflow_dispatch:
+
+jobs:
+  backend_full_tests:
+    uses: ./.github/workflows/backend_full_tests.yml
+    secrets: inherit
+
+  frontend_full_tests:
+    uses: ./.github/workflows/frontend_full_tests.yml
+    secrets: inherit
+
+  get_tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Generate Tag
+        id: tag
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          branch=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]' \
+            | sed -E 's/[^a-z0-9_.-]+/-/g; s/-+/-/g; s/^[-.]+//; s/[-.]+$//' \
+            | cut -c1-80)
+
+          tag="${branch}-$(date -u +%Y%m%d-%H%M)-$(git rev-parse --short=7 HEAD)" 
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "Generated tag: $tag"
+
+  docker_publish_custom:
+    needs: [backend_full_tests, frontend_full_tests, get_tag]
+    uses: ./.github/workflows/publish_docker_tag.yml
+    with:
+      tag: ${{ needs.get-tag.outputs.tag }}
+    secrets: inherit

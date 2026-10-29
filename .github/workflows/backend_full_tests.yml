@@ -1,0 +1,11 @@
+name: backend_full_tests
+
+on:
+  workflow_call:
+
+jobs:
+  backend_full_tests:
+    runs-on: ubuntu-latest 
+    steps:  
+      - name: This is a test
+        run: echo "This is a test"

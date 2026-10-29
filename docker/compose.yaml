@@ -1,0 +1,130 @@
+services:
+  hootoutapi:
+    image: ivanmotos/hootout_api:0.1
+    deploy:
+      replicas: 2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment: 
+      ASPNETCORE_ENVIRONMENT: Release
+      ASPNETCORE_URLS: http://+:8080  
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      S3_URL: "https://rustfs:${RUSTFS_PORT}"
+      S3_Public_URL: "https://localhost:${RUSTFS_PORT}"
+      S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
+      S3_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      SSL_CERT_FILE: /certs/ca.pem
+      LOGS_FOLDER: /var/logs
+    volumes:
+      - ./config.json:/app/wwwroot/config.json:ro
+      - ./keys:/app/keys:rw
+      - ./certs:/certs:ro
+      - logs:/var/logs
+
+  hootoutwebsockets:
+    image: ivanmotos/hootout_websockets:0.1
+    deploy:
+      replicas: 2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy 
+    environment:
+      ASPNETCORE_ENVIRONMENT: Release
+      ASPNETCORE_URLS: http://+:8080 
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      S3_Public_URL: "https://localhost:${RUSTFS_PORT}"
+      S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
+      S3_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      SSL_CERT_FILE: /certs/ca.pem
+      LOGS_FOLDER: /var/logs
+    volumes: 
+      - ./certs:/certs:ro
+      - logs:/var/logs
+
+  postgres:
+    image: postgres:18.6-trixie
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq: 
+    image: rabbitmq:4.3.6-management
+    restart: unless-stopped
+    ports: 
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_HOST: ${RABBIT_HOSTNAME}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq/
+      - rabbitmq:/var/log/rabbitmq/
+      - ./rabbitmq:/etc/rabbitmq/:ro
+      - ./certs:/certs:ro
+
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
+      retries: 3
+      timeout: 5s
+      interval: 30s  
+
+  rustfs:
+    image: rustfs/rustfs:1.0.3
+    ports: 
+      - "${RUSTFS_PORT}:${RUSTFS_PORT}"
+      - "9001:9001"
+    environment:
+      RUSTFS_TLS_PATH: /opt/tls
+      RUSTFS_ACCESS_KEY:  ${RUSTFS_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      RUSTFS_ADDRESS: ":${RUSTFS_PORT}"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
+    volumes:
+      - ./certs/cert.pem:/opt/tls/rustfs_cert.pem:ro
+      - ./certs/key.pem:/opt/tls/rustfs_key.pem:ro
+      - s3-data:/data
+
+  haproxy:
+    image: haproxy:3.4
+    restart: unless-stopped
+    depends_on:
+      - hootoutapi
+      - hootoutwebsockets
+    volumes: 
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - ./certs/hootout.pem:/usr/local/etc/haproxy/certs/hootout.pem:ro
+    ports:
+      - "80:80"
+      - "443:443"
+
+volumes:
+  pgdata:
+  s3-data:
+  logs:
+  rabbitmq:
+    driver: local

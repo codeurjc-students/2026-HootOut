@@ -8,6 +8,7 @@
     "dev:test": "vite --mode test",
     "build": "run-p type-check \"build-only {@}\" --",
     "build:test": "vite build --mode test",
+    "build:production": "vite build --mode production",
     "preview": "vite preview",
     "test:unit": "vitest",
     "test:unit:coverage": "vitest run --coverage",

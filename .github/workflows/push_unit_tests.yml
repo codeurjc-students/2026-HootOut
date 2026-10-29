@@ -1,4 +1,4 @@
-name: push-unit-tests-workflow
+name: push_unit_tests
 
 on:
   push:

@@ -5,7 +5,7 @@ class FakeWebSocket {
     static instances: FakeWebSocket[] = [];
     static readonly OPEN = 1;
 
-    url: URL;
+    url: string;
     readyState = FakeWebSocket.OPEN;
     onopen: ((event: Event) => void) | null = null;
     onclose: ((event: Event) => void) | null = null;
@@ -14,7 +14,7 @@ class FakeWebSocket {
     send = vi.fn();
     close = vi.fn();
 
-    constructor(url: URL) {
+    constructor(url: string) {
         this.url = url;
         FakeWebSocket.instances.push(this);
     }
@@ -32,13 +32,13 @@ describe('WebSocketService', () => {
     it('connect creates a new coket and calls onOpen', () => {
         const onOpen = vi.fn();
 
-        service.connect(new URL('wss://test'), { onOpen });
+        service.connect(new URL('wss://test').toString(), { onOpen });
 
         const instance = FakeWebSocket.instances[0];
 
         expect(instance).not.toBeNullable();
 
-        expect(instance?.url.href).toBe('wss://test/');
+        expect(instance?.url).toBe('wss://test/');
 
         instance?.onopen?.(new Event('open'));
         expect(onOpen).toHaveBeenCalledTimes(1);
@@ -46,7 +46,7 @@ describe('WebSocketService', () => {
 
     it('on message when receives an event', () => {
         const onMessage = vi.fn();
-        service.connect(new URL('wss://test'), { onMessage });
+        service.connect(new URL('wss://test').toString(), { onMessage });
 
         const instance = FakeWebSocket.instances[0];
         expect(instance).not.toBeNullable();
@@ -58,7 +58,7 @@ describe('WebSocketService', () => {
     });
 
     it('send message when connected', () => {
-        service.connect(new URL('wss://test'));
+        service.connect(new URL('wss://test').toString());
         const instance = FakeWebSocket.instances[0];
 
         service.send('hello');
@@ -71,7 +71,7 @@ describe('WebSocketService', () => {
     });
 
     it('close the socket', () => {
-        service.connect(new URL('wss://test'));
+        service.connect(new URL('wss://test').toString());
         const instance = FakeWebSocket.instances[0];
 
         service.close();

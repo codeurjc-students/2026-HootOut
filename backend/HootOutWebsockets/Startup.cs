@@ -25,6 +25,7 @@ namespace HootOut.HootOutWebsockets
             services.AddHostedService<PubSubQueueConsumerService>();
 
             services.Configure<FileStorageSettings>(Configuration.GetSection("FileStorage"));
+            services.AddHealthChecks();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -36,10 +37,14 @@ namespace HootOut.HootOutWebsockets
                 NullValueHandling = NullValueHandling.Ignore
             };
 
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            var fwd = new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-            });
+            };
+
+            fwd.KnownIPNetworks.Clear();
+            fwd.KnownProxies.Clear();
+            app.UseForwardedHeaders(fwd); 
 
             if (!env.IsDevelopment())
                 app.UseHsts();
@@ -68,6 +73,7 @@ namespace HootOut.HootOutWebsockets
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHealthChecks("/health").AllowAnonymous();
                 endpoints.MapControllers();
             });
         }

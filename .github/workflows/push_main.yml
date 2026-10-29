@@ -1,0 +1,27 @@
+name: push_main
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  backend_full_tests:
+    uses: ./.github/workflows/backend_full_tests.yml
+    secrets: inherit
+
+  frontend_full_tests:
+    uses: ./.github/workflows/frontend_full_tests.yml
+    secrets: inherit
+    
+  docker_publish_dev:
+    needs: [backend_full_tests, frontend_full_tests]
+    uses: ./.github/workflows/publish_docker_tag.yml
+    with:
+      tag: 'dev'
+    secrets: inherit

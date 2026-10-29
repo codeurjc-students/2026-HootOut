@@ -5,6 +5,9 @@ import { useAuthStore } from '@/stores/auth';
 import { ApiError } from '@/types';
 
 const mockFetch = vi.fn();
+vi.mock('@/config', () => ({
+    getConfig: () => "wss://test"
+}));
 
 // The service reads success bodies with text() and error bodies with json().
 function mockResponse(status: number, body?: unknown) {
