@@ -5,7 +5,7 @@ class FakeWebSocket {
     static instances: FakeWebSocket[] = [];
     static readonly OPEN = 1;
 
-    url: URL;
+    url: string;
     readyState = FakeWebSocket.OPEN;
     onopen: ((event: Event) => void) | null = null;
     onclose: ((event: Event) => void) | null = null;
@@ -14,7 +14,7 @@ class FakeWebSocket {
     send = vi.fn();
     close = vi.fn();
 
-    constructor(url: URL) {
+    constructor(url: string) {
         this.url = url;
         FakeWebSocket.instances.push(this);
     }
@@ -38,7 +38,7 @@ describe('WebSocketService', () => {
 
         expect(instance).not.toBeNullable();
 
-        expect(instance?.url.href).toBe('wss://test/');
+        expect(instance?.url).toBe('wss://test/');
 
         instance?.onopen?.(new Event('open'));
         expect(onOpen).toHaveBeenCalledTimes(1);
