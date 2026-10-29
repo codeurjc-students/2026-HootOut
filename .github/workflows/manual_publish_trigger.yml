@@ -37,5 +37,5 @@ jobs:
     needs: [backend_full_tests, frontend_full_tests, get_tag]
     uses: ./.github/workflows/publish_docker_tag.yml
     with:
-      tag: ${{ needs.get-tag.outputs.tag }}
+      tag: ${{ needs.get_tag.outputs.tag }}
     secrets: inherit
