@@ -1,4 +1,4 @@
 {
     "API_URL": "/api",
-    "WSS_URL": "wss://localhost:4321/ws"
+    "WSS_URL": "/ws"
 }

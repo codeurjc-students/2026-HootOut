@@ -1,6 +1,8 @@
 services:
   hootoutapi:
-    image: hootoutapi 
+    image: hootoutapi
+    deploy:
+      replicas: 2
     build:
       context: .
       dockerfile: HootOutAPI/Dockerfile
@@ -11,23 +13,19 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    ports: 
-      - ${HOOTOUTAPI_HTTPS_PORTS}:${HOOTOUTAPI_HTTPS_PORTS}
     environment: 
-      ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: https://+:${HOOTOUTAPI_HTTPS_PORTS}   # the only listener, so there is no HTTP port to use
-      ASPNETCORE_Kestrel__Certificates__Default__Path: /certs/cert.pem
-      ASPNETCORE_Kestrel__Certificates__Default__KeyPath: /certs/key.pem
-      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      ASPNETCORE_ENVIRONMENT: Release
+      ASPNETCORE_URLS: http://+:8080  
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-hootout};Username=${POSTGRES_USER:?Define POSTGRES_USER};Password=${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}"
       RABBITMQ_HOST: rabbitmq
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
-      S3_URL: "https://rustfs:${RUSTFS_PORT}"
-      S3_Public_URL: "https://localhost:${RUSTFS_PORT}"
-      S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
-      S3_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?Define RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Define RABBITMQ_PASSWORD}
+      S3_URL: "https://rustfs:9000"
+      S3_Public_URL: ${S3_PUBLIC_URL:-https://localhost:9000}
+      S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?Define RUSTFS_ACCESS_KEY}
+      S3_SECRET_KEY: ${RUSTFS_SECRET_KEY:?Define RUSTFS_SECRET_KEY}
       SSL_CERT_FILE: /certs/ca.pem
-      LOGS_FOLDER: /var/logs
+      LOGS_FOLDER: /var/logs 
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
       - ./keys:/app/keys:rw
@@ -36,6 +34,8 @@ services:
 
   hootoutwebsockets:
     image: hootoutwebsockets 
+    deploy:
+      replicas: 2
     build:
       context: .
       dockerfile: HootOutWebsockets/Dockerfile
@@ -45,21 +45,17 @@ services:
       postgres:
         condition: service_healthy
       rabbitmq:
-        condition: service_healthy
-    ports: 
-      - ${HOOTOUTWEBSOCKETS_HTTPS_PORTS}:${HOOTOUTWEBSOCKETS_HTTPS_PORTS}
+        condition: service_healthy 
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: https://+:${HOOTOUTWEBSOCKETS_HTTPS_PORTS}
-      ASPNETCORE_Kestrel__Certificates__Default__Path: /certs/cert.pem
-      ASPNETCORE_Kestrel__Certificates__Default__KeyPath: /certs/key.pem 
-      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      ASPNETCORE_ENVIRONMENT: Release
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER:?Define POSTGRES_USER};Password=${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}"
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
-      S3_Public_URL: "https://localhost:${RUSTFS_PORT}"
-      S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
-      S3_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      S3_Public_URL: "https://localhost:${RUSTFS_PORT:-9000}"
+      S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?Define RUSTFS_ACCESS_KEY}
+      S3_SECRET_KEY: ${RUSTFS_SECRET_KEY:?Define RUSTFS_SECRET_KEY}
       SSL_CERT_FILE: /certs/ca.pem
       LOGS_FOLDER: /var/logs
     volumes:
@@ -74,8 +70,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "${POSTGRES_PORT}:5432"
     volumes:
       - pgdata-test:/var/lib/postgresql
 
@@ -88,8 +82,7 @@ services:
   rabbitmq: 
     image: rabbitmq:4.3.6-management
     restart: unless-stopped
-    ports: 
-      - 5672:5672
+    ports:
       - 15672:15672
     environment:
       RABBITMQ_HOST: ${RABBIT_HOSTNAME}
@@ -105,7 +98,7 @@ services:
       test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
       retries: 3
       timeout: 5s
-      interval: 30s  
+      interval: 30s
 
   rustfs:
     image: rustfs/rustfs:1.0.3
@@ -123,6 +116,18 @@ services:
       - ../certs/cert.pem:/opt/tls/rustfs_cert.pem:ro
       - ../certs/key.pem:/opt/tls/rustfs_key.pem:ro
       - s3-data-test:/data
+  
+  haproxy:
+    image: haproxy:3.4
+    restart: unless-stopped
+    depends_on:
+      - hootoutapi
+      - hootoutwebsockets
+    volumes: 
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - ../certs/hootout.pem:/usr/local/etc/haproxy/certs/hootout.pem:ro
+    ports:
+    - 1234:8443 
 
 volumes:
   pgdata-test:
