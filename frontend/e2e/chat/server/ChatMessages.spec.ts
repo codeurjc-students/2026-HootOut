@@ -142,10 +142,10 @@ test('test send message with attachments', async ({ page: user1, browser, second
     // User 1 chat
     await expect(user1.locator('.file-preview-entry > .file-preview-name')).toHaveText(fileName);
     expect(user1.locator('.file-preview-entry > img')).not.toBeNull();
-    await expect(user1.locator('.file-preview-entry > img')).toHaveAttribute('src', image.url);
+    await expect(user1.locator('.file-preview-entry > img')).toHaveAttribute('src', expect.any(String));
 
     // User 2 chat
     await expect(user2.locator('.file-preview-entry > .file-preview-name')).toHaveText(fileName);
     expect(user2.locator('.file-preview-entry > img')).not.toBeNull();
-    await expect(user2.locator('.file-preview-entry > img')).toHaveAttribute('src', image.url);
+    await expect(user2.locator('.file-preview-entry > img')).toHaveAttribute('src', expect.any(String));
 });

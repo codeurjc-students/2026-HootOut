@@ -49,6 +49,12 @@ export default defineConfig(({ mode, command }) => {
       changeOrigin: true,
       secure: false
     },
+    '/ws': {
+      target: env.VITE_API_PROXY_TARGET ?? 'https://localhost:8443',
+      changeOrigin: true,
+      ws: true,
+      secure: false
+    }
   }
   return {
     plugins: [
