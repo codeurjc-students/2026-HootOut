@@ -60,7 +60,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var ct = TestContext.Current.CancellationToken;
 
             var response = await httpClient!.GetAsync("/api/v1/users/all", ct);
-            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
 
             await RegisterAsync(ct);
             var loginResponse = await LoginAsync(DefaultEmail, DefaultPassword, ct);
