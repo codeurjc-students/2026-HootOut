@@ -32,4 +32,4 @@ jobs:
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/hootout_websockets:${{ inputs.tag }}
 
       - name: Publish dev Docker compose file 
-        run: docker compose -f docker/compose.dev.yaml --env-file docker/.env.example publish ${{ secrets.DOCKERHUB_USERNAME }}/hootout-compose:${{ inputs.tag }}
+        run: docker compose -f docker/compose.dev.yaml --env-file docker/.env.example -y publish ${{ secrets.DOCKERHUB_USERNAME }}/hootout-compose:${{ inputs.tag }}
