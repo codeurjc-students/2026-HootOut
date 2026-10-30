@@ -5,6 +5,7 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
+import tailwindcss from '@tailwindcss/vite'
 
 function runtimeConfig(mode: string) {
   const file = path.resolve(__dirname, `config/config.${mode}.json`)
@@ -61,6 +62,7 @@ export default defineConfig(({ mode, command }) => {
       vue(),
       vueDevTools(),
       runtimeConfig(mode),
+      tailwindcss()
     ],
     resolve: {
       alias: {
