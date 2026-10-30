@@ -8,7 +8,10 @@
   const { currentChatChannel, currentServer } = storeToRefs(serverInfoStore())
 
   async function goToChannelList() {
-    router.push({ name: 'server', params: { serverId: currentServer.value?.id, channelId: '' } })
+    router.push({
+      name: 'server',
+      params: { serverId: currentServer.value?.id, channelId: '' },
+    })
   }
 </script>
 

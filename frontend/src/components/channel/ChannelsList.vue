@@ -16,7 +16,10 @@
   const updateChannelModal = useTemplateRef('update-channel-form-modal')
 
   async function selectChannel(channel: ChatChannel) {
-    router.push({ name: 'channel', params: { serverId: currentServer.id, channelId: channel.id } })
+    router.push({
+      name: 'channel',
+      params: { serverId: currentServer.id, channelId: channel.id },
+    })
   }
 
   async function onUpdatedChannelSuccess(channel: ChatChannel) {
