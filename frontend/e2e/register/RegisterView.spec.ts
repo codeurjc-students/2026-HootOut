@@ -32,7 +32,7 @@ test('test register user', async ({ page }) => {
   await expect(page).toHaveURL(/\/chat/)
 
   const username = page.locator('#navbar-user')
-  expect(username).toHaveText(account.username)
+  await expect(username).toHaveText(account.username)
 })
 
 test('test register user bad request', async ({ page }) => {
