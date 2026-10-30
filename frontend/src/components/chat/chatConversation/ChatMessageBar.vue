@@ -63,16 +63,19 @@
 </script>
 
 <template>
-  <div class="chat-message-bar">
+  <div class="chat-message-bar max-w-screen pt-2">
     <FilePreviewList
       v-if="attachments.length > 0"
       :files="attachments"
       :canRemove="true"
       @remove="removeFile"
     />
-    <div id="message-input-bar">
-      <div id="message-box" class="background-primary">
-        <div id="message-box-icons">
+    <div id="message-input-bar" class="m-4 mt-0">
+      <div
+        id="message-box"
+        class="background-primary max-width-full m-0 flex h-12 items-center rounded-[10px] p-3 md:mx-auto md:max-w-[80%]"
+      >
+        <div id="message-box-icons" class="flex items-center">
           <div class="inline-btn material-symbols-sharp pointer" @click="selectFile">add</div>
           <input id="file-input" ref="fileInput" type="file" hidden @change="uploadFile" />
         </div>
@@ -80,6 +83,7 @@
           v-model="message"
           type="text"
           id="message-input"
+          class="h-full grow! pl-4!"
           @keyup.enter="sendMessage"
           :placeholder="`Write a message to ${currentChatChannel?.name}`"
           autocomplete="off"
@@ -99,50 +103,14 @@
 
 <style>
   .chat-message-bar {
-    padding-top: 0.5rem;
     border-top: 1px solid rgb(var(--color-border));
-    max-width: 100vw;
-  }
-
-  #message-input-bar {
-    margin: 1rem;
-    margin-top: 0;
   }
 
   #message-box {
     border: 1px solid rgb(var(--color-border));
-    border-radius: 10px;
-    height: 3rem;
-    display: flex;
-    align-items: center;
-    max-width: 80%;
-    margin: 0 auto;
-    padding: 0.75rem;
   }
 
   #message-input {
     all: unset;
-    flex-grow: 1;
-    height: 100%;
-    padding-left: 1rem;
-  }
-
-  #message-box-icons {
-    align-items: center;
-    display: flex;
-  }
-
-  .file-preview-close-btn {
-    position: absolute;
-    right: 0;
-    top: 0;
-    color: rgb(var(--color-warning-light));
-  }
-
-  @media (max-width: 520px) {
-    #message-box {
-      margin: 0;
-      max-width: 100%;
-    }
   }
 </style>

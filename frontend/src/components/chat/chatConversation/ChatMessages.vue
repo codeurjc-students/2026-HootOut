@@ -23,9 +23,9 @@
 </script>
 
 <template>
-  <div id="messages-list">
+  <div id="messages-list" class="flex min-h-full flex-col-reverse overflow-y-auto px-4">
     <div
-      class="message-entry pending"
+      class="message-entry pending opacity-25"
       v-for="(message, index) in pendingMessagesList"
       :key="message.id"
     >
@@ -50,7 +50,7 @@
     <div
       @click="serverInfo.getNextMessages"
       v-if="lastPage?.next"
-      class="get-more-messages-btn background-soft pointer"
+      class="get-more-messages-btn background-soft pointer my-2"
     >
       Get Older Messages
     </div>
@@ -58,22 +58,9 @@
 </template>
 
 <style>
-  #messages-list {
-    min-height: 100%;
-    overflow-y: auto;
-    padding: 0 1rem;
-    display: flex;
-    flex-direction: column-reverse;
-  }
-
-  .message-entry.pending {
-    opacity: 0.3;
-  }
-
   .get-more-messages-btn {
     padding: 0.5rem 1rem;
     border-radius: var(--border-radius);
-    margin: 0.5rem 0;
     border: 1px solid rgb(var(--color-border));
   }
 

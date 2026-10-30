@@ -241,14 +241,6 @@
   color: rgb(var(--color-text));
 }
 
-.p-2 {
-  padding: 2rem;
-}
-
-.p-3 {
-  padding: 3rem;
-}
-
 .v-tooltip {
   position: fixed;
   z-index: 9999;

@@ -60,26 +60,24 @@
 </script>
 
 <template>
-  <section class="chat-layout" :class="mobileClass">
+  <section class="chat-layout grid grid-cols-[100px_300px_1fr]" :class="mobileClass">
     <ChatSideBar class="chat-side-bar" :class="mobileClass" />
-    <ChatLeftBar class="background-soft chat-left-bar" :class="mobileClass" />
-    <ChatConversationView class="chat-conversation" :class="mobileClass" />
+    <ChatLeftBar
+      class="background-soft chat-left-bar grid grid-rows-[auto_auto_1fr] rounded-l-[30px] max-sm:rounded-[30px]"
+      :class="mobileClass"
+    />
+    <ChatConversationView :class="mobileClass" />
   </section>
 </template>
 
 <style>
   .chat-layout {
-    display: grid;
-    grid-template-columns: 100px 300px 1fr;
     max-height: calc(100vh - var(--navbar-height));
     height: calc(100vh - var(--navbar-height));
   }
 
   .chat-left-bar {
     max-height: calc(100vh - var(--navbar-height));
-    display: grid;
-    grid-template-rows: auto auto 1fr;
-    border-radius: 30px 0 0 30px;
   }
 
   @media (max-width: 520px) {

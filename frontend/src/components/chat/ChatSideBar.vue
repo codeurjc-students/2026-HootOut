@@ -29,13 +29,13 @@
 </script>
 
 <template>
-  <aside class="side-bar">
+  <aside class="side-bar grid h-full grid-rows-[auto_1fr_auto]">
     <div id=""></div>
-    <div id="server-list">
+    <div id="server-list" class="flex w-full grow flex-col overflow-x-hidden overflow-y-auto">
       <ServerList />
     </div>
 
-    <div id="new-server">
+    <div id="new-server" class="relative flex items-center justify-center py-4">
       <div id="new-server-btn" class="round-btn pointer" @click="openModal"></div>
       <Modal title="Create New Server" ref="create-server-form-modal">
         <template v-slot:body>
@@ -50,25 +50,6 @@
   .side-bar {
     height: 100%;
     max-height: calc(100vh - var(--navbar-height));
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-  }
-
-  #server-list {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    width: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-
-  #new-server {
-    display: flex;
-    padding: 1rem 0;
-    align-items: center;
-    justify-content: center;
-    position: relative;
   }
 
   #new-server::before {

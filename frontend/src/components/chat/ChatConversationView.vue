@@ -9,7 +9,11 @@
 </script>
 
 <template>
-  <div v-if="currentChatChannel" id="chat" class="background-primary">
+  <div
+    v-if="currentChatChannel"
+    id="chat"
+    class="background-primary chat-conversation grid grid-rows-[auto_1fr_auto]"
+  >
     <ChatInfo />
     <ChatMessages />
     <ChatMessageBar />
@@ -19,8 +23,6 @@
 
 <style>
   .chat-conversation {
-    display: grid;
-    grid-template-rows: auto 1fr auto;
     border: 1px solid rgb(var(--color-border));
     max-height: calc(100vh - var(--navbar-height));
   }
