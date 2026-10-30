@@ -54,7 +54,7 @@ test('test login user ok', async ({ page, request }) => {
   await expect(page).toHaveURL(/\/chat/)
 
   const username = page.locator('#navbar-user')
-  expect(username).toHaveText(account.username)
+  await expect(username).toHaveText(account.username)
 })
 
 test('test logged user redirects', async ({ page, request }) => {
