@@ -4,7 +4,10 @@
 </script>
 
 <template>
-  <div id="home-layout">
+  <div
+    id="home-layout"
+    class="mx-auto my-0 grid h-screen max-h-screen w-screen grid-rows-[5rem_1fr]"
+  >
     <nav id="home-navbar" class="background-primary">
       <RouterLink to="/" class="pointer">
         <img id="home-navbar-logo" :src="navbarLogo" alt="HootOutLogo" />
@@ -22,15 +25,6 @@
 </template>
 
 <style lang="css">
-  #home-layout {
-    width: 100vw;
-    height: 100vh;
-    max-height: 100vh;
-    margin: 0 auto;
-    display: grid;
-    grid-template-rows: 5rem 1fr;
-  }
-
   #home-navbar {
     display: flex;
     align-items: center;
