@@ -18,7 +18,9 @@
     <ChatMessages />
     <ChatMessageBar />
   </div>
-  <div v-else id="empty-chat" class="background-primary p-4">Start a new chat</div>
+  <div v-else id="empty-chat" class="chat-conversation background-primary p-4">
+    Start a new chat
+  </div>
 </template>
 
 <style>
