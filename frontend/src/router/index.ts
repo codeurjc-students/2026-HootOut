@@ -1,9 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.ts'
+import NotFound from '@/views/NotFound.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'NotFound', component: NotFound,
+      meta: { layout: 'HomeLayout', public: true, guestOnly: false }
+    },
     {
       path: '/',
       name: 'home',
@@ -39,7 +45,7 @@ const router = createRouter({
       name: 'channel',
       component: () => import('@/views/ChatView.vue'),
       meta: { layout: 'MainLayout' }
-    },
+    }
   ],
 })
 
@@ -54,5 +60,6 @@ router.beforeEach(async (to) => {
     return { name: 'home' }
   }
 })
+
 
 export default router
