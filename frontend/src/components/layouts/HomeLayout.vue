@@ -8,17 +8,17 @@
     id="home-layout"
     class="mx-auto my-0 grid h-screen max-h-screen w-screen grid-rows-[5rem_1fr]"
   >
-    <nav id="home-navbar" class="background-primary">
+    <nav id="home-navbar" class="background-primary flex max-h-20 content-between items-center">
       <RouterLink to="/" class="pointer">
-        <img id="home-navbar-logo" :src="navbarLogo" alt="HootOutLogo" />
+        <img id="home-navbar-logo" class="h-10" :src="navbarLogo" alt="HootOutLogo" />
       </RouterLink>
 
-      <div id="login-register-btns">
+      <div id="login-register-btns" class="ml-auto flex items-center gap-4">
         <RouterLink to="/login" class="button-action"> Login </RouterLink>
         <RouterLink to="/register" class="button-action"> Register </RouterLink>
       </div>
     </nav>
-    <section id="home-content">
+    <section id="home-content" class="h-full">
       <slot />
     </section>
   </div>
@@ -26,25 +26,6 @@
 
 <style lang="css">
   #home-navbar {
-    display: flex;
-    align-items: center;
-    align-content: space-between;
     padding: 0 10vw;
-    max-height: 5rem;
-  }
-
-  #home-navbar-logo {
-    height: 2.5rem;
-  }
-
-  #home-content {
-    height: 100%;
-  }
-
-  #login-register-btns {
-    margin-left: auto;
-    display: flex;
-    gap: 1rem;
-    align-items: center;
   }
 </style>
