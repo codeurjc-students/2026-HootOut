@@ -202,12 +202,16 @@
 .custom-form-text-input {
   background: transparent;
   border: none;
-  color: inherit;
+  color: rgb(var(--color-text));
   font-size: inherit;
   min-width: 30%;
   padding-inline: 0.8rem;
   flex: 1;
   height: 100%;
+}
+
+.custom-form-text-input::placeholder {
+  color: rgba(var(--color-text), 0.5);
 }
 
 .custom-form > .button-action {

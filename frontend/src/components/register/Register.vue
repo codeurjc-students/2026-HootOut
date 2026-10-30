@@ -32,7 +32,6 @@
       await router.push({ name: 'chat' }) // registering also signs the user in
     } catch (err) {
       // 4xx errors carry a message the user can act on (e.g. "username already taken").
-      // Adjust this to the error format your API returns.
       error.value =
         err instanceof ApiError && err.status < 500
           ? err.message
@@ -46,7 +45,7 @@
 </script>
 
 <template>
-  <section id="register" class="background-soft">
+  <section id="register" class="background-soft h-full w-full p-0 md:pt-20">
     <div class="custom-form-wrapper">
       <h1>Create Account</h1>
       <form class="custom-form" id="register-form" novalidate @submit.prevent="onSubmit">
@@ -132,17 +131,3 @@
     </div>
   </section>
 </template>
-
-<style>
-  #register {
-    width: 100%;
-    height: 100%;
-    padding-top: 5rem;
-  }
-
-  @media (max-width: 520px) {
-    #register {
-      padding: 0;
-    }
-  }
-</style>

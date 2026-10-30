@@ -25,8 +25,6 @@
       await auth.login(form.email.trim(), form.password)
       await router.push({ name: 'chat' }) // registering also signs the user in
     } catch (err) {
-      // 4xx errors carry a message the user can act on (e.g. "username already taken").
-      // Adjust this to the error format your API returns.
       error.value =
         err instanceof ApiError && (err.status === 400 || err.status === 401)
           ? 'Invalid username or password.'
@@ -39,8 +37,8 @@
 </script>
 
 <template>
-  <section id="login" class="background-soft">
-    <div class="custom-form-wrapper">
+  <section id="login" class="background-soft h-full w-full p-0 md:pt-20">
+    <div class="custom-form-wrapper background-primary">
       <h1>Welcome Back!</h1>
       <form class="custom-form" id="login-form" novalidate @submit.prevent="onSubmit">
         <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
@@ -91,17 +89,3 @@
     </div>
   </section>
 </template>
-
-<style>
-  #login {
-    width: 100%;
-    height: 100%;
-    padding-top: 5rem;
-  }
-
-  @media (max-width: 520px) {
-    #login {
-      padding: 0;
-    }
-  }
-</style>
