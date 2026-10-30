@@ -1,32 +1,31 @@
 <script setup lang="ts">
-import { RouterView, useRoute } from 'vue-router'
-import MainLayout from '@/components/layouts/MainLayout.vue';
-import NoLayout from '@/components/layouts/NoLayout.vue';
-import HomeLayout from '@/components/layouts/HomeLayout.vue';
-import { computed } from 'vue';
-import { useSingleMedia } from '@/composables/useSingleMedia.ts';
+  import { RouterView, useRoute } from 'vue-router'
+  import MainLayout from '@/components/layouts/MainLayout.vue'
+  import NoLayout from '@/components/layouts/NoLayout.vue'
+  import HomeLayout from '@/components/layouts/HomeLayout.vue'
+  import { computed } from 'vue'
+  import { useSingleMedia } from '@/composables/useSingleMedia.ts'
 
-const layouts = {
+  const layouts = {
     MainLayout,
     NoLayout,
-    HomeLayout
-}
+    HomeLayout,
+  }
 
-const route = useRoute()
+  const route = useRoute()
 
-const currentLayout = computed(() => {
+  const currentLayout = computed(() => {
     const layoutName = (route.meta.layout || 'NoLayout') as keyof typeof layouts
-    return layouts[layoutName];
-});
+    return layouts[layoutName]
+  })
 
-useSingleMedia()
-
+  useSingleMedia()
 </script>
 
 <template>
-    <component :is="currentLayout">
-        <RouterView v-slot="{ Component }">
-            <component :is="Component" :key="$route.fullPath" />
-        </RouterView>
-    </component>
+  <component :is="currentLayout">
+    <RouterView v-slot="{ Component }">
+      <component :is="Component" :key="$route.fullPath" />
+    </RouterView>
+  </component>
 </template>

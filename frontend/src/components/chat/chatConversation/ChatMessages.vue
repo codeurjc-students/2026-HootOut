@@ -1,80 +1,60 @@
 <script setup lang="ts">
-import FilePreviewList from "@/components/shared/filePreview/FilePreviewList.vue";
-import { serverInfoStore } from "@/stores/serverInfo"
-import { userInfoStore } from "@/stores/userInfo";
-import { storeToRefs } from "pinia";
-import { computed } from "vue";
+  import FilePreviewList from '@/components/shared/filePreview/FilePreviewList.vue'
+  import { serverInfoStore } from '@/stores/serverInfo'
+  import { userInfoStore } from '@/stores/userInfo'
+  import { storeToRefs } from 'pinia'
+  import { computed } from 'vue'
 
-const serverInfo = serverInfoStore();
+  const serverInfo = serverInfoStore()
 
-const { channelMessages, currentChatChannel, pendingMessages, lastPage } = storeToRefs(serverInfo);
-const { user } = storeToRefs(userInfoStore());
+  const { channelMessages, currentChatChannel, pendingMessages, lastPage } = storeToRefs(serverInfo)
+  const { user } = storeToRefs(userInfoStore())
 
+  const pendingMessagesList = computed(() => {
+    return pendingMessages?.value[currentChatChannel.value!.id]
+  })
 
-const pendingMessagesList = computed(() => {
-    return pendingMessages?.value[currentChatChannel.value!.id];
-});
-
-function convertDate(date_string: string) {
+  function convertDate(date_string: string) {
     return new Intl.DateTimeFormat(undefined, {
-        dateStyle: 'short',
-        timeStyle: 'short'
+      dateStyle: 'short',
+      timeStyle: 'short',
     }).format(new Date(date_string))
-}
-
+  }
 </script>
 
 <template>
-    <div id="messages-list">
-
-        <div class="message-entry pending" v-for='(message, index) in pendingMessagesList' :key='message.id'>
-            <div>
-                {{ user.username }} --- {{ convertDate(message.createdAt!) }}
-            </div>
-            <div>
-                {{ message.content }}
-            </div>
-        </div>
-
-        <div v-for='(message, index) in channelMessages' :key='message.id'
-            :class="{ 'background-soft': message.author.username == user.username }">
-            <div>
-                {{ message.author.username }} --- {{ convertDate(message.createdAt!) }}
-            </div>
-
-            <FilePreviewList v-if="message.attachments.length > 0" :files="message.attachments" />
-            <div>
-                {{ message.content }}
-            </div>
-        </div>
-        <div @click="serverInfo.getNextMessages" v-if="lastPage?.next"
-            class="get-more-messages-btn background-soft pointer">
-            Get Older Messages
-        </div>
+  <div id="messages-list" class="flex min-h-full flex-col-reverse overflow-y-auto px-4">
+    <div class="opacity-25" v-for="(message, index) in pendingMessagesList" :key="message.id">
+      <div>{{ user.username }} --- {{ convertDate(message.createdAt!) }}</div>
+      <div>
+        {{ message.content }}
+      </div>
     </div>
+
+    <div
+      v-for="(message, index) in channelMessages"
+      :key="message.id"
+      :class="{ 'background-soft': message.author.username == user.username }"
+    >
+      <div>{{ message.author.username }} --- {{ convertDate(message.createdAt!) }}</div>
+
+      <FilePreviewList v-if="message.attachments.length > 0" :files="message.attachments" />
+      <div>
+        {{ message.content }}
+      </div>
+    </div>
+    <div
+      @click="serverInfo.getNextMessages"
+      v-if="lastPage?.next"
+      class="get-more-messages-btn background-soft pointer my-2 rounded-sm border-1 px-4 py-2"
+    >
+      Get Older Messages
+    </div>
+  </div>
 </template>
 
 <style>
-#messages-list {
-    min-height: 100%;
-    overflow-y: auto;
-    padding: 0 1rem;
-    display: flex;
-    flex-direction: column-reverse;
-}
-
-.message-entry.pending {
-    opacity: 0.3;
-}
-
-.get-more-messages-btn {
-    padding: 0.5rem 1rem;
-    border-radius: var(--border-radius);
-    margin: 0.5rem 0;
-    border: 1px solid rgb(var(--color-border))
-}
-
-.get-more-messages-btn:hover {
+  .get-more-messages-btn:hover {
     background-color: rgb(var(--color-background-light));
-}
+  }
 </style>

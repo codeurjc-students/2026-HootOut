@@ -1,47 +1,29 @@
 <script setup lang="ts">
-import { serverInfoStore } from '@/stores/serverInfo';
-import type { ChatServer } from '@/types';
-import { storeToRefs } from 'pinia';
-import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+  import { serverInfoStore } from '@/stores/serverInfo'
+  import type { ChatServer } from '@/types'
+  import { storeToRefs } from 'pinia'
+  import { onMounted } from 'vue'
+  import { useRouter } from 'vue-router'
 
-const router = useRouter();
+  const router = useRouter()
 
-const serverInfo = serverInfoStore()
-const { servers, currentServer } = storeToRefs(serverInfo)
-
-function setCurrentServer(server: ChatServer) {
-    router.push({ name: 'server', params: { serverId: server.id } })
-}
-
+  const serverInfo = serverInfoStore()
+  const { servers, currentServer } = storeToRefs(serverInfo)
 </script>
 
 <template>
-    <div v-for="server in servers" class="round-btn server-btn pointer" @click="setCurrentServer(server)"
-        :class="{ 'background-light': currentServer?.id == server.id }" :key="server.id" v-tooltip:right="server.name"
-        :aria-label="server.name" :server-id="server.id">
-        <span class="server-btn-text">
-            {{ server.name.charAt(0).toUpperCase() }}
-        </span>
-    </div>
-
+  <RouterLink
+    :to="{ name: 'server', params: { serverId: server.id } }"
+    v-for="server in servers"
+    class="round-btn pointer mb-2 flex h-full justify-center self-center"
+    :class="{ 'background-light': currentServer?.id == server.id }"
+    :key="server.id"
+    v-tooltip:right="server.name"
+    :aria-label="server.name"
+    :server-id="server.id"
+  >
+    <span class="server-btn-text text- inline-block self-center text-center text-[2rem]">
+      {{ server.name.charAt(0).toUpperCase() }}
+    </span>
+  </RouterLink>
 </template>
-
-<style>
-.server-btn {
-    height: 100%;
-    margin-bottom: .5rem;
-    align-self: center;
-    justify-content: center;
-    display: flex;
-}
-
-.server-btn-text {
-    display: inline-block;
-    text-align: center;
-    align-self: center;
-    font-size: 2rem;
-    transform: translateY(-2%);
-
-}
-</style>

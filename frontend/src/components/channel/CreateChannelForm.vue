@@ -1,89 +1,96 @@
 <script setup lang="ts">
-import ChatChannelService from '@/services/chatChannel/ChatChannelService';
-import { getValidationErrors } from '@/services/common/utils';
-import { ApiError, ValidationError, type ChatChannel } from '@/types';
-import { computed, onMounted, reactive, ref } from 'vue';
+  import ChatChannelService from '@/services/chatChannel/ChatChannelService'
+  import { getValidationErrors } from '@/services/common/utils'
+  import { ApiError, ValidationError, type ChatChannel } from '@/types'
+  import { computed, onMounted, reactive, ref } from 'vue'
 
-defineExpose({
-    cleanForm
-})
+  defineExpose({
+    cleanForm,
+  })
 
-const props = defineProps({
-    server: Object
-})
+  const props = defineProps({
+    server: Object,
+  })
 
-const emit = defineEmits<{
+  const emit = defineEmits<{
     (e: 'success', channel: ChatChannel): void
-}>()
+  }>()
 
-const form = reactive({ name: '' })
-const submitting = ref(false)
-const error = ref('')
+  const form = reactive({ name: '' })
+  const submitting = ref(false)
+  const error = ref('')
 
-const canSubmit = computed(
-    () =>
-        !submitting.value &&
-        form.name.trim() !== '' &&
-        props.server?.Id?.trim() !== ''
-)
+  const canSubmit = computed(
+    () => !submitting.value && form.name.trim() !== '' && props.server?.Id?.trim() !== ''
+  )
 
-const formErrors = ref(new Map<string, Map<string, string>>())
+  const formErrors = ref(new Map<string, Map<string, string>>())
 
-async function onSubmit() {
+  async function onSubmit() {
     if (!canSubmit.value) return
 
     error.value = ''
-    formErrors.value = new Map();
+    formErrors.value = new Map()
     submitting.value = true
 
     try {
-        const newChannel = await ChatChannelService.createNewChannel({ name: form.name, chatServerId: props.server?.id });
-        form.name = ''
-        emit('success', newChannel);
+      const newChannel = await ChatChannelService.createNewChannel({
+        name: form.name,
+        chatServerId: props.server?.id,
+      })
+      form.name = ''
+      emit('success', newChannel)
     } catch (err) {
-        error.value = err instanceof ApiError && err.status < 500
-            ? err.message
-            : 'Something went wrong. Please try again.'
+      error.value =
+        err instanceof ApiError && err.status < 500
+          ? err.message
+          : 'Something went wrong. Please try again.'
 
-        if (err instanceof ValidationError && err.status == 400) {
-            error.value = 'Please review the form.'
-            formErrors.value = getValidationErrors(err);
-        }
+      if (err instanceof ValidationError && err.status == 400) {
+        error.value = 'Please review the form.'
+        formErrors.value = getValidationErrors(err)
+      }
     } finally {
-        submitting.value = false
+      submitting.value = false
     }
-}
+  }
 
-async function cleanForm() {
-    formErrors.value = new Map();
-    form.name = '';
-    submitting.value = false;
-}
-
+  async function cleanForm() {
+    formErrors.value = new Map()
+    form.name = ''
+    submitting.value = false
+  }
 </script>
 
 <template>
+  <form class="custom-form" id="create-channel-form" novalidate @submit.prevent="onSubmit">
+    <p class="custom-form-row" :aria-label="props.server?.name">Server: {{ props.server?.name }}</p>
+    <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
+    <div class="custom-form-row">
+      <div class="custom-form-label-wrapper">
+        <label for="server-name">Channel Name *</label>
+      </div>
+      <div class="custom-form-input-wrapper">
+        <input
+          id="server-name"
+          class="custom-form-text-input"
+          v-model="form.name"
+          type="text"
+          required
+          placeholder="Server name"
+          minlength="3"
+          maxlength="50"
+          autocomplete="off"
+        />
+      </div>
 
-    <form class="custom-form" id="create-channel-form" novalidate @submit.prevent="onSubmit">
-        <p class="custom-form-row" :aria-label="props.server?.name"> Server: {{ props.server?.name }}</p>
-        <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
-        <div class="custom-form-row">
-            <div class="custom-form-label-wrapper">
-                <label for="server-name">Channel Name *</label>
-            </div>
-            <div class="custom-form-input-wrapper">
-                <input id="server-name" class="custom-form-text-input" v-model="form.name" type="text" required
-                    placeholder="Server name" minlength="3" maxlength="50" autocomplete="off" />
-            </div>
+      <p v-for="err in formErrors.get('Name')?.values()" :key="err" class="custom-form-field-error">
+        {{ err }}
+      </p>
+    </div>
 
-            <p v-for="err in formErrors.get('Name')?.values()" :key="err" class="custom-form-field-error">
-                {{ err }}
-            </p>
-
-        </div>
-
-        <button class="button-action" type="submit" :disabled="submitting || !form.name">
-            Create Channel
-        </button>
-    </form>
+    <button class="button-action" type="submit" :disabled="submitting || !form.name">
+      Create Channel
+    </button>
+  </form>
 </template>

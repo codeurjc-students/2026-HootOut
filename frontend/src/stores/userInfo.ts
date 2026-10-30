@@ -6,7 +6,7 @@ export const userInfoStore = defineStore('userInfo', () => {
   const user = ref<UserInfo>({})
 
   function setUser(newUser: UserInfo) {
-    user.value = newUser;
+    user.value = newUser
   }
 
   return { user, setUser }

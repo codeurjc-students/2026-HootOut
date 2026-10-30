@@ -1,57 +1,25 @@
 <script setup lang="ts">
-import navbarLogo from '@/assets/img/navbar-logo.svg'
-import { RouterLink } from 'vue-router';
-
+  import navbarLogo from '@/assets/img/navbar-logo.svg'
+  import { RouterLink } from 'vue-router'
 </script>
 
 <template>
-    <div id="home-layout">
-        <nav id="home-navbar" class="background-primary">
-            <RouterLink to="/" class="pointer">
-                <img id="home-navbar-logo" :src="navbarLogo" alt="HootOutLogo" />
-            </RouterLink>
+  <div
+    id="home-layout"
+    class="mx-auto my-0 grid h-screen max-h-screen w-screen grid-rows-[5rem_1fr]"
+  >
+    <nav class="background-primary flex max-h-20 content-between items-center px-[10vw]">
+      <RouterLink to="/" class="pointer">
+        <img id="home-navbar-logo" class="h-10" :src="navbarLogo" alt="HootOutLogo" />
+      </RouterLink>
 
-            <div id="login-register-btns">
-                <RouterLink to="/login" class="button-action"> Login </RouterLink>
-                <RouterLink to="/register" class="button-action"> Register </RouterLink>
-            </div>
-        </nav>
-        <section id="home-content">
-            <slot />
-        </section>
-    </div>
+      <div id="login-register-btns" class="ml-auto flex items-center gap-4">
+        <RouterLink to="/login" class="button-action"> Login </RouterLink>
+        <RouterLink to="/register" class="button-action"> Register </RouterLink>
+      </div>
+    </nav>
+    <section id="home-content" class="h-full">
+      <slot />
+    </section>
+  </div>
 </template>
-
-<style lang="css">
-#home-layout {
-    width: 100vw;
-    height: 100vh;
-    max-height: 100vh;
-    margin: 0 auto;
-    display: grid;
-    grid-template-rows: 5rem 1fr;
-}
-
-#home-navbar {
-    display: flex;
-    align-items: center;
-    align-content: space-between;
-    padding: 0 10vw;
-    max-height: 5rem;
-}
-
-#home-navbar-logo {
-    height: 2.5rem;
-}
-
-#home-content {
-    height: 100%;
-}
-
-#login-register-btns {
-    margin-left: auto;
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
-</style>
