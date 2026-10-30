@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @import './base.css';
 
 *,
@@ -47,5 +47,5 @@ ul {
   --max-width-1\/4: 25%;
   --max-width-1\/2: 50%;
   --max-width-3\/4: 75%;
-  --tracking-widest: .15em;
+  --tracking-widest: 0.15em;
 }

@@ -1,57 +1,56 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+  import { ref } from 'vue'
 
-const props = defineProps({
+  const props = defineProps({
     title: String,
-    modalClass: String
-})
+    modalClass: String,
+  })
 
-const emit = defineEmits<{
+  const emit = defineEmits<{
     (e: 'close'): void
-}>()
+  }>()
 
-const show = ref(false)
+  const show = ref(false)
 
-function close() {
-    show.value = false;
-}
+  function close() {
+    show.value = false
+  }
 
-function open() {
-    show.value = true;
-}
+  function open() {
+    show.value = true
+  }
 
-defineExpose({
+  defineExpose({
     close,
-    open
-})
-
+    open,
+  })
 </script>
 
 <template>
-    <Teleport to="body">
-        <div v-if="show" class="modal-background" @click="close"></div>
-        <div v-if="show" class="modal custom-form-wrapper p-2" :class="modalClass">
-            <div class="modal-title">
-                <h2>
-                    {{ props.title }}
-                </h2>
+  <Teleport to="body">
+    <div v-if="show" class="modal-background" @click="close"></div>
+    <div v-if="show" class="modal custom-form-wrapper p-2" :class="modalClass">
+      <div class="modal-title">
+        <h2>
+          {{ props.title }}
+        </h2>
 
-                <div class="modal-top pointer">
-                    <slot name="options"></slot>
-                    <div class="material-symbols-sharp modal-close" @click="close" aria-label="close">
-                        close
-                    </div>
-                </div>
-            </div>
-            <div class="modal-body" @keyup.esc="close">
-                <slot name="body"></slot>
-            </div>
+        <div class="modal-top pointer">
+          <slot name="options"></slot>
+          <div class="material-symbols-sharp modal-close" @click="close" aria-label="close">
+            close
+          </div>
         </div>
-    </Teleport>
+      </div>
+      <div class="modal-body" @keyup.esc="close">
+        <slot name="body"></slot>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <style>
-.modal-background {
+  .modal-background {
     position: fixed;
     top: 0;
     left: 0;
@@ -59,9 +58,9 @@ defineExpose({
     height: 100vh;
     z-index: 998;
     background-color: rgba(var(--color-background), 0.5);
-}
+  }
 
-.modal {
+  .modal {
     min-width: 30rem;
     min-height: 30vh;
     position: fixed;
@@ -71,54 +70,54 @@ defineExpose({
     transform: translateX(-50%);
     display: flex;
     flex-direction: column;
-}
+  }
 
-.modal-title {
+  .modal-title {
     display: grid;
     grid-template-columns: 1fr auto;
-}
+  }
 
-.modal-body {
+  .modal-body {
     flex: 1;
     max-height: 100%;
-}
+  }
 
-.modal-top {
+  .modal-top {
     margin-left: auto;
     display: flex;
-}
+  }
 
-.modal-top>span {
+  .modal-top > span {
     display: inline-block;
     align-self: center;
-}
+  }
 
-@media(max-width: 520px) {
+  @media (max-width: 520px) {
     .modal {
-        top: 0;
-        left: 0;
-        transform: unset;
-        min-width: 100vw;
-        max-width: 100vw;
-        min-height: 100vh;
-        max-height: 100vh;
-        overflow-y: auto;
+      top: 0;
+      left: 0;
+      transform: unset;
+      min-width: 100vw;
+      max-width: 100vw;
+      min-height: 100vh;
+      max-height: 100vh;
+      overflow-y: auto;
     }
 
     .modal-top {
-        top: 0;
-        left: 0;
-        order: -1;
-        margin: 0;
+      top: 0;
+      left: 0;
+      order: -1;
+      margin: 0;
     }
 
     .modal-close {
-        order: -1;
+      order: -1;
     }
 
     .modal-title {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr;
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
     }
-}
+  }
 </style>

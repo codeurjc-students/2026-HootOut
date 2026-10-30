@@ -1,7 +1,7 @@
 export interface UploadFileResponse {
-    id: string;
-    contentType: string;
-    fileName: string;
-    bytesSize: string;
-    url: string;
+  id: string
+  contentType: string
+  fileName: string
+  bytesSize: string
+  url: string
 }

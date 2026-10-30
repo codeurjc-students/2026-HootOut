@@ -10,7 +10,7 @@ import { loadConfig } from './config'
 
 await loadConfig()
 const app = createApp(App)
-app.directive('tooltip', vTooltip);
+app.directive('tooltip', vTooltip)
 app.use(createPinia())
 app.use(router)
 

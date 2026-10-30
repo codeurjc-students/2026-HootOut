@@ -7,45 +7,46 @@ const router = createRouter({
   routes: [
     {
       path: '/:pathMatch(.*)*',
-      name: 'NotFound', component: NotFound,
-      meta: { layout: 'HomeLayout', public: true, guestOnly: false }
+      name: 'NotFound',
+      component: NotFound,
+      meta: { layout: 'HomeLayout', public: true, guestOnly: false },
     },
     {
       path: '/',
       name: 'home',
       component: () => import('@/views/HomeView.vue'),
-      meta: { layout: 'HomeLayout', public: true, guestOnly: false }
+      meta: { layout: 'HomeLayout', public: true, guestOnly: false },
     },
     {
       path: '/login',
       name: 'login',
       component: () => import('@/views/LoginView.vue'),
-      meta: { layout: 'HomeLayout', public: true, guestOnly: true }
+      meta: { layout: 'HomeLayout', public: true, guestOnly: true },
     },
     {
       path: '/register',
       name: 'register',
       component: () => import('@/views/RegisterView.vue'),
-      meta: { layout: 'HomeLayout', public: true, guestOnly: true }
+      meta: { layout: 'HomeLayout', public: true, guestOnly: true },
     },
     {
       path: '/chat',
       name: 'chat',
       component: () => import('@/views/ChatView.vue'),
-      meta: { layout: 'MainLayout' }
+      meta: { layout: 'MainLayout' },
     },
     {
       path: '/chat/server/:serverId?',
       name: 'server',
       component: () => import('@/views/ChatView.vue'),
-      meta: { layout: 'MainLayout' }
+      meta: { layout: 'MainLayout' },
     },
     {
       path: '/chat/server/:serverId/channel/:channelId',
       name: 'channel',
       component: () => import('@/views/ChatView.vue'),
-      meta: { layout: 'MainLayout' }
-    }
+      meta: { layout: 'MainLayout' },
+    },
   ],
 })
 
@@ -60,6 +61,5 @@ router.beforeEach(async (to) => {
     return { name: 'home' }
   }
 })
-
 
 export default router

@@ -55,7 +55,6 @@
   --color-warning-light: var(--c-red-light);
 }
 
-
 /* Custom Button */
 
 .inline-btn {
@@ -65,7 +64,7 @@
   text-decoration-thickness: auto;
   color: rgb(var(--color-text));
   font-size: 1.5rem;
-  transition: all .2s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
 .inline-btn:hover {
@@ -79,21 +78,23 @@
   box-sizing: border-box;
   background-color: rgb(var(--color-inverse));
   color: rgb(var(--color-background));
-  font-size: .95rem;
+  font-size: 0.95rem;
   font-weight: 600;
   line-height: 1.25rem;
-  padding: .5rem 1rem;
+  padding: 0.5rem 1rem;
   text-decoration: none rgb(var(--color-inverse-light)) solid;
   text-decoration-thickness: auto;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px 0 rgba(0, 0, 0, 0.06);
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
 }
 
-@media(max-width: 520px) {
+@media (max-width: 520px) {
   .button-action {
-    padding: 0.4em .8rem;
+    padding: 0.4em 0.8rem;
   }
 }
 
@@ -168,7 +169,7 @@
   text-align: center;
 }
 
-@media(max-width: 520px) {
+@media (max-width: 520px) {
   .custom-form-wrapper {
     box-shadow: none;
     border-radius: 0;
@@ -184,7 +185,7 @@
 
 .custom-form-label-wrapper {
   font-weight: 600;
-  margin-bottom: .5rem;
+  margin-bottom: 0.5rem;
 }
 
 .custom-form-input-wrapper {
@@ -209,14 +210,14 @@
   height: 100%;
 }
 
-.custom-form>.button-action {
+.custom-form > .button-action {
   margin-top: 2rem;
   width: 100%;
 }
 
 .custom-form-link {
   text-align: left;
-  margin-top: .5rem;
+  margin-top: 0.5rem;
   text-decoration: underline;
 }
 
@@ -254,5 +255,5 @@
   color: rgb(var(--color-text));
   font-size: 13px;
   line-height: 1.4;
-  pointer-events: none
+  pointer-events: none;
 }

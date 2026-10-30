@@ -1,9 +1,9 @@
-import { get } from "../common/api/ApiService"
+import { get } from '../common/api/ApiService'
 
 const UserService = {
-    getAllUsers: async function (): Promise<Array<any>> {
-        return get('users/all');
-    }
+  getAllUsers: async function (): Promise<Array<any>> {
+    return get('users/all')
+  },
 }
 
-export default UserService;
+export default UserService
