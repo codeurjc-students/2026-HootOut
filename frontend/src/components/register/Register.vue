@@ -47,7 +47,7 @@
 <template>
   <section id="register" class="background-soft h-full w-full p-0 md:pt-20">
     <div class="custom-form-wrapper">
-      <h1>Create Account</h1>
+      <h1 class="text-3xl">Create Account</h1>
       <form class="custom-form" id="register-form" novalidate @submit.prevent="onSubmit">
         <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
 

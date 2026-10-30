@@ -6,7 +6,7 @@
       id="home-text"
       class="z-10 w-full max-w-full px-8 tracking-widest md:w-1/2 md:max-w-1/2 md:p-16"
     >
-      <h1 class="text-5xl font-semibold">HootOut</h1>
+      <h1 class="text-5xl font-semibold!">HootOut</h1>
 
       <h2 class="mt-4 text-2xl md:mt-8">
         <p>HootOut is an Instant Message application.</p>
