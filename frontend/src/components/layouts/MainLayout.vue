@@ -9,11 +9,14 @@
 </script>
 
 <template>
-  <div id="main-layout" class="background-primary">
-    <nav id="navbar">
-      <img id="navbar-logo" :src="navbarLogo" alt="HootOutLogo" />
+  <div
+    id="main-layout"
+    class="background-primary grid h-screen max-h-screen w-screen max-w-full grid-rows-[var(--navbar-height)_1fr]"
+  >
+    <nav id="navbar" class="flex w-screen items-center px-8 py-0">
+      <img id="navbar-logo" class="h-7" :src="navbarLogo" alt="HootOutLogo" />
 
-      <div id="navbar-user">
+      <div id="navbar-user" class="ml-auto">
         {{ user.username }}
       </div>
     </nav>
@@ -22,37 +25,3 @@
     </section>
   </div>
 </template>
-
-<style lang="css">
-  #main-layout {
-    width: 100vw;
-    height: 100vh;
-    max-height: 100vh;
-    display: grid;
-    grid-template-rows: var(--navbar-height) 1fr;
-  }
-
-  #navbar {
-    display: flex;
-    align-items: center;
-    padding: 0 2rem;
-  }
-
-  #navbar-logo {
-    height: 1.8rem;
-  }
-
-  #navbar-user {
-    margin-left: auto;
-  }
-
-  @media (max-width: 520px) {
-    #main-layout {
-      max-width: 100vw;
-    }
-
-    #navbar {
-      width: 100vw;
-    }
-  }
-</style>
