@@ -16,7 +16,7 @@ async function registerUser(
     return response
 }
 
-test('test login user bad request', async ({ page, request }) => {
+test('test login user bad request', async ({ page }) => {
     await page.goto('/login');
 
     const account = acquireAccount();
