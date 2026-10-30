@@ -42,7 +42,7 @@ ul {
   list-style: none;
 }
 
-.border-1 { 
+.border-1 {
   border: 1px solid rgb(var(--color-border));
 }
 .border-top-1 {
