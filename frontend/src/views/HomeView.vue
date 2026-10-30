@@ -1,103 +1,37 @@
 <script setup lang="ts">
 </script>
 
-
 <template>
-      <section id="home">
-            <div id="home-text">
-                  <h1>HootOut</h1>
+      <section id="home" class="flex flex-col md:flex-row h-full md:h-auto md:mt-20">
+            <div id="home-text" class="w-full max-w-full md:w-1/2 md:max-w-1/2 px-8 md:p-16 tracking-widest z-10">
+                  <h1 class="text-5xl font-semibold">HootOut</h1>
 
-                  <h2>HootOut is an Instant Message application. <br> Connect with friends, make plans and chat with
-                        them.
+                  <h2 class="text-2xl mt-4 md:mt-8">
+                        <p>HootOut is an Instant Message application.</p>
+                        <p> Connect with friends, make plans and chat with them.</p>
                   </h2>
 
-                  <RouterLink to="/register" class="color-text">
+                  <RouterLink to="/register" class="color-text inline-block text-xl underline mt-4">
                         Create an account and start chatting.
                   </RouterLink>
             </div>
-            <div id="home-image">
-                  <img src="/jeremy-hynes-cE6r38Mj7gA-unsplash.jpg" />
+            <div id="home-image"
+                  class="w-full max-w-full md:w-1/2 md:max-w-1/2 self-center opacity-50 md:opacity-100 mt-auto md:mt-0 pt-8 md:p-0">
+                  <img class="w-auto max-w-full object-contain rounded-4xl block"
+                        src="/jeremy-hynes-cE6r38Mj7gA-unsplash.jpg" />
             </div>
       </section>
 </template>
 
 <style>
 #home {
-      display: flex;
-      margin-top: 5rem;
       padding: 0 10vw;
-}
-
-#home>* {
-      width: 50%;
-      max-width: 50%;
-}
-
-#home-text {
-      padding: 4rem;
-      letter-spacing: .15em;
-}
-
-#home-text>h1 {
-      font-size: 3rem;
-      font-weight: 600;
-}
-
-#home-text>h2 {
-      margin-top: 2rem;
-}
-
-#home-text>a {
-      display: inline-block;
-      font-size: 1.2rem;
-      margin-top: 1rem;
-}
-
-#home-image {
-      align-self: center;
-      max-width: 100%;
-}
-
-#home-image>img {
-      width: auto;
-      max-width: 100%;
-      object-fit: contain;
-      border-radius: 2rem;
-      display: block;
 }
 
 @media(max-width: 520px) {
       #home {
             padding: 0;
-            margin: 0;
-            flex-direction: column;
-            height: 100%;
       }
 
-      #home>* {
-            width: 100%;
-            max-width: 100%;
-
-      }
-
-      #home-text {
-            padding: 0 2rem;
-            z-index: 1;
-      }
-
-      #home-text>h2 {
-            margin-top: 1rem;
-      }
-
-      #home-image {
-            opacity: 40%;
-            margin-top: auto;
-            padding-top: 2rem;
-      }
-
-      #home-image>img {
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-      }
 }
 </style>

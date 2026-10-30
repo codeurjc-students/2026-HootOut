@@ -42,3 +42,10 @@ body {
 ul {
   list-style: none;
 }
+
+@theme {
+  --max-width-1\/4: 25%;
+  --max-width-1\/2: 50%;
+  --max-width-3\/4: 75%;
+  --tracking-widest: .15em;
+}
