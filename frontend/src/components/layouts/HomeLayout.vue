@@ -8,7 +8,7 @@
     id="home-layout"
     class="mx-auto my-0 grid h-screen max-h-screen w-screen grid-rows-[5rem_1fr]"
   >
-    <nav id="home-navbar" class="background-primary flex max-h-20 content-between items-center">
+    <nav class="background-primary flex max-h-20 content-between items-center px-[10vw]">
       <RouterLink to="/" class="pointer">
         <img id="home-navbar-logo" class="h-10" :src="navbarLogo" alt="HootOutLogo" />
       </RouterLink>
@@ -23,9 +23,3 @@
     </section>
   </div>
 </template>
-
-<style lang="css">
-  #home-navbar {
-    padding: 0 10vw;
-  }
-</style>

@@ -46,19 +46,23 @@
 </script>
 
 <template>
-  <div class="channel-list">
+  <div class="overflow-y-auto">
     <div
       v-for="channel in channels"
-      class="channel-name-row pointer"
+      class="channel-name-row pointer hover:background-light border-bottom-1 flex items-center justify-between px-4"
       :class="{ 'background-light': channel.id == currentChatChannel?.id }"
       :key="channel.id"
     >
-      <div @click="selectChannel(channel)" class="channel-name">{{ channel.name }}</div>
+      <RouterLink
+        :to="{ name: 'channel', params: { serverId: currentServer.id, channelId: channel.id } }"
+        class="channel-name flex-1 py-2"
+        >{{ channel.name }}
+      </RouterLink>
 
       <button
         @click="openUpdateChannelModal(channel)"
         type="button"
-        class="inline-btn pointer material-symbols-sharp channel-settings"
+        class="inline-btn pointer material-symbols-sharp text-xl!"
       >
         settings
       </button>
@@ -77,28 +81,7 @@
 </template>
 
 <style>
-  .channel-list {
-    overflow-y: auto;
-  }
-
-  .channel-name-row {
-    padding: 0rem 1rem;
-    border-bottom: 1px solid rgb(var(--color-background-light));
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
   .channel-name-row:hover {
     background-color: rgb(var(--color-background-light));
-  }
-
-  .channel-name {
-    flex-grow: 1;
-    padding: 0.5rem 0;
-  }
-
-  .channel-settings {
-    font-size: 1.25rem;
   }
 </style>

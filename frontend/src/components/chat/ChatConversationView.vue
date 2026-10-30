@@ -12,24 +12,17 @@
   <div
     v-if="currentChatChannel"
     id="chat"
-    class="background-primary chat-conversation grid grid-rows-[auto_1fr_auto]"
+    class="background-primary chat-conversation grid grid-rows-[auto_1fr_auto] border-1"
   >
     <ChatInfo />
     <ChatMessages />
     <ChatMessageBar />
   </div>
-  <div v-else id="empty-chat" class="chat-conversation background-primary p-4">
-    Start a new chat
-  </div>
+  <div v-else class="chat-conversation background-primary border-1 p-4">Start a new chat</div>
 </template>
 
 <style>
   .chat-conversation {
-    border: 1px solid rgb(var(--color-border));
     max-height: calc(100vh - var(--navbar-height));
-  }
-
-  #empty-chat {
-    border: 1px solid rgb(var(--color-border));
   }
 </style>

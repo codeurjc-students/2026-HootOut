@@ -42,7 +42,7 @@
 </script>
 
 <template>
-  <div class="add-channel">
+  <div class="add-channel border-bottom-1 flex justify-between p-4">
     <span>Channels</span>
     <button @click="openCreateChannelModal" type="button" class="inline-btn pointer">+</button>
   </div>
@@ -52,12 +52,3 @@
     </template>
   </Modal>
 </template>
-
-<style>
-  .add-channel {
-    padding: 1rem 1rem;
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid rgb(var(--color-background-light));
-  }
-</style>

@@ -10,7 +10,7 @@
 
 <template>
   <div class="server-channels-bar">
-    <div class="server-name p-4 text-xl font-semibold">
+    <div class="server-name border-bottom-1 p-4 text-xl font-semibold">
       <div>{{ currentServer?.name }}</div>
     </div>
 
@@ -18,9 +18,3 @@
     <ChannelsList />
   </div>
 </template>
-
-<style>
-  .server-name {
-    border-bottom: 1px solid rgb(var(--color-background-light));
-  }
-</style>

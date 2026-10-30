@@ -40,7 +40,7 @@
   <div class="file-preview-list flex w-full gap-4 overflow-auto p-4">
     <div
       v-for="file in files"
-      class="file-preview-entry background-soft pointer relative flex justify-center rounded-lg p-4"
+      class="file-preview-entry background-soft pointer relative flex justify-center rounded-lg border-1 p-4"
       :key="file.id"
       @click="openFile(file)"
     >
@@ -81,10 +81,6 @@
 <style>
   .file-preview-close-btn {
     color: rgb(var(--color-warning-light));
-  }
-
-  .file-preview-entry {
-    border: 1px solid rgb(var(--color-border));
   }
 
   .file-preview-entry:hover::before {

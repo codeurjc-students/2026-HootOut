@@ -48,7 +48,6 @@
 
 <style>
   .side-bar {
-    height: 100%;
     max-height: calc(100vh - var(--navbar-height));
   }
 

@@ -43,7 +43,7 @@
           {{ props.title }}
         </h2>
 
-        <div class="modal-options pointer ml-auto flex">
+        <div class="modal-options pointer flex md:ml-auto">
           <slot name="options"></slot>
           <div class="material-symbols-sharp modal-close" @click="close" aria-label="close">
             close
@@ -65,10 +65,7 @@
 
   @media (max-width: 520px) {
     .modal-options {
-      top: 0;
-      left: 0;
       order: -1;
-      margin: 0;
     }
 
     .modal-close {

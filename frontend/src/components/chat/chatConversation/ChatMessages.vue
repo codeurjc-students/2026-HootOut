@@ -24,11 +24,7 @@
 
 <template>
   <div id="messages-list" class="flex min-h-full flex-col-reverse overflow-y-auto px-4">
-    <div
-      class="message-entry pending opacity-25"
-      v-for="(message, index) in pendingMessagesList"
-      :key="message.id"
-    >
+    <div class="opacity-25" v-for="(message, index) in pendingMessagesList" :key="message.id">
       <div>{{ user.username }} --- {{ convertDate(message.createdAt!) }}</div>
       <div>
         {{ message.content }}
@@ -50,7 +46,7 @@
     <div
       @click="serverInfo.getNextMessages"
       v-if="lastPage?.next"
-      class="get-more-messages-btn background-soft pointer my-2"
+      class="get-more-messages-btn background-soft pointer my-2 rounded-sm border-1 px-4 py-2"
     >
       Get Older Messages
     </div>
@@ -58,12 +54,6 @@
 </template>
 
 <style>
-  .get-more-messages-btn {
-    padding: 0.5rem 1rem;
-    border-radius: var(--border-radius);
-    border: 1px solid rgb(var(--color-border));
-  }
-
   .get-more-messages-btn:hover {
     background-color: rgb(var(--color-background-light));
   }

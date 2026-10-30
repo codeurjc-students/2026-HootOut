@@ -63,17 +63,16 @@
 </script>
 
 <template>
-  <div class="chat-message-bar max-w-screen pt-2">
+  <div class="border-top-1 max-w-screen pt-2">
     <FilePreviewList
       v-if="attachments.length > 0"
       :files="attachments"
       :canRemove="true"
       @remove="removeFile"
     />
-    <div id="message-input-bar" class="m-4 mt-0">
+    <div class="m-4 mt-0">
       <div
-        id="message-box"
-        class="background-primary max-width-full m-0 flex h-12 items-center rounded-[10px] p-3 md:mx-auto md:max-w-[80%]"
+        class="background-primary max-width-full m-0 flex h-12 items-center rounded-[10px] border-1 p-3 md:mx-auto md:max-w-[80%]"
       >
         <div id="message-box-icons" class="flex items-center">
           <div class="inline-btn material-symbols-sharp pointer" @click="selectFile">add</div>
@@ -83,6 +82,7 @@
           v-model="message"
           type="text"
           id="message-input"
+          aria-label="Write a message"
           class="h-full grow! pl-4!"
           @keyup.enter="sendMessage"
           :placeholder="`Write a message to ${currentChatChannel?.name}`"
@@ -102,14 +102,6 @@
 </template>
 
 <style>
-  .chat-message-bar {
-    border-top: 1px solid rgb(var(--color-border));
-  }
-
-  #message-box {
-    border: 1px solid rgb(var(--color-border));
-  }
-
   #message-input {
     all: unset;
   }

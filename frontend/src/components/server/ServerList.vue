@@ -9,43 +9,21 @@
 
   const serverInfo = serverInfoStore()
   const { servers, currentServer } = storeToRefs(serverInfo)
-
-  function setCurrentServer(server: ChatServer) {
-    router.push({ name: 'server', params: { serverId: server.id } })
-  }
 </script>
 
 <template>
-  <div
+  <RouterLink
+    :to="{ name: 'server', params: { serverId: server.id } }"
     v-for="server in servers"
-    class="round-btn server-btn pointer"
-    @click="setCurrentServer(server)"
+    class="round-btn pointer mb-2 flex h-full justify-center self-center"
     :class="{ 'background-light': currentServer?.id == server.id }"
     :key="server.id"
     v-tooltip:right="server.name"
     :aria-label="server.name"
     :server-id="server.id"
   >
-    <span class="server-btn-text">
+    <span class="server-btn-text text- inline-block self-center text-center text-[2rem]">
       {{ server.name.charAt(0).toUpperCase() }}
     </span>
-  </div>
+  </RouterLink>
 </template>
-
-<style>
-  .server-btn {
-    height: 100%;
-    margin-bottom: 0.5rem;
-    align-self: center;
-    justify-content: center;
-    display: flex;
-  }
-
-  .server-btn-text {
-    display: inline-block;
-    text-align: center;
-    align-self: center;
-    font-size: 2rem;
-    transform: translateY(-2%);
-  }
-</style>

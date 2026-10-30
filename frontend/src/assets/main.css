@@ -42,6 +42,17 @@ ul {
   list-style: none;
 }
 
+.border-1 { 
+  border: 1px solid rgb(var(--color-border));
+}
+.border-top-1 {
+  border-top: 1px solid rgb(var(--color-border));
+}
+
+.border-bottom-1 {
+  border-bottom: 1px solid rgb(var(--color-border));
+}
+
 @theme {
   --max-width-1\/4: 25%;
   --max-width-1\/2: 50%;
