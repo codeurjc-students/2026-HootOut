@@ -29,9 +29,9 @@
 <template>
   <Teleport to="body">
     <div v-if="show" class="modal-background" @click="close"></div>
-    <div v-if="show" class="modal custom-form-wrapper p-2" :class="modalClass">
+    <div v-if="show" class="modal custom-form-wrapper p-8" :class="modalClass">
       <div class="modal-title">
-        <h2>
+        <h2 class="text-2xl md:mb-2">
           {{ props.title }}
         </h2>
 

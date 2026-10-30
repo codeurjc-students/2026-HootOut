@@ -80,8 +80,10 @@
 
 <template>
   <form class="custom-form" id="update-channel-form" novalidate @submit.prevent="onSubmit">
-    <p class="custom-form-row" :aria-label="props.server?.name">Server: {{ props.server?.name }}</p>
     <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
+    <p class="custom-form-row text-xl font-semibold" :aria-label="props.server?.name">
+      Server: {{ props.server?.name }}
+    </p>
     <div class="custom-form-row">
       <div class="custom-form-label-wrapper">
         <label for="server-name">Channel Name *</label>

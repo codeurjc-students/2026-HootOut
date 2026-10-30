@@ -40,14 +40,14 @@
   <div class="file-preview-list flex w-full gap-4 overflow-auto p-4">
     <div
       v-for="file in files"
-      class="file-preview-entry background-soft pointer"
+      class="file-preview-entry background-soft pointer relative flex justify-center rounded-lg p-4"
       :key="file.id"
       @click="openFile(file)"
     >
       <FilePreview :file="file" />
       <div
         v-if="canRemove"
-        class="material-symbols-sharp pointer inline-btn file-preview-close-btn"
+        class="material-symbols-sharp pointer inline-btn file-preview-close-btn absolute top-0 right-0"
         @click.stop="emit('remove', file)"
       >
         close
@@ -57,28 +57,34 @@
       :title="modalFileTitle"
       ref="view-file-modal"
       @close="closePreview"
-      modalClass="file-preview-modal"
+      modalClass="w-[80vw]! max-w-[80vw]! h-[80vh]! md:top-[10vh]!"
     >
       <template v-slot:options>
-        <a class="material-symbols-sharp file-download" :href="modalFile?.downloadUrl" download>
+        <a
+          class="material-symbols-sharp file-download px-2"
+          :href="modalFile?.downloadUrl"
+          download
+        >
           download
         </a>
       </template>
       <template v-slot:body>
-        <FilePreview :file="modalFile" filePreviewClass="modal-file-preview" />
+        <FilePreview
+          :file="modalFile"
+          filePreviewClass="h-full! max-h-[95%]! max-w-full! object-contain! justify-self-center"
+        />
       </template>
     </Modal>
   </div>
 </template>
 
 <style>
+  .file-preview-close-btn {
+    color: rgb(var(--color-warning-light));
+  }
+
   .file-preview-entry {
-    display: flex;
-    justify-content: center;
     border: 1px solid rgb(var(--color-border));
-    border-radius: 0.5rem;
-    padding: 1rem;
-    position: relative;
   }
 
   .file-preview-entry:hover::before {
@@ -90,29 +96,5 @@
     height: 100%;
     background-color: rgba(var(--color-background-light), 0.2);
     pointer-events: none;
-  }
-
-  .file-preview-modal {
-    width: 80vw;
-    max-width: 80vw;
-    height: 80vh;
-    top: 10vh;
-  }
-
-  .file-download {
-    padding: 0 0.25rem;
-  }
-
-  @media (max-width: 520px) {
-    .file-preview-modal {
-      top: 0;
-    }
-  }
-
-  .modal-file-preview {
-    height: 100%;
-    max-height: 95%;
-    max-width: 100%;
-    object-fit: contain;
   }
 </style>

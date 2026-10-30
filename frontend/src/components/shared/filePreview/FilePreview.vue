@@ -34,10 +34,10 @@
     <source :src="file.url" :type="file.contentType" />
   </audio>
 
-  <div v-else class="generic-file-preview" :class="filePreviewClass">
-    <div class="material-symbols-sharp">attach_file</div>
+  <div v-else class="generic-file-preview flex" :class="filePreviewClass">
+    <div class="material-symbols-sharp m-auto text-6xl">attach_file</div>
   </div>
-  <div class="file-preview-name">
+  <div class="file-preview-name absolute bottom-0 left-0 w-full py-1 text-center text-sm">
     {{
       file?.fileName && file?.fileName.length > 20
         ? file?.fileName.slice(0, 16) + '...'
@@ -55,24 +55,5 @@
     min-width: 128px;
     object-fit: cover;
     overflow: hidden;
-  }
-
-  .generic-file-preview {
-    display: flex;
-  }
-
-  .generic-file-preview > div {
-    margin: auto;
-    font-size: 64px;
-  }
-
-  .file-preview-name {
-    font-size: 0.9rem;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    padding: 0.2rem 0rem;
-    text-align: center;
-    width: 100%;
   }
 </style>
