@@ -13,9 +13,9 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    environment: 
+    environment:
       ASPNETCORE_ENVIRONMENT: Release
-      ASPNETCORE_URLS: http://+:8080  
+      ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-hootout};Username=${POSTGRES_USER:?Define POSTGRES_USER};Password=${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}"
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?Define RABBITMQ_USER}
@@ -25,7 +25,7 @@ services:
       S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?Define RUSTFS_ACCESS_KEY}
       S3_SECRET_KEY: ${RUSTFS_SECRET_KEY:?Define RUSTFS_SECRET_KEY}
       SSL_CERT_FILE: /certs/ca.pem
-      LOGS_FOLDER: /var/logs 
+      LOGS_FOLDER: /var/logs
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
       - ./keys:/app/keys:rw
@@ -33,7 +33,7 @@ services:
       - logs:/var/logs
 
   hootoutwebsockets:
-    image: hootoutwebsockets 
+    image: hootoutwebsockets
     deploy:
       replicas: 2
     build:
@@ -45,7 +45,7 @@ services:
       postgres:
         condition: service_healthy
       rabbitmq:
-        condition: service_healthy 
+        condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Release
       ASPNETCORE_URLS: http://+:8080
@@ -71,7 +71,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - pgdata-dev:/var/lib/postgresql
+      - pgdata:/var/lib/postgresql
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -79,7 +79,7 @@ services:
       timeout: 5s
       retries: 5
 
-  rabbitmq: 
+  rabbitmq:
     image: rabbitmq:4.3.6-management
     restart: unless-stopped
     ports:
@@ -95,19 +95,19 @@ services:
       - ../certs:/certs:ro
 
     healthcheck:
-      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
       retries: 3
       timeout: 5s
       interval: 30s
 
   rustfs:
     image: rustfs/rustfs:1.0.3
-    ports: 
+    ports:
       - "${RUSTFS_PORT}:${RUSTFS_PORT}"
       - "9001:9001"
     environment:
       RUSTFS_TLS_PATH: /opt/tls
-      RUSTFS_ACCESS_KEY:  ${RUSTFS_ACCESS_KEY}
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
       RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
       RUSTFS_ADDRESS: ":${RUSTFS_PORT}"
       RUSTFS_CONSOLE_ADDRESS: ":9001"
@@ -115,23 +115,23 @@ services:
     volumes:
       - ../certs/cert.pem:/opt/tls/rustfs_cert.pem:ro
       - ../certs/key.pem:/opt/tls/rustfs_key.pem:ro
-      - s3-data-dev:/data
-  
+      - s3-data:/data
+
   haproxy:
     image: haproxy:3.4
     restart: unless-stopped
     depends_on:
       - hootoutapi
       - hootoutwebsockets
-    volumes: 
+    volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
       - ../certs/hootout.pem:/usr/local/etc/haproxy/certs/hootout.pem:ro
     ports:
-    - ${HOOTOUTAPI_HTTPS_PORTS}:8443 
+      - ${HOOTOUTAPI_HTTPS_PORTS}:8443
 
 volumes:
-  pgdata-dev:
-  s3-data-dev:
+  pgdata:
+  s3-data:
   logs:
   rabbitmq:
     driver: local
