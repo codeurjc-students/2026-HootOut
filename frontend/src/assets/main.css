@@ -53,6 +53,18 @@ ul {
   border-bottom: 1px solid rgb(var(--color-border));
 }
 
+@utility background-primary {
+  background-color: rgb(var(--color-background));
+}
+
+@utility background-soft {
+  background-color: rgb(var(--color-background-soft));
+}
+
+@utility background-light {
+  background-color: rgb(var(--color-background-light));
+}
+
 @theme {
   --max-width-1\/4: 25%;
   --max-width-1\/2: 50%;

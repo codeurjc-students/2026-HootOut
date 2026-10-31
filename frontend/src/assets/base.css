@@ -223,19 +223,7 @@
   text-align: left;
   margin-top: 0.5rem;
   text-decoration: underline;
-}
-
-.background-primary {
-  background-color: rgb(var(--color-background));
-}
-
-.background-soft {
-  background-color: rgb(var(--color-background-soft));
-}
-
-.background-light {
-  background-color: rgb(var(--color-background-light));
-}
+} 
 
 .color-text {
   color: rgb(var(--color-text));

@@ -1,9 +1,6 @@
 <script setup lang="ts">
   import ChatSideBar from './ChatSideBar.vue'
   import { onMounted, ref, watch } from 'vue'
-  import { userInfoStore } from '@/stores/userInfo.ts'
-  import type { UserInfo } from '@/types/userInfo.ts'
-  import { get } from '@/services/common/api/ApiService.ts'
   import { useRoute } from 'vue-router'
   import { serverInfoStore } from '@/stores/serverInfo.ts'
   import ChatLeftBar from './ChatLeftBar.vue'
@@ -12,13 +9,9 @@
 
   const serverInfo = serverInfoStore()
 
-  const userInfo = userInfoStore()
   const route = useRoute()
 
   onMounted(async () => {
-    const user = await get<UserInfo>('users/me')
-    userInfo.setUser(user)
-
     await wsMessageService.tryReconnect()
   })
 

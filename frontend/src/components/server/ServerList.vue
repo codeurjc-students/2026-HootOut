@@ -1,11 +1,6 @@
 <script setup lang="ts">
   import { serverInfoStore } from '@/stores/serverInfo'
-  import type { ChatServer } from '@/types'
   import { storeToRefs } from 'pinia'
-  import { onMounted } from 'vue'
-  import { useRouter } from 'vue-router'
-
-  const router = useRouter()
 
   const serverInfo = serverInfoStore()
   const { servers, currentServer } = storeToRefs(serverInfo)
