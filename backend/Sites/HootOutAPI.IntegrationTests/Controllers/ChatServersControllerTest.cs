@@ -58,7 +58,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             Guid channelId = Guid.NewGuid();
             var response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get,
-                $"/api/v1/chatServers/all",
+                $"/api/v1/chatServers/joined",
                 auth?.AccessToken!,
                 ct
             );
@@ -96,7 +96,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             server.OwnerId.Should().Be(userId);
 
             response = await SendAuthorizeHttpRequest(
-                HttpMethod.Get, "/api/v1/chatServers/all", auth.AccessToken!, ct);
+                HttpMethod.Get, "/api/v1/chatServers/joined", auth.AccessToken!, ct);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var serverList = await response.Content.ReadFromJsonAsync<IEnumerable<ChatServerDto>>(ct);
@@ -139,7 +139,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             server.OwnerId.Should().Be(userId);
 
             response = await SendAuthorizeHttpRequest(
-                HttpMethod.Get, "/api/v1/chatServers/all", auth.AccessToken!, ct);
+                HttpMethod.Get, "/api/v1/chatServers/joined", auth.AccessToken!, ct);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var serverList = await response.Content.ReadFromJsonAsync<IEnumerable<ChatServerDto>>(ct);

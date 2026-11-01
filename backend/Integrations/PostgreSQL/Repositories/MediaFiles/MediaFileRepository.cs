@@ -1,19 +1,18 @@
 ﻿using Dapper;
 using HootOut.CommonDomain.Persistence;
 using HootOut.MediaFiles.Entities;
-using HootOut.MediaFiles.Search;
+using HootOut.MediaFiles.Repositories;
 
-namespace HootOut.PostgreSQL.Searchs.MediaFiles
+namespace HootOut.PostgreSQL.Repositories.MediaFiles
 {
-    public sealed class MediaFileSearch : IMediaFileSearch
+    public sealed class MediaFileRepository : IMediaFileRepository
     {
         private readonly IPersistenceProvider provider;
 
-        public MediaFileSearch(IPersistenceProvider provider)
+        public MediaFileRepository(IPersistenceProvider provider)
         {
             this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
-        }
-
+        } 
         private const string mediaFileColumns =
             """ "Id", "FileName", "Checksum", "ContentType", "BytesSize", "Url", "OwnerId", "CreatedAt", "ModifiedAt" """;
 

@@ -44,7 +44,7 @@ namespace HootOut.HootOutWebsockets
 
             fwd.KnownIPNetworks.Clear();
             fwd.KnownProxies.Clear();
-            app.UseForwardedHeaders(fwd); 
+            app.UseForwardedHeaders(fwd);
 
             if (!env.IsDevelopment())
                 app.UseHsts();

@@ -1,14 +1,14 @@
 ﻿using Dapper;
 using HootOut.ChatChannels.Entities;
-using HootOut.ChatChannels.Search;
+using HootOut.ChatChannels.Repositories;
 using HootOut.CommonDomain.Persistence;
 
-namespace HootOut.PostgreSQL.Searchs.ChatChannels
+namespace HootOut.PostgreSQL.Repositories.ChatChannels
 {
-    public class ChatChannelSearch : IChatChannelSearch
+    public class ChatChannelRepository : IChatChannelRepository
     {
         private IPersistenceProvider persistenceProvider;
-        public ChatChannelSearch(IPersistenceProvider persistenceProvider)
+        public ChatChannelRepository(IPersistenceProvider persistenceProvider)
         {
             this.persistenceProvider = persistenceProvider ?? throw new ArgumentNullException(nameof(persistenceProvider));
         }

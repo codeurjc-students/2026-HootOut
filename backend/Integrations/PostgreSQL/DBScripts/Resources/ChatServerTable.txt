@@ -14,7 +14,7 @@ end $$;
 -- CHAT SERVER TABLE ---------------------------------------------------------------
 ----------------------------------------------------------------------------------
 
-DO $$
+DO $$ 
 BEGIN
 if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
 				WHERE TABLE_SCHEMA = 'HootOut'
@@ -30,7 +30,51 @@ then
 		"ModifiedAt" timestamptz NOT NULL
 	);
 
+end if;  
+
+if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
+				WHERE TABLE_SCHEMA = 'HootOut'
+				AND   TABLE_NAME = 'ServerInvitation')
+then
+	CREATE TABLE "HootOut"."ServerInvitation"(
+		"Id" UUID NOT NULL PRIMARY KEY,
+		"ChatServerId" UUID NOT NULL REFERENCES "HootOut"."ChatServer"("Id"),
+		"InvitedBy" UUID NOT NULL REFERENCES "HootOut"."UserInfo"("Id"),
+		"UserId" UUID NOT NULL REFERENCES "HootOut"."UserInfo"("Id"),
+		"Status" smallint NOT NULL DEFAULT 0 CHECK ("Status" IN (0, 10, 20, 30)),
+		"CreatedAt" timestamptz NOT NULL,
+		"ModifiedAt" timestamptz NOT NULL
+	);
 end if;
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_server_invitation_pending
+ON "HootOut"."ServerInvitation" ("ChatServerId", "UserId")
+WHERE "Status" = 0;
+
+CREATE INDEX IF NOT EXISTS ix_server_invitation_invitee
+ON "HootOut"."ServerInvitation" ("UserId")
+WHERE "Status" = 0;
+
  
+
+if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
+				WHERE TABLE_SCHEMA = 'HootOut'
+				AND   TABLE_NAME = 'ServerMember')
+then
+	CREATE TABLE "HootOut"."ServerMember"(
+		"Id" UUID NOT NULL PRIMARY KEY , 
+		"ChatServerId" UUID NOT NULL REFERENCES "HootOut"."ChatServer"("Id"),
+		"UserId" UUID NOT NULL REFERENCES "HootOut"."UserInfo"("Id"), 
+		"InvitationId" UUID REFERENCES "HootOut"."ServerInvitation"("Id"),
+		"JoinedAt" timestamptz NOT NULL, 
+		"Deleted" boolean NOT NULL DEFAULT false,
+		"CreatedAt" timestamptz  NOT NULL,
+		"ModifiedAt" timestamptz NOT NULL
+	);
+
+end if; 
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_server_member
+ON "HootOut"."ServerMember" ("ChatServerId", "UserId");
 
 end $$;

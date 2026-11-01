@@ -6,14 +6,14 @@ using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.Contracts.Users.Services;
 using HootOut.Users.Entities;
 using HootOut.Users.Mappers;
-using HootOut.Users.Search;
+using HootOut.Users.Repositories;
 
 namespace HootOut.Authentication.Services
 {
     public class AuthenticationService : IAuthenticationService
     {
         private readonly IUserService userService;
-        private readonly IUserSearch userSearch;
+        private readonly IUserRepository userSearch;
         private readonly IPasswordHasherService passwordHasherService;
         private readonly IAuthTokenService authTokenService;
         private readonly IRefreshTokenService refreshTokenService;
@@ -21,7 +21,7 @@ namespace HootOut.Authentication.Services
 
         public AuthenticationService(
             IUserService userService,
-            IUserSearch userSearch,
+            IUserRepository userSearch,
             IPasswordHasherService passwordHasherService,
             IAuthTokenService authTokenService,
             IRefreshTokenService refreshTokenService,
@@ -62,15 +62,14 @@ namespace HootOut.Authentication.Services
         public async Task<AuthResponse> RegisterUserAsync(AuthRegistrationRequest request, CancellationToken ct = default)
         {
             //TO-DO proper user validation
-            var userName = request.Username?.Trim() ?? string.Empty;
-
+            request.Username = request.Username?.Trim() ?? string.Empty; 
             request.Validate();
 
             var passwordHash = passwordHasherService.HashPassword(request.Password!);
 
             var newUser = await userService.CreateUserAsync(new CreateUserRequest
             {
-                Username = userName,
+                Username = request.Username,
                 Email = request.Email!,
                 Password = passwordHash
             }, ct);

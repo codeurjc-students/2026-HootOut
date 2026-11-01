@@ -1,14 +1,14 @@
 ﻿using Dapper;
-using HootOut.ChatMessages.Searchs;
+using HootOut.ChatMessages.Repositories;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.ChatMessage.Dtos;
 
-namespace HootOut.PostgreSQL.Searchs.ChatMessages
+namespace HootOut.PostgreSQL.Repositories.ChatMessages
 {
-    public class ChatMessageAttachmentSearch : IChatMessageAttachmentSearch
+    public class ChatMessageAttachmentRepository : IChatMessageAttachmentRepository
     {
         private readonly IPersistenceProvider provider;
-        public ChatMessageAttachmentSearch(IPersistenceProvider provider)
+        public ChatMessageAttachmentRepository(IPersistenceProvider provider)
         {
             this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
         }

@@ -16,6 +16,7 @@
     <Project Path="Domains/ChatMessages/ChatMessages/ChatMessages.csproj" Id="e62a2fa4-c4d8-4c4e-93f9-86be8b5b576b" />
   </Folder>
   <Folder Name="/Domains/ChatServers/">
+    <Project Path="Domains/ChatServers/ChatServers.IntegrationTests/ChatServers.IntegrationTests.csproj" Id="98c3a47f-1c17-4015-9423-d0afaf703223" />
     <Project Path="Domains/ChatServers/ChatServers/ChatServers.csproj" Id="75a51ef4-2461-43e1-9e34-e0ed52f128ee" />
   </Folder>
   <Folder Name="/Domains/MediaFile/">

@@ -1,8 +1,8 @@
 ﻿using HootOut.Contracts.ChatMessage.Dtos;
 
-namespace HootOut.ChatMessages.Searchs
+namespace HootOut.ChatMessages.Repositories
 {
-    public interface IChatMessageAttachmentSearch
+    public interface IChatMessageAttachmentRepository
     {
         Task<IEnumerable<ChatMessageAttachmentDto>> GetChatMessageAttachmentDtos(Guid messageId, CancellationToken ct = default);
     }

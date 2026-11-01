@@ -22,12 +22,15 @@ namespace HootOut.HootOutAPI.Controllers
             this.chatServerService = chatServerService ?? throw new ArgumentNullException(nameof(chatServerService));
         }
 
-        [HttpGet("all")]
+        [HttpGet("joined")]
         public async Task<ActionResult<IEnumerable<ChatServerDto>>> GetChatServersAsync(CancellationToken ct)
         {
+            var userId = User.FindFirstValue("sub");
+            if (userId is null)
+                return Unauthorized();
             return await CommandLaunchHelper.LaunchAsync(
                logger,
-               async () => await chatServerService.GetAllChatServerDtosAsync(ct),
+               async () => await chatServerService.GetServersByUserAsync(Guid.Parse(userId), ct),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );
@@ -46,6 +49,22 @@ namespace HootOut.HootOutAPI.Controllers
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );
+        }
+
+        [HttpPost("inviteMember")]
+        public async Task<ActionResult> InviteServerMember(InviteServerMemberRequest request, CancellationToken ct)
+        {
+            var userId = User.FindFirstValue("sub");
+            if (userId is null)
+                return Unauthorized();
+
+            return await CommandLaunchHelper.LaunchAsync(
+               logger,
+               async () => await chatServerService.InviteMemberAsync(request, Guid.Parse(userId), ct),
+               BadRequest,
+               (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
+           );
+
         }
     }
 }

@@ -3,7 +3,6 @@ using HootOut.Contracts.ChatMessage.Services;
 using HootOut.Contracts.Common;
 using HootOut.HootOutAPI.Helpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace HootOut.HootOutAPI.Controllers
 {
@@ -32,6 +31,6 @@ namespace HootOut.HootOutAPI.Controllers
                 BadRequest,
                 (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
                 );
-        } 
+        }
     }
 }

@@ -1,15 +1,15 @@
 ﻿using Dapper;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Users.Entities;
-using HootOut.Users.Search;
+using HootOut.Users.Repositories;
 
-namespace HootOut.PostgreSQL.Searchs.Users
+namespace HootOut.PostgreSQL.Repositories.Users
 {
-    public class UserSearch : IUserSearch
+    public class UserRepository : IUserRepository
     {
         private IPersistenceProvider provider;
 
-        public UserSearch(IPersistenceProvider provider)
+        public UserRepository(IPersistenceProvider provider)
         {
             this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
         }
@@ -39,6 +39,15 @@ namespace HootOut.PostgreSQL.Searchs.Users
             return await conn.QuerySingleOrDefaultAsync<UserInfo>(new CommandDefinition(
                 $"""SELECT {UserColumns} FROM "HootOut"."UserInfo" where "Id" = @Id""",
                     new { Id = id }, cancellationToken: ct));
+        }
+
+        public async Task<UserInfo?> GetUserByUsernameAsync(string username, CancellationToken ct = default)
+        {
+            await using var conn = await provider.OpenConnectionAsync(ct);
+
+            return await conn.QuerySingleOrDefaultAsync<UserInfo>(new CommandDefinition(
+                $"""SELECT {UserColumns} FROM "HootOut"."UserInfo" where "Username" = @Username""",
+                    new { Username = username }, cancellationToken: ct));
         }
     }
 }

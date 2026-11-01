@@ -2,7 +2,7 @@
 
 namespace HootOut.Contracts.ChatServers.Dtos
 {
-    public class ChatServerDto
+    public sealed record ChatServerDto
     {
         public Guid Id { get; set; }
 

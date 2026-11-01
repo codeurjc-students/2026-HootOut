@@ -1,8 +1,8 @@
 ﻿using HootOut.ChatChannels.Entities;
 
-namespace HootOut.ChatChannels.Search
+namespace HootOut.ChatChannels.Repositories
 {
-    public interface IChatChannelSearch
+    public interface IChatChannelRepository
     {
         Task<ChatChannel?> GetChannelByIdAsync(Guid channelId, CancellationToken ct = default);
 

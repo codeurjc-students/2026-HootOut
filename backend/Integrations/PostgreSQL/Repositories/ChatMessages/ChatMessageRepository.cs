@@ -1,21 +1,20 @@
 ﻿using Dapper;
-using HootOut.ChatMessages.Searchs;
+using HootOut.ChatMessages.Repositories;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.Common;
 using HootOut.Contracts.Users.Dtos;
-using System.Data.Common;
 
-namespace HootOut.PostgreSQL.Searchs.ChatMessages
+namespace HootOut.PostgreSQL.Repositories.ChatMessages
 {
-    public class ChatMessageSearch : IChatMessageSearch
+    public class ChatMessageRepository : IChatMessageRepository
     {
         private const int maxPageSize = 50;
         private readonly IPersistenceProvider provider;
-        public ChatMessageSearch(IPersistenceProvider provider)
+        public ChatMessageRepository(IPersistenceProvider provider)
         {
             this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
-        } 
+        }
 
         public async Task<PageResult<ChatMessageDto>> SearchMessagesByChannelIdAsync(Guid channelId, Guid? next = null, int pageSize = 10, CancellationToken ct = default)
         {
@@ -65,7 +64,7 @@ namespace HootOut.PostgreSQL.Searchs.ChatMessages
                 {
                     ChannelId = channelId,
                     Next = next,
-                    Take = pageSize + 1          
+                    Take = pageSize + 1
                 }, cancellationToken: ct),
                 (message, author, attachment) =>
                 {
@@ -90,8 +89,8 @@ namespace HootOut.PostgreSQL.Searchs.ChatMessages
 
             var nextCursor = hasMore ? messages[^1].Id : (Guid?)null;
 
-            return new PageResult<ChatMessageDto> { Items =  messages, Next = nextCursor, PageSize = pageSize };
+            return new PageResult<ChatMessageDto> { Items = messages, Next = nextCursor, PageSize = pageSize };
 
         }
-    } 
+    }
 }

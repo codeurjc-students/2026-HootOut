@@ -1,21 +1,21 @@
 ﻿using Autofac;
-using HootOut.ChatChannels.Search;
-using HootOut.ChatMessages.Searchs;
-using HootOut.ChatServers.Searchs;
+using HootOut.ChatChannels.Repositories;
+using HootOut.ChatMessages.Repositories;
+using HootOut.ChatServers.Repositories;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Infraestructure.DI;
-using HootOut.MediaFiles.Search;
+using HootOut.MediaFiles.Repositories;
 using HootOut.PostgreSQL.Dapper;
 using HootOut.PostgreSQL.DBScripts;
-using HootOut.PostgreSQL.Searchs.ChatChannels;
-using HootOut.PostgreSQL.Searchs.ChatMessages;
-using HootOut.PostgreSQL.Searchs.ChatServers;
-using HootOut.PostgreSQL.Searchs.MediaFiles;
-using HootOut.PostgreSQL.Searchs.Users;
+using HootOut.PostgreSQL.Repositories.ChatChannels;
+using HootOut.PostgreSQL.Repositories.ChatMessages;
+using HootOut.PostgreSQL.Repositories.ChatServers;
+using HootOut.PostgreSQL.Repositories.MediaFiles;
+using HootOut.PostgreSQL.Repositories.Users;
 using HootOut.PostgreSQL.Services;
-using HootOut.Users.Search;
+using HootOut.Users.Repositories;
 using System.Reflection;
 
 namespace HootOut.PostgreSQL
@@ -39,12 +39,12 @@ namespace HootOut.PostgreSQL
         }
         private static void RegisterSearchs(ContainerBuilder builder)
         {
-            builder.RegisterType<UserSearch>().As<IUserSearch>().SingleInstance();
-            builder.RegisterType<ChatChannelSearch>().As<IChatChannelSearch>().SingleInstance();
-            builder.RegisterType<ChatMessageSearch>().As<IChatMessageSearch>().SingleInstance();
-            builder.RegisterType<ChatServerSearch>().As<IChatServerSearch>().SingleInstance();
-            builder.RegisterType<MediaFileSearch>().As<IMediaFileSearch>().SingleInstance();
-            builder.RegisterType<ChatMessageAttachmentSearch>().As<IChatMessageAttachmentSearch>().SingleInstance();
+            builder.RegisterType<UserRepository>().As<IUserRepository>().SingleInstance();
+            builder.RegisterType<ChatChannelRepository>().As<IChatChannelRepository>().SingleInstance();
+            builder.RegisterType<ChatMessageRepository>().As<IChatMessageRepository>().SingleInstance();
+            builder.RegisterType<ChatServerRepository>().As<IChatServerRepository>().SingleInstance();
+            builder.RegisterType<MediaFileRepository>().As<IMediaFileRepository>().SingleInstance();
+            builder.RegisterType<ChatMessageAttachmentRepository>().As<IChatMessageAttachmentRepository>().SingleInstance();
         }
     }
 }
