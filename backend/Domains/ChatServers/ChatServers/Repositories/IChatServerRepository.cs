@@ -5,7 +5,7 @@ using HootOut.Contracts.Common;
 namespace HootOut.ChatServers.Repositories
 {
     public interface IChatServerRepository
-    { 
+    {
         Task<IEnumerable<ChatServer>> GetServersByUserAsync(Guid userId, CancellationToken ct = default);
 
         Task<ServerMember?> GetServerMemberAsync(Guid serverId, Guid userId, CancellationToken ct = default);

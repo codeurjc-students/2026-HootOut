@@ -4,7 +4,7 @@ namespace HootOut.Contracts.ChatServers.Requests
 {
     public sealed record InviteServerMemberRequest
     {
-        public Guid ServerId { get; set; } = Guid.Empty;
+        public Guid ChatServerId { get; set; } = Guid.Empty;
         public string Username { get; set; } = string.Empty;
         public void Validate() => new InviteServerMemberRequestValidator().ValidateAndThrow(this);
     }
@@ -13,7 +13,7 @@ namespace HootOut.Contracts.ChatServers.Requests
     {
         public InviteServerMemberRequestValidator()
         {
-            RuleFor(x => x.ServerId).NotEmpty();
+            RuleFor(x => x.ChatServerId).NotEmpty();
             RuleFor(x => x.Username).NotEmpty().MinimumLength(5).MaximumLength(100);
         }
     }

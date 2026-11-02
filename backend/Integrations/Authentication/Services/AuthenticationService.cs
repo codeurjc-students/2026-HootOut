@@ -62,7 +62,7 @@ namespace HootOut.Authentication.Services
         public async Task<AuthResponse> RegisterUserAsync(AuthRegistrationRequest request, CancellationToken ct = default)
         {
             //TO-DO proper user validation
-            request.Username = request.Username?.Trim() ?? string.Empty; 
+            request.Username = request.Username?.Trim() ?? string.Empty;
             request.Validate();
 
             var passwordHash = passwordHasherService.HashPassword(request.Password!);

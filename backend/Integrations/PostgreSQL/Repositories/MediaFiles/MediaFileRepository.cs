@@ -12,7 +12,7 @@ namespace HootOut.PostgreSQL.Repositories.MediaFiles
         public MediaFileRepository(IPersistenceProvider provider)
         {
             this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
-        } 
+        }
         private const string mediaFileColumns =
             """ "Id", "FileName", "Checksum", "ContentType", "BytesSize", "Url", "OwnerId", "CreatedAt", "ModifiedAt" """;
 

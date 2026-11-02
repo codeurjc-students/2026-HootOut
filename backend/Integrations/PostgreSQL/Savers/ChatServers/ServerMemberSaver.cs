@@ -2,9 +2,6 @@
 using HootOut.ChatServers.Entities;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common.Saver;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.PostgreSQL.Savers.ChatServers
 {

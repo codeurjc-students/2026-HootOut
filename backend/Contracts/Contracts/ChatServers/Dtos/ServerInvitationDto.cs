@@ -1,7 +1,4 @@
 ﻿using HootOut.Contracts.ChatServers.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.Contracts.ChatServers.Dtos
 {

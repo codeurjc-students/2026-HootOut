@@ -1,30 +1,30 @@
-﻿using HootOut.ChatServers.Entities;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using HootOut.ChatServers.Entities;
 using HootOut.ChatServers.Mappers;
 using HootOut.ChatServers.Repositories;
 using HootOut.Contracts.ChatServers.Dtos;
+using HootOut.Contracts.ChatServers.Enums;
 using HootOut.Contracts.ChatServers.Requests;
 using HootOut.Contracts.ChatServers.Services;
-using HootOut.Contracts.Common.Saver;
-using FluentValidation;
-using FluentValidation.Results;
-using HootOut.Contracts.ChatServers.Enums;
-using HootOut.Contracts.Users.Services;
-using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.Common;
+using HootOut.Contracts.Common.Saver;
+using HootOut.Contracts.Users.Dtos;
+using HootOut.Contracts.Users.Services;
 
 namespace HootOut.ChatServers.Services
 {
     public sealed class ChatServerService : IChatServerService
     {
         private readonly ISaver<ChatServer> serverSaver;
-        private readonly ISaver<ServerMember> memberSaver; 
+        private readonly ISaver<ServerMember> memberSaver;
         private readonly ISaver<ServerInvitation> serverInvitationSaver;
         private readonly IChatServerRepository serverRepository;
         private readonly IUserService userService;
 
         public ChatServerService(
-            ISaver<ChatServer> serverSaver, 
-            ISaver<ServerMember> memberSaver, 
+            ISaver<ChatServer> serverSaver,
+            ISaver<ServerMember> memberSaver,
             ISaver<ServerInvitation> serverInvitationSaver,
             IChatServerRepository serverRepository,
             IUserService userService
@@ -53,12 +53,12 @@ namespace HootOut.ChatServers.Services
 
             var member = Persistable.CreateNew<ServerMember>();
             member.ChatServerId = newServer.Id;
-            member.UserId = ownerId; 
+            member.UserId = ownerId;
 
             await memberSaver.SaveAsync(member, ct);
 
             return newServer.ToDto();
-        } 
+        }
 
         public async Task<IEnumerable<ChatServerDto>> GetServersByUserAsync(Guid userId, CancellationToken ct = default)
         {
@@ -71,7 +71,7 @@ namespace HootOut.ChatServers.Services
         {
             await ValidateUserIsInServer(serverId, userId, ct);
 
-            return await serverRepository.GetServerMemberDtosAsync(serverId, next, pageSize , ct);
+            return await serverRepository.GetServerMemberDtosAsync(serverId, next, pageSize, ct);
         }
 
         public async Task<ServerInvitationDto> InviteMemberAsync(InviteServerMemberRequest request, Guid userId, CancellationToken ct = default)
@@ -79,7 +79,7 @@ namespace HootOut.ChatServers.Services
             ArgumentNullException.ThrowIfNull(request);
             request.Validate();
 
-            await ValidateUserIsInServer(request.ServerId, userId, ct);
+            await ValidateUserIsInServer(request.ChatServerId, userId, ct);
             UserDto? invitedUser = await userService.GetUserDtoByUsernameAsync(request.Username, ct);
 
             if (invitedUser == null)
@@ -87,15 +87,15 @@ namespace HootOut.ChatServers.Services
                 throw new ValidationException(new[] { new ValidationFailure("username", "Cannot find a user with this username") });
             }
 
-            await ValidateUserIsAlreadyAMember(request.ServerId, invitedUser.Id, ct);
+            await ValidateUserIsAlreadyAMember(request.ChatServerId, invitedUser.Id, ct);
 
             var serverInvitation = Persistable.CreateNew<ServerInvitation>();
-            serverInvitation.ChatServerId = request.ServerId;
+            serverInvitation.ChatServerId = request.ChatServerId;
             serverInvitation.UserId = invitedUser.Id;
             serverInvitation.InvitedBy = userId;
             serverInvitation.Status = ServerInvitationStatus.Pending;
 
-            await serverInvitationSaver.SaveAsync(serverInvitation, ct); 
+            await serverInvitationSaver.SaveAsync(serverInvitation, ct);
             return serverInvitation.ToDto();
         }
 
@@ -107,23 +107,23 @@ namespace HootOut.ChatServers.Services
             switch (request.Status)
             {
                 case ServerInvitationStatus.Accepted:
-                    return await AcceptInvitationAsync(request, userId, ct); 
+                    return await AcceptInvitationAsync(request, userId, ct);
 
                 case ServerInvitationStatus.Rejected:
-                    return await RejectServerInvitation(request, userId, ct); 
+                    return await RejectServerInvitation(request, userId, ct);
 
                 case ServerInvitationStatus.Revoked:
-                    return await RevokeServerInvitation(request, userId, ct); 
+                    return await RevokeServerInvitation(request, userId, ct);
                 default:
                     throw new ValidationException(new[] { new ValidationFailure("status", "Invalid invitation status") });
-            }  
+            }
         }
 
-        private async Task<Guid?> AcceptInvitationAsync (UpdateServerInvitationRequest request, Guid userId, CancellationToken ct)
+        private async Task<Guid?> AcceptInvitationAsync(UpdateServerInvitationRequest request, Guid userId, CancellationToken ct)
         {
             var invitation = await ValidateServerInvitation(request.Id, userId, ct);
 
-            return await serverRepository.AcceptServerInvitationAsync(invitation, ct); 
+            return await serverRepository.AcceptServerInvitationAsync(invitation, ct);
         }
 
         private async Task<Guid?> RejectServerInvitation(UpdateServerInvitationRequest request, Guid userId, CancellationToken ct)
@@ -146,7 +146,7 @@ namespace HootOut.ChatServers.Services
 
             ServerMember? member = await serverRepository.GetServerMemberAsync(invitation.ChatServerId, userId, ct);
             if (member == null)
-                throw new ValidationException(new[] { new ValidationFailure("member", "User is not a member of the server") });  
+                throw new ValidationException(new[] { new ValidationFailure("member", "User is not a member of the server") });
 
             invitation.Status = ServerInvitationStatus.Revoked;
             await serverInvitationSaver.SaveAsync(invitation, ct);
@@ -164,7 +164,7 @@ namespace HootOut.ChatServers.Services
             }
 
             await ValidateUserIsAlreadyAMember(invitation.ChatServerId, userId, ct);
-           
+
 
             return invitation;
         }
@@ -174,7 +174,7 @@ namespace HootOut.ChatServers.Services
             ServerMember? member = await serverRepository.GetServerMemberAsync(serverId, userId, ct);
             if (member == null)
             {
-                throw new ValidationException(new[] { new ValidationFailure("validation", "The user is not a member of the server")});
+                throw new ValidationException(new[] { new ValidationFailure("validation", "The user is not a member of the server") });
             }
             return;
         }
@@ -184,6 +184,6 @@ namespace HootOut.ChatServers.Services
             ServerMember? member = await serverRepository.GetServerMemberAsync(serverId, userId, ct);
             if (member != null)
                 throw new ValidationException(new[] { new ValidationFailure("member", "User is already a member") });
-        } 
+        }
     }
 }

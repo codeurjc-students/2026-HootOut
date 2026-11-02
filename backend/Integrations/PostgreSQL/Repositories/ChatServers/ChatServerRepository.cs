@@ -4,9 +4,7 @@ using HootOut.ChatServers.Repositories;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.ChatServers.Dtos;
 using HootOut.Contracts.ChatServers.Enums;
-using HootOut.Contracts.ChatServers.Requests;
 using HootOut.Contracts.Common;
-using HootOut.Contracts.Common.Saver;
 
 namespace HootOut.PostgreSQL.Repositories.ChatServers
 {
@@ -115,8 +113,8 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
         public async Task<PageResult<ServerMemberDto>> GetServerMemberDtosAsync(Guid serverId, Guid? next = null, int pageSize = 10, CancellationToken ct = default)
         {
             await using var conn = await provider.OpenConnectionAsync(ct);
-            var cursorFiler = next is null 
-                ? "" 
+            var cursorFiler = next is null
+                ? ""
                 : """
                 AND (member."CreatedAt", member."Id") < (
                         SELECT m."CreatedAt", m."Id"

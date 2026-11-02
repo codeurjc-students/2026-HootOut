@@ -39,7 +39,7 @@ namespace HootOut.Users.Services
         {
             if (Guid.Empty == id)
             {
-                throw new ValidationException(new[] { new ValidationFailure("userId", "Invalid Request") }); 
+                throw new ValidationException(new[] { new ValidationFailure("userId", "Invalid Request") });
             }
 
             return (await userRepository.GetUserByIdAsync(id, ct))?.ToDto();

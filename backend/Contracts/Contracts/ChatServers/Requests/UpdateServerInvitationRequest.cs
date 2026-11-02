@@ -1,8 +1,5 @@
 ﻿using FluentValidation;
 using HootOut.Contracts.ChatServers.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.Contracts.ChatServers.Requests
 {
@@ -10,14 +7,14 @@ namespace HootOut.Contracts.ChatServers.Requests
     {
         public Guid Id { get; set; }
         public ServerInvitationStatus Status { get; set; }
-        public void Validate() => new UpdateServerInvitationRequestValidator().ValidateAndThrow(this); 
+        public void Validate() => new UpdateServerInvitationRequestValidator().ValidateAndThrow(this);
     }
 
     public class UpdateServerInvitationRequestValidator : AbstractValidator<UpdateServerInvitationRequest>
     {
         public UpdateServerInvitationRequestValidator()
         {
-            RuleFor(x => x.Id).NotEmpty(); 
+            RuleFor(x => x.Id).NotEmpty();
             RuleFor(x => x.Status).NotEmpty().IsInEnum();
         }
     }

@@ -1,11 +1,8 @@
 ﻿using HootOut.ChatServers.Entities;
 using HootOut.Contracts.ChatServers.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.ChatServers.Mappers
-{ 
+{
     public static class ChatServerServerInvitationToDto
     {
         public static ServerInvitationDto ToDto(this ServerInvitation invitation)

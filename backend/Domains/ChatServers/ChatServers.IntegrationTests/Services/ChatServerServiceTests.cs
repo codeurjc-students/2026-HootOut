@@ -1,34 +1,23 @@
 ﻿using Autofac;
 using FluentAssertions;
 using FluentValidation;
-using HootOut.ChatChannels.Services;
-using HootOut.ChatServers.Entities;
 using HootOut.ChatServers.Repositories;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.CommonIntegrationTests.S3;
-using HootOut.Contracts.ChatChannels.Dtos;
-using HootOut.Contracts.ChatChannels.Requests;
-using HootOut.Contracts.ChatChannels.Services;
 using HootOut.Contracts.ChatServers.Dtos;
 using HootOut.Contracts.ChatServers.Enums;
 using HootOut.Contracts.ChatServers.Requests;
 using HootOut.Contracts.ChatServers.Services;
-using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.Contracts.Users.Services;
-using Microsoft.AspNetCore.Hosting.Server;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace HootOut.ChatServers.IntegrationTests.Services
 {
     [Collection("IntegrationTests")]
     public class ChatServerServiceTests : IClassFixture<PostgresTestContainer>, IClassFixture<TestS3Container>, IAsyncLifetime
-    { 
+    {
         private IContainer container;
         private ClearAllTables clearTables;
 
@@ -168,7 +157,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
 
             await chatServerService.InviteMemberAsync(new InviteServerMemberRequest
             {
-                ServerId = server.Id,
+                ChatServerId = server.Id,
                 Username = username2
             }, userId, ct);
 
@@ -199,7 +188,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
                 }, userId, ct);
             invitation.Should().NotBeNull();
@@ -247,7 +236,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
                 }, userId, ct);
 
@@ -255,7 +244,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             await Assert.ThrowsAnyAsync<Exception>(async () => await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
                 }, userId, ct));
 
@@ -288,7 +277,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
                 }, userId, ct);
 
@@ -304,12 +293,12 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             await Assert.ThrowsAsync<ValidationException>(async () => await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
                 }, userId, ct));
 
             // Validates Invitation is accepted
-            await ValidateServerInvitationAcceptedAsync(serverRepository, invitation, userId, userId2, server.Id, ct); 
+            await ValidateServerInvitationAcceptedAsync(serverRepository, invitation, userId, userId2, server.Id, ct);
         }
 
         [Fact]
@@ -329,12 +318,12 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
                 }, userId, ct);
 
             // Accepts other user Invitation
-            await Assert.ThrowsAsync<ValidationException> (async () => await chatServerService.UpdateServerInvitationAsync(
+            await Assert.ThrowsAsync<ValidationException>(async () => await chatServerService.UpdateServerInvitationAsync(
                 new UpdateServerInvitationRequest
                 {
                     Id = invitation.Id,
@@ -352,7 +341,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
                 }, userId2, ct);
 
             // Validates Invitation is accepted
-            await ValidateServerInvitationAcceptedAsync(serverRepository, invitation, userId, userId2, server.Id, ct); 
+            await ValidateServerInvitationAcceptedAsync(serverRepository, invitation, userId, userId2, server.Id, ct);
         }
 
         [Fact]
@@ -377,7 +366,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation2 = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
                 }, userId, ct);
 
@@ -386,7 +375,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation3 = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username3,
                 }, userId, ct);
 
@@ -424,7 +413,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
                 }, userId3, ct);
 
             // Validates Invitation 3 is accepted
-            await ValidateServerInvitationAcceptedAsync(serverRepository, invitation3, userId, userId3, server.Id, ct); 
+            await ValidateServerInvitationAcceptedAsync(serverRepository, invitation3, userId, userId3, server.Id, ct);
         }
 
         [Fact]
@@ -448,7 +437,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation2 = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
                 }, userId, ct);
 
@@ -465,7 +454,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation3 = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username3,
                 }, userId2, ct);
 
@@ -478,7 +467,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
                    Status = ServerInvitationStatus.Accepted
                }, userId3, ct);
 
-            await ValidateServerInvitationAcceptedAsync(serverRepository, invitation3, userId2, userId3, server.Id, ct); 
+            await ValidateServerInvitationAcceptedAsync(serverRepository, invitation3, userId2, userId3, server.Id, ct);
         }
 
         [Fact]
@@ -498,7 +487,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
                 }, userId, ct);
 
@@ -543,7 +532,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
                 }, userId, ct);
 
@@ -559,7 +548,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             await ValidateServerInvitationRejectedAsync(serverRepository, invitation, userId, userId2, server.Id, ct);
 
             var servers = await chatServerService.GetServersByUserAsync(userId2, ct);
-            servers.Should().BeEmpty(); 
+            servers.Should().BeEmpty();
         }
 
         [Fact]
@@ -579,7 +568,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
                 }, userId, ct);
 
@@ -598,7 +587,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation2 = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
                 }, userId, ct);
 
@@ -634,7 +623,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
                 }, userId, ct);
 
@@ -675,9 +664,9 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
-                }, userId, ct); 
+                }, userId, ct);
 
             // Accepts Invitation
             await chatServerService.UpdateServerInvitationAsync(
@@ -716,7 +705,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
                 }, userId, ct);
 
@@ -752,7 +741,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
                 }, userId, ct);
 
@@ -782,7 +771,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var invitation = await chatServerService.InviteMemberAsync(
                 new InviteServerMemberRequest
                 {
-                    ServerId = server.Id,
+                    ChatServerId = server.Id,
                     Username = username2,
                 }, userId, ct);
 
@@ -828,7 +817,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
 
             var member = await serverRepository.GetServerMemberAsync(serverId, userId, ct);
             member.Should().BeNull();
-        } 
+        }
         private static async Task ValidateServerInvitationRevokedAsync(IChatServerRepository serverRepository, ServerInvitationDto invitation, Guid invitedBy, Guid userId, Guid serverId, CancellationToken ct)
         {
             var dbInvitation = await serverRepository.GetServerInvitationByIdAsync(invitation.Id, ct);

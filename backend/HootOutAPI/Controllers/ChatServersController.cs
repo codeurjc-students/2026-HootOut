@@ -1,5 +1,4 @@
-﻿using Amazon.Runtime.Internal;
-using HootOut.Contracts.ChatServers.Dtos;
+﻿using HootOut.Contracts.ChatServers.Dtos;
 using HootOut.Contracts.ChatServers.Requests;
 using HootOut.Contracts.ChatServers.Services;
 using HootOut.Contracts.Common;
@@ -65,7 +64,7 @@ namespace HootOut.HootOutAPI.Controllers
                async () => await chatServerService.InviteMemberAsync(request, Guid.Parse(userId), ct),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
-           ); 
+           );
         }
 
         [HttpPut("invitation")]
@@ -82,7 +81,7 @@ namespace HootOut.HootOutAPI.Controllers
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );
         }
-         
+
         [HttpGet("{id:guid}/members")]
         public async Task<ActionResult<PageResult<ServerMemberDto>>> GetServerMembers([FromRoute] Guid id, [FromQuery] Guid? next, [FromQuery] int? pageSize, CancellationToken ct)
         {

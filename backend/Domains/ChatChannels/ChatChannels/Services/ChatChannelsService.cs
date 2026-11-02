@@ -37,7 +37,7 @@ namespace HootOut.ChatChannels.Services
 
         public async Task<IEnumerable<ChatChannelDto>> GetChannelsByServerIdAsync(Guid serverId, CancellationToken ct = default)
         {
-            return  (await search.GetChannelsByServerId(serverId, ct)).Select(x => x.ToDto());
+            return (await search.GetChannelsByServerId(serverId, ct)).Select(x => x.ToDto());
         }
 
         public async Task<ChatChannelDto> UpdateChatChannelAsync(UpdateChatChannelRequest request, CancellationToken ct = default)
@@ -59,7 +59,7 @@ namespace HootOut.ChatChannels.Services
             ChatChannel? channel = await search.GetChannelByIdAsync(channelId, ct); // TO-DO Check 
             if (channel == null)
             {
-                throw new ValidationException(new[] { new ValidationFailure("channel", "Channel not found") }); 
+                throw new ValidationException(new[] { new ValidationFailure("channel", "Channel not found") });
             }
 
             await saver.DeleteAsync(channel, ct);

@@ -2,22 +2,20 @@
 using HootOut.ChatServers.Entities;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common.Saver;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.PostgreSQL.Savers.ChatServers
 {
-    public class ServerInvitationSaver: ISaver<ServerInvitation>
+    public class ServerInvitationSaver : ISaver<ServerInvitation>
     {
-        private readonly IPersistenceProvider provider; 
+        private readonly IPersistenceProvider provider;
 
         public ServerInvitationSaver(IPersistenceProvider provider)
         {
             this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
         }
 
-        public async Task SaveAsync(ServerInvitation item, CancellationToken ct = default) { 
+        public async Task SaveAsync(ServerInvitation item, CancellationToken ct = default)
+        {
             await using var conn = await provider.OpenConnectionAsync(ct);
             await using var tx = await conn.BeginTransactionAsync(ct);
 
@@ -38,7 +36,7 @@ namespace HootOut.PostgreSQL.Savers.ChatServers
             {
                 var msg = $"Error while trying to save server invitation {item.Id}";
                 throw new Exception(msg, ex);
-            } 
-        } 
+            }
+        }
     }
 }

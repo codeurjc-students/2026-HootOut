@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using HootOut.ChatMessages.Entities;
+﻿using HootOut.ChatMessages.Entities;
 using HootOut.ChatMessages.Mappers;
 using HootOut.ChatMessages.Repositories;
 using HootOut.Contracts.ChatMessage.Dtos;
