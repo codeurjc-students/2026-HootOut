@@ -30,7 +30,7 @@
   <Teleport to="body">
     <div
       v-if="show"
-      class="modal-background background-primary fixed top-0 left-0 z-990 h-screen w-screen opacity-50"
+      class="modal-background fixed top-0 left-0 z-990 h-screen w-screen background-primary opacity-50"
       @click="close"
     ></div>
     <div

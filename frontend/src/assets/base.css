@@ -1,4 +1,4 @@
-/* color palette from <https://github.com/vuejs/theme> */
+
 :root {
   --c-white: 255, 255, 255;
   --c-white-soft: 248, 248, 248;
@@ -223,7 +223,7 @@
   text-align: left;
   margin-top: 0.5rem;
   text-decoration: underline;
-} 
+}
 
 .color-text {
   color: rgb(var(--color-text));

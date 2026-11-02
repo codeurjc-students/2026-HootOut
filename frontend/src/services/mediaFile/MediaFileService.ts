@@ -8,7 +8,7 @@ const MediaFileService = {
     const formData = new FormData()
     formData.append('file', file)
 
-    return post('files', formData)
+    return await post('files', formData)
   },
 }
 

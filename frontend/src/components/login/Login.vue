@@ -37,7 +37,7 @@
 </script>
 
 <template>
-  <section id="login" class="background-soft h-full w-full p-0 md:pt-20">
+  <section id="login" class="h-full w-full background-soft p-0 md:pt-20">
     <div class="custom-form-wrapper background-primary">
       <h1 class="text-3xl">Welcome Back!</h1>
       <form class="custom-form" id="login-form" novalidate @submit.prevent="onSubmit">

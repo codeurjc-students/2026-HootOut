@@ -13,3 +13,38 @@ export interface CreateChatServerRequest {
   name: string
   description: string
 }
+
+export enum ServerInvitationStatus {
+  Pending = 0,
+  Accepted = 10,
+  Rejected = 20,
+  Revoked = 30,
+}
+
+export interface InviteServerMemberRequest {
+  chatServerId: string
+  username: string
+}
+
+export interface UpdateServerInvitationRequest {
+  id: string
+  status: ServerInvitationStatus
+}
+
+export interface ServerInvitation {
+  id: string
+  chatServerId: string
+  chatServerName: string
+  userId: string
+  username: string
+  status: ServerInvitationStatus
+  createdAt: string
+  modifiedAt: string
+}
+
+export interface ServerMember {
+  id: string
+  username: string
+  userId: string
+  createdAt: string
+}

@@ -49,7 +49,7 @@
   <div class="overflow-y-auto">
     <div
       v-for="channel in channels"
-      class="channel-name-row pointer hover:background-light border-bottom-1 flex items-center justify-between px-4"
+      class="channel-name-row pointer border-bottom-1 flex items-center justify-between px-4 hover:background-light"
       :class="{ 'background-light': channel.id == currentChatChannel?.id }"
       :key="channel.id"
     >
@@ -79,9 +79,3 @@
     </template>
   </Modal>
 </template>
-
-<style>
-  .channel-name-row:hover {
-    background-color: rgb(var(--color-background-light));
-  }
-</style>

@@ -7,7 +7,7 @@ const ChatMessageService = {
     next: string | undefined = undefined,
     pageSize: number = 20
   ): Promise<PageResult<ChatMessage>> {
-    return get('chatMessages/channelMessages', { channelId, next, pageSize })
+    return await get('chatMessages/channelMessages', { channelId, next, pageSize })
   },
 }
 

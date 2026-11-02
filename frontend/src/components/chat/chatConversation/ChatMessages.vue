@@ -46,7 +46,7 @@
     <div
       @click="serverInfo.getNextMessages"
       v-if="lastPage?.next"
-      class="get-more-messages-btn background-soft pointer my-2 rounded-sm border-1 px-4 py-2"
+      class="get-more-messages-btn pointer my-2 rounded-sm border-1 background-soft px-4 py-2"
     >
       Get Older Messages
     </div>

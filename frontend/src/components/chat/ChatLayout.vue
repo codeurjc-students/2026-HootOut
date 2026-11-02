@@ -20,12 +20,10 @@
   watch(
     () => route.params.serverId,
     async (newId, oldId) => {
-      if (serverInfo.servers.length == 0) {
-        await serverInfo.getChatServers()
-      }
-
       if (newId) {
         await serverInfo.setCurrentServer(newId as string)
+      } else {
+        serverInfo.setCurrentServer('')
       }
 
       if (route.params.channelId) {
@@ -56,7 +54,7 @@
   <section class="chat-layout grid grid-cols-[100px_300px_1fr]" :class="mobileClass">
     <ChatSideBar class="chat-side-bar" :class="mobileClass" />
     <ChatLeftBar
-      class="background-soft chat-left-bar grid grid-rows-[auto_auto_1fr] rounded-l-[30px] max-sm:rounded-[30px]"
+      class="chat-left-bar grid grid-rows-[auto_auto_1fr] rounded-l-[30px] background-soft max-sm:rounded-[30px]"
       :class="mobileClass"
     />
     <ChatConversationView :class="mobileClass" />

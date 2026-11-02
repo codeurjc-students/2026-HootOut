@@ -16,7 +16,7 @@
 </script>
 
 <template>
-  <div class="chat-info background-light flex px-4 py-2">
+  <div class="chat-info flex background-light px-4 py-2">
     <div class="material-symbols-sharp inline-block pr-2 md:hidden!" @click="goToChannelList">
       chevron_left
     </div>

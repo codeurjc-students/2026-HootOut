@@ -1,9 +1,14 @@
 <script setup lang="ts">
   import { serverInfoStore } from '@/stores/serverInfo'
   import { storeToRefs } from 'pinia'
+  import { onMounted } from 'vue'
 
   const serverInfo = serverInfoStore()
   const { servers, currentServer } = storeToRefs(serverInfo)
+
+  onMounted(async () => {
+    await serverInfo.getChatServers()
+  })
 </script>
 
 <template>
