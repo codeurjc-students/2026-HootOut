@@ -28,8 +28,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
 {
     [Collection("IntegrationTests")]
     public class ChatServerServiceTests : IClassFixture<PostgresTestContainer>, IClassFixture<TestS3Container>, IAsyncLifetime
-    {
-
+    { 
         private IContainer container;
         private ClearAllTables clearTables;
 
@@ -800,7 +799,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
 
         /* Pending revoked edge test cases*/
 
-        private async Task ValidateServerInvitationAcceptedAsync(IChatServerRepository serverRepository, ServerInvitationDto invitation, Guid invitedBy, Guid userId, Guid serverId, CancellationToken ct)
+        private static async Task ValidateServerInvitationAcceptedAsync(IChatServerRepository serverRepository, ServerInvitationDto invitation, Guid invitedBy, Guid userId, Guid serverId, CancellationToken ct)
         {
             var dbInvitation = await serverRepository.GetServerInvitationByIdAsync(invitation.Id, ct);
             dbInvitation.Should().NotBeNull();
@@ -817,7 +816,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             member.InvitationId.Should().Be(invitation.Id);
         }
 
-        private async Task ValidateServerInvitationRejectedAsync(IChatServerRepository serverRepository, ServerInvitationDto invitation, Guid invitedBy, Guid userId, Guid serverId, CancellationToken ct)
+        private static async Task ValidateServerInvitationRejectedAsync(IChatServerRepository serverRepository, ServerInvitationDto invitation, Guid invitedBy, Guid userId, Guid serverId, CancellationToken ct)
         {
             var dbInvitation = await serverRepository.GetServerInvitationByIdAsync(invitation.Id, ct);
             dbInvitation.Should().NotBeNull();
@@ -830,7 +829,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var member = await serverRepository.GetServerMemberAsync(serverId, userId, ct);
             member.Should().BeNull();
         } 
-        private async Task ValidateServerInvitationRevokedAsync(IChatServerRepository serverRepository, ServerInvitationDto invitation, Guid invitedBy, Guid userId, Guid serverId, CancellationToken ct)
+        private static async Task ValidateServerInvitationRevokedAsync(IChatServerRepository serverRepository, ServerInvitationDto invitation, Guid invitedBy, Guid userId, Guid serverId, CancellationToken ct)
         {
             var dbInvitation = await serverRepository.GetServerInvitationByIdAsync(invitation.Id, ct);
             dbInvitation.Should().NotBeNull();
@@ -844,7 +843,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             member.Should().BeNull();
         }
 
-        private async Task ValidateServerInvitationPendingAsync(IChatServerRepository serverRepository, ServerInvitationDto invitation, Guid invitedBy, Guid userId, Guid serverId, CancellationToken ct)
+        private static async Task ValidateServerInvitationPendingAsync(IChatServerRepository serverRepository, ServerInvitationDto invitation, Guid invitedBy, Guid userId, Guid serverId, CancellationToken ct)
         {
             var dbInvitation = await serverRepository.GetServerInvitationByIdAsync(invitation.Id, ct);
             dbInvitation.Should().NotBeNull();

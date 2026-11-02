@@ -2,8 +2,10 @@
 using HootOut.ChatServers.Entities;
 using HootOut.ChatServers.Repositories;
 using HootOut.CommonDomain.Persistence;
+using HootOut.Contracts.ChatServers.Dtos;
 using HootOut.Contracts.ChatServers.Enums;
 using HootOut.Contracts.ChatServers.Requests;
+using HootOut.Contracts.Common;
 using HootOut.Contracts.Common.Saver;
 
 namespace HootOut.PostgreSQL.Repositories.ChatServers
@@ -20,7 +22,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
             """ server."Id", server."Name", server."Description", server."OwnerId", server."CreatedAt", server."ModifiedAt" """;
 
         private const string serverMemberColumns =
-            """ member."Id", member."ChatServerId", member."UserId", member."InvitationId", member."JoinedAt", member."CreatedAt", member."ModifiedAt" """;
+            """ member."Id", member."ChatServerId", member."UserId", member."InvitationId", member."CreatedAt", member."ModifiedAt" """;
         private const string serverInvitationColumns =
             """ invitation."Id", invitation."ChatServerId", invitation."InvitedBy", invitation."UserId", invitation."Status", invitation."CreatedAt", invitation."ModifiedAt" """;
 
@@ -86,8 +88,8 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                           AND "Status" = @Pending 
                         RETURNING "Id", "ChatServerId", "UserId"
                     )
-                    INSERT INTO "HootOut"."ServerMember" ("Id", "ChatServerId", "UserId", "InvitationId", "JoinedAt", "CreatedAt", "ModifiedAt")
-                    SELECT @NewMemberId, "ChatServerId", "UserId", "Id", @now, @now, @now
+                    INSERT INTO "HootOut"."ServerMember" ("Id", "ChatServerId", "UserId", "InvitationId", "CreatedAt", "ModifiedAt")
+                    SELECT @NewMemberId, "ChatServerId", "UserId", "Id", @now, @now
                     FROM accepted
                     ON CONFLICT ("ChatServerId", "UserId") DO NOTHING;
                     """;
@@ -108,6 +110,62 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                 }, cancellationToken: ct));
 
             return memberId;
+        }
+
+        public async Task<PageResult<ServerMemberDto>> GetServerMemberDtosAsync(Guid serverId, Guid? next = null, int pageSize = 10, CancellationToken ct = default)
+        {
+            await using var conn = await provider.OpenConnectionAsync(ct);
+            var cursorFiler = next is null 
+                ? "" 
+                : """
+                AND (member."CreatedAt", member."Id") < (
+                        SELECT m."CreatedAt", m."Id"
+                        FROM "HootOut"."ServerMember" m
+                        WHERE m."Id" = @Next)
+                """;
+
+            var sql = $"""
+                WITH page AS (
+                    SELECT 
+                        member."Id",
+                        member."UserId",
+                        member."CreatedAt"
+                    FROM "HootOut"."ServerMember" member 
+                    WHERE member."ChatServerId" = @ServerId 
+                    {cursorFiler}
+                    ORDER BY member."CreatedAt" DESC, member."Id" DESC
+                    LIMIT @Take
+                )
+                SELECT
+                    p."Id", 
+                    p."UserId",
+                    p."CreatedAt",
+                    u."Username"
+                FROM page p
+                INNER JOIN "HootOut"."UserInfo" u
+                    ON p."UserId" = u."Id"
+                ORDER BY p."CreatedAt" DESC, p."Id" DESC;
+                """;
+
+            var members = (await conn.QueryAsync<ServerMemberDto>(new CommandDefinition(sql, new
+            {
+                ServerId = serverId,
+                Next = next,
+                Take = pageSize + 1
+            }))).ToList();
+
+            var hasMore = members.Count > pageSize;
+            if (hasMore)
+                members.RemoveAt(members.Count - 1);
+
+            var nextCursor = hasMore ? members[^1].Id : (Guid?)null;
+
+            return new PageResult<ServerMemberDto>
+            {
+                Items = members,
+                Next = nextCursor,
+                PageSize = pageSize
+            };
         }
     }
 }

@@ -10,6 +10,7 @@ using FluentValidation.Results;
 using HootOut.Contracts.ChatServers.Enums;
 using HootOut.Contracts.Users.Services;
 using HootOut.Contracts.Users.Dtos;
+using HootOut.Contracts.Common;
 
 namespace HootOut.ChatServers.Services
 {
@@ -52,8 +53,7 @@ namespace HootOut.ChatServers.Services
 
             var member = Persistable.CreateNew<ServerMember>();
             member.ChatServerId = newServer.Id;
-            member.UserId = ownerId;
-            member.JoinedAt = member.CreatedAt;
+            member.UserId = ownerId; 
 
             await memberSaver.SaveAsync(member, ct);
 
@@ -65,6 +65,13 @@ namespace HootOut.ChatServers.Services
             return (await serverRepository.GetServersByUserAsync(userId, ct))
                 .Select(x => x.ToDto())
                 .ToList();
+        }
+
+        public async Task<PageResult<ServerMemberDto>> GetServerMemberDtosAsync(Guid serverId, Guid userId, Guid? next = null, int pageSize = 10, CancellationToken ct = default)
+        {
+            await ValidateUserIsInServer(serverId, userId, ct);
+
+            return await serverRepository.GetServerMemberDtosAsync(serverId, next, pageSize , ct);
         }
 
         public async Task<ServerInvitationDto> InviteMemberAsync(InviteServerMemberRequest request, Guid userId, CancellationToken ct = default)
@@ -126,7 +133,7 @@ namespace HootOut.ChatServers.Services
             invitation.Status = ServerInvitationStatus.Rejected;
             await serverInvitationSaver.SaveAsync(invitation, ct);
 
-            return invitation.Id;
+            return null;
         }
         private async Task<Guid?> RevokeServerInvitation(UpdateServerInvitationRequest request, Guid userId, CancellationToken ct)
         {
@@ -144,7 +151,7 @@ namespace HootOut.ChatServers.Services
             invitation.Status = ServerInvitationStatus.Revoked;
             await serverInvitationSaver.SaveAsync(invitation, ct);
 
-            return invitation.Id;
+            return null;
         }
 
         private async Task<ServerInvitation> ValidateServerInvitation(Guid invitationId, Guid userId, CancellationToken ct)
@@ -177,6 +184,6 @@ namespace HootOut.ChatServers.Services
             ServerMember? member = await serverRepository.GetServerMemberAsync(serverId, userId, ct);
             if (member != null)
                 throw new ValidationException(new[] { new ValidationFailure("member", "User is already a member") });
-        }
+        } 
     }
 }

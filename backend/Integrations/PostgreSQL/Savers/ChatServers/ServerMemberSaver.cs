@@ -26,8 +26,8 @@ namespace HootOut.PostgreSQL.Savers.ChatServers
             {
                 await conn.ExecuteAsync(
                    new CommandDefinition("""
-                INSERT INTO "HootOut"."ServerMember" ("Id", "ChatServerId", "UserId", "InvitationId", "JoinedAt", "CreatedAt", "ModifiedAt") 
-                   VALUES (@Id, @ChatServerId, @UserId, @InvitationId, @JoinedAt, @CreatedAt, @ModifiedAt) 
+                INSERT INTO "HootOut"."ServerMember" ("Id", "ChatServerId", "UserId", "InvitationId", "CreatedAt", "ModifiedAt") 
+                   VALUES (@Id, @ChatServerId, @UserId, @InvitationId, @CreatedAt, @ModifiedAt) 
                """, item, tx, cancellationToken: ct));
 
                 await tx.CommitAsync(ct);

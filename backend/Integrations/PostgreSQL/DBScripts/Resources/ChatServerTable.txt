@@ -66,7 +66,6 @@ then
 		"ChatServerId" UUID NOT NULL REFERENCES "HootOut"."ChatServer"("Id"),
 		"UserId" UUID NOT NULL REFERENCES "HootOut"."UserInfo"("Id"), 
 		"InvitationId" UUID REFERENCES "HootOut"."ServerInvitation"("Id"),
-		"JoinedAt" timestamptz NOT NULL, 
 		"Deleted" boolean NOT NULL DEFAULT false,
 		"CreatedAt" timestamptz  NOT NULL,
 		"ModifiedAt" timestamptz NOT NULL
@@ -76,5 +75,8 @@ end if;
 
 CREATE UNIQUE INDEX IF NOT EXISTS ux_server_member
 ON "HootOut"."ServerMember" ("ChatServerId", "UserId");
+
+CREATE INDEX IF NOT EXISTS ix_server_member_server_createdAt
+ON "HootOut"."ServerMember" ("ChatServerId", "CreatedAt" DESC, "Id" DESC);
 
 end $$;

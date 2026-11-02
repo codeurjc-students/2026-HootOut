@@ -5,8 +5,11 @@ using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.Contracts.Authentication.Responses;
 using HootOut.Contracts.ChatServers.Dtos;
+using HootOut.Contracts.ChatServers.Enums;
 using HootOut.Contracts.ChatServers.Requests;
+using HootOut.Contracts.Common;
 using HootOut.HootOutAPI.IntegrationTests.Common;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -166,6 +169,67 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var error = await response.Content.ReadFromJsonAsync<object[]>(ct);
             Console.Write(error?.ToString());
         }
+
+        [Fact]
+        public async Task InviteUserToServer_AcceptInvitation_ReturnsOk()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            await RegisterAsync(ct);
+
+            var loginResponse = await LoginAsync(DefaultEmail, DefaultPassword, ct);
+            var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);
+
+            Guid userId = GetUserIdFromAccessToken(auth?.AccessToken);
+            string description = "short description of the server";
+
+            var response = await SendAuthorizeHttpRequest(
+                HttpMethod.Post, "/api/v1/chatServers", new CreateChatServerRequest { Name = "test1234", Description = description }, auth!.AccessToken!, ct);
+            response.StatusCode.Should().Be(HttpStatusCode.OK); 
+
+            var server = await response.Content.ReadFromJsonAsync<ChatServerDto>(ct);
+            server.Should().NotBeNull();
+            server.Id.Should().NotBeEmpty();
+            var username2 = "Username 2";
+
+            var auth2 = await RegisterAsync(ct, username2, "email2@test.com");
+            Guid userId2 = GetUserIdFromAccessToken(auth2?.AccessToken);
+
+            var invitationResponse = await SendAuthorizeHttpRequest(
+                HttpMethod.Post, "/api/v1/chatServers/invitation", new InviteServerMemberRequest { ServerId = server.Id, Username = username2 }, auth!.AccessToken!, ct);
+
+            invitationResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var invitation = await invitationResponse.Content.ReadFromJsonAsync<ServerInvitationDto>(ct);
+            invitation.Should().NotBeNull();
+            invitation.UserId.Should().Be(userId2);
+            invitation.ChatServerId.Should().Be(server.Id);
+            invitation.Status.Should().Be(ServerInvitationStatus.Pending);
+
+            var invitationAcceptResponse = await SendAuthorizeHttpRequest(
+                HttpMethod.Put, "/api/v1/chatServers/invitation", new UpdateServerInvitationRequest { Id = invitation.Id, Status = ServerInvitationStatus.Accepted }, auth2!.AccessToken!, ct);
+
+            invitationAcceptResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var memberId = await invitationAcceptResponse.Content.ReadFromJsonAsync<Guid?>(ct);
+            memberId.Should().NotBeNull().And.NotBeEmpty();
+
+            var serversResponse = await SendAuthorizeHttpRequest(
+                HttpMethod.Get, "/api/v1/chatServers/joined", auth2.AccessToken!, ct);
+            serversResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var serverList = await serversResponse.Content.ReadFromJsonAsync<IEnumerable<ChatServerDto>>(ct);
+            serverList.Should().NotBeEmpty().And.HaveCount(1);
+
+            var serverMembers = await SendAuthorizeHttpRequest(
+                HttpMethod.Get, $"/api/v1/chatServers/{server.Id}/members", auth2.AccessToken!, ct);
+            serverMembers.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var membersPage = await serverMembers.Content.ReadFromJsonAsync<PageResult<ServerMemberDto>>(ct);
+            membersPage.Should().NotBeNull();
+            membersPage.Items.Should().HaveCount(2);
+            var member = membersPage.Items.Where(x => x.UserId == userId2);
+            member.Should().HaveCount(1);
+            member.FirstOrDefault()?.Id.Should().Be(memberId.Value);
+        } 
+
         public void Dispose()
         {
             container.Dispose();
