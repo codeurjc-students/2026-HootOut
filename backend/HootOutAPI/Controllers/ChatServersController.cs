@@ -96,5 +96,20 @@ namespace HootOut.HootOutAPI.Controllers
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );
         }
+
+        [HttpGet("{id:guid}")]
+        public async Task<ActionResult<ChatServerDto>> GetChatServer([FromRoute] Guid id, CancellationToken ct)
+        {
+            var userId = User.FindFirstValue("sub");
+            if (userId is null)
+                return Unauthorized();
+
+            return await CommandLaunchHelper.LaunchAsync(
+               logger,
+               async () => await chatServerService.GetServerDtoByIdAsync(id, Guid.Parse(userId), ct),
+               BadRequest,
+               (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
+           );
+        }
     }
 }

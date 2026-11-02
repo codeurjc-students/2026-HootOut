@@ -1,7 +1,9 @@
 ﻿using Dapper;
+using HootOut.ChatChannels.Entities;
 using HootOut.ChatServers.Entities;
 using HootOut.ChatServers.Repositories;
 using HootOut.CommonDomain.Persistence;
+using HootOut.Contracts.ChatChannels.Dtos;
 using HootOut.Contracts.ChatServers.Dtos;
 using HootOut.Contracts.ChatServers.Enums;
 using HootOut.Contracts.Common;
@@ -40,6 +42,35 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                 """,
                 new { UserId = userId },
                 cancellationToken: ct));
+        }
+
+        public async Task<ChatServerDto?> GetServerDtoByIdAsync(Guid serverId, CancellationToken ct)
+        {
+            await using var conn = await provider.OpenConnectionAsync(ct);
+            var sql = $"""
+                SELECT 
+                    {serverColumns},
+                    channel."Id", 
+                    channel."ChatServerId",
+                    channel."Name"
+                FROM "HootOut"."ChatServer" server
+                LEFT JOIN "HootOut"."ChatChannel" channel
+                    ON server."Id" = channel."ChatServerId" AND channel."Deleted" = FALSE
+                WHERE server."Id" = @ServerId AND server."Deleted" = FALSE 
+                """;
+
+            return (await conn.QueryAsync<ChatServerDto, ChatChannelDto?, ChatServerDto?>(new CommandDefinition(sql, new
+            {
+                ServerId = serverId
+            }, cancellationToken: ct),
+            (server, channel) =>
+            {
+                if (channel != null)
+                    server.Channels.Add(channel);
+                return server;
+            }, splitOn: "Id"
+            
+            )).FirstOrDefault();
         }
 
         public async Task<ServerMember?> GetServerMemberAsync(Guid serverId, Guid userId, CancellationToken ct = default)

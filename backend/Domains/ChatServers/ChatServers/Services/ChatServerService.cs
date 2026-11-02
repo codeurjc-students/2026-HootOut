@@ -67,6 +67,12 @@ namespace HootOut.ChatServers.Services
                 .ToList();
         }
 
+        public async Task<ChatServerDto?> GetServerDtoByIdAsync(Guid serverId, Guid userId, CancellationToken ct = default)
+        {
+            await ValidateUserIsInServer(serverId, userId, ct); 
+            return await serverRepository.GetServerDtoByIdAsync(serverId, ct);
+        } 
+
         public async Task<PageResult<ServerMemberDto>> GetServerMemberDtosAsync(Guid serverId, Guid userId, Guid? next = null, int pageSize = 10, CancellationToken ct = default)
         {
             await ValidateUserIsInServer(serverId, userId, ct);
