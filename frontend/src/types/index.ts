@@ -34,6 +34,23 @@ export interface ValidationErrorEntry {
 
 export interface PageResult<T> {
   items: T[]
-  next?: string | undefined
+  next?: string | null
   pageSize: number
+  total: number
 }
+
+export interface PageRequest extends Record<string, unknown> {
+  next?: string | null
+  descending: boolean
+  sortBy?: string | null
+  pageSize?: number | null
+}
+
+export interface TableHeader {
+  key: string
+  name: string
+  canSort?: boolean | undefined
+  default?: boolean | undefined
+}
+
+export interface TableItem extends Object {}

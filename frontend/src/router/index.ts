@@ -5,6 +5,8 @@ import ChatServerService from '@/services/chatServer/ChatServerService'
 import { serverInfoStore } from '@/stores/serverInfo'
 import ServerSettingsProfile from '@/components/server/settings/ServerSettingsProfile.vue'
 import ServerSettingsMember from '@/components/server/settings/ServerSettingsMember.vue'
+import ActiveMembers from '@/components/server/settings/Members/ActiveMembers.vue'
+import ServerInvitations from '@/components/server/settings/Members/ServerInvitations.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -78,6 +80,18 @@ const router = createRouter({
           path: 'members',
           name: 'serverMembers',
           component: ServerSettingsMember,
+          children: [
+            {
+              path: 'active',
+              name: 'serverActiveMembers',
+              component: ActiveMembers,
+            },
+            {
+              path: 'invitations',
+              name: 'serverInvitations',
+              component: ServerInvitations,
+            },
+          ],
         },
       ],
     },

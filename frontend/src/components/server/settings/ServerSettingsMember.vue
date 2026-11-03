@@ -1,33 +1,28 @@
 <script setup lang="ts">
-  import ChatServerService from '@/services/chatServer/ChatServerService'
-  import { serverInfoStore } from '@/stores/serverInfo'
-  import type { PageResult, ServerMember } from '@/types'
-  import { storeToRefs } from 'pinia'
-  import { onMounted, ref } from 'vue'
+  import { RouterLink, useRoute } from 'vue-router'
 
-  const { currentServer } = storeToRefs(serverInfoStore())
-  let currentPage: PageResult<ServerMember> | undefined = undefined
-  const members = ref<ServerMember[]>([])
-
-  onMounted(async () => {
-    if (!currentServer.value) return
-
-    currentPage = await ChatServerService.getServerMembers(currentServer.value?.id)
-    members.value = currentPage.items
-  })
+  const route = useRoute()
 </script>
 
 <template>
-  <table class="table-auto">
-    <thead>
-      <tr>
-        <th>User Name</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="member in members">
-        <td>{{ member.username }}</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="grid h-full grid-cols-[200px_1fr] border-1">
+    <div class="border-left-1 flex w-full flex-col">
+      <h2 class="border-bottom-1 mt-[1px] p-4 text-xl font-semibold">Server Members</h2>
+      <RouterLink
+        :to="{ name: 'serverActiveMembers' }"
+        class="pointer border-bottom-1 px-4 py-2 hover:background-light"
+        :class="route.name == 'serverActiveMembers' ? 'background-light' : ''"
+        >Active Members</RouterLink
+      >
+      <RouterLink
+        :to="{ name: 'serverInvitations' }"
+        class="pointer border-bottom-1 px-4 py-2 hover:background-light"
+        :class="route.name == 'serverInvitations' ? 'background-light' : ''"
+        >Server Invitations</RouterLink
+      >
+    </div>
+    <div class="h-full w-full background-soft">
+      <router-view />
+    </div>
+  </div>
 </template>

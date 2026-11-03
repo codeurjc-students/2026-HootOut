@@ -2,12 +2,13 @@ import type {
   ChatServer,
   CreateChatServerRequest,
   InviteServerMemberRequest,
+  PageRequest,
   PageResult,
   ServerInvitation,
   ServerMember,
   UpdateServerInvitationRequest,
 } from '@/types'
-import { get, post, put } from '../common/api/ApiService'
+import { get, post, put, type Query } from '../common/api/ApiService'
 
 const ChatServerService = {
   createNewServer: async function (request: CreateChatServerRequest): Promise<ChatServer> {
@@ -22,6 +23,10 @@ const ChatServerService = {
     return await get(`chatServers/${serverId}`)
   },
 
+  getServerInvitations: async function (serverId: string): Promise<PageResult<ServerInvitation>> {
+    return await get(`chatServers/${serverId}/invitations`)
+  },
+
   inviteUser: async function (request: InviteServerMemberRequest): Promise<ServerInvitation> {
     return await post('chatservers/invitation', request)
   },
@@ -34,9 +39,9 @@ const ChatServerService = {
 
   getServerMembers: async function (
     serverid: string,
-    next?: string
+    pageRequest: PageRequest
   ): Promise<PageResult<ServerMember>> {
-    return await get(`chatservers/${serverid}/members`, { next })
+    return await get(`chatservers/${serverid}/members`, pageRequest)
   },
 }
 

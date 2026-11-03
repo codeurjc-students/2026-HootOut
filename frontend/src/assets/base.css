@@ -62,8 +62,7 @@
   background-color: transparent;
   text-decoration: none rgb(var(--color-inverse-light)) solid;
   text-decoration-thickness: auto;
-  color: rgb(var(--color-text));
-  font-size: 1.5rem;
+  color: rgb(var(--color-text)); 
   transition: all 0.2s ease-in-out;
 }
 

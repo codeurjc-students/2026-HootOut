@@ -10,7 +10,7 @@
   const router = useRouter()
 
   const serverInfo = serverInfoStore()
-  const { channels, currentChatChannel, currentServer } = storeToRefs(serverInfo) as any
+  const { channels, currentChatChannel, currentServer } = storeToRefs(serverInfo)
 
   const channelToEdit = ref<ChatChannel>()
   const updateChannelModal = useTemplateRef('update-channel-form-modal')
@@ -18,7 +18,7 @@
   async function selectChannel(channel: ChatChannel) {
     router.push({
       name: 'channel',
-      params: { serverId: currentServer.id, channelId: channel.id },
+      params: { serverId: currentServer.value?.id, channelId: channel.id },
     })
   }
 
@@ -37,10 +37,12 @@
     updateChannelModal.value?.close()
     const channel = currentChatChannel.value
 
-    await serverInfo.fetchServerChannels(currentServer.value)
+    await serverInfo.fetchServerChannels(currentServer.value!, true)
 
     if (channel?.id != id) {
       serverInfo.setCurrentChatChannel(channel)
+    } else {
+      router.push({ name: 'server', params: { serverId: currentServer.value!.id } })
     }
   }
 </script>
@@ -54,7 +56,7 @@
       :key="channel.id"
     >
       <RouterLink
-        :to="{ name: 'channel', params: { serverId: currentServer.id, channelId: channel.id } }"
+        :to="{ name: 'channel', params: { serverId: currentServer!.id, channelId: channel.id } }"
         class="channel-name flex-1 py-2"
         >{{ channel.name }}
       </RouterLink>

@@ -121,7 +121,7 @@ export const serverInfoStore = defineStore('serverInfo', () => {
   }
 
   async function setCurrentServer(id: string): Promise<void> {
-    currentServer.value = servers.value.filter((x) => x.id == id).at(0)
+    currentServer.value = await ChatServerService.getServerById(id)
     if (currentServer?.value) await fetchServerChannels(currentServer.value)
   }
 
@@ -129,8 +129,13 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     currentServer.value = server
   }
 
-  async function fetchServerChannels(chatServer: ChatServer): Promise<void> {
-    const channels = await ChatChannelService.getChannelsByServerId(chatServer.id)
+  async function fetchServerChannels(
+    chatServer: ChatServer,
+    makeRequest: boolean = false
+  ): Promise<void> {
+    if (makeRequest)
+      currentServer.value!.channels = await ChatChannelService.getChannelsByServerId(chatServer.id)
+    const channels = currentServer.value?.channels ?? []
     clearChannels()
     setServerChannels(channels)
     setCurrentChatChannel(undefined)
