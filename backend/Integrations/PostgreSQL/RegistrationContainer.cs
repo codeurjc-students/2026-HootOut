@@ -45,6 +45,8 @@ namespace HootOut.PostgreSQL
             builder.RegisterType<ChatServerRepository>().As<IChatServerRepository>().SingleInstance();
             builder.RegisterType<MediaFileRepository>().As<IMediaFileRepository>().SingleInstance();
             builder.RegisterType<ChatMessageAttachmentRepository>().As<IChatMessageAttachmentRepository>().SingleInstance();
+            builder.RegisterType<ServerMemberRepository>().As<IServerMemberRepository>().SingleInstance();
+            builder.RegisterType<ServerInvitationRepository>().As<IServerInvitationRepository>().SingleInstance();
         }
     }
 }

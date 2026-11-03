@@ -52,6 +52,29 @@ namespace HootOut.HootOutAPI.Controllers
            );
         }
 
+        [HttpGet("{id:guid}/invitations")]
+        public async Task<ActionResult<ChatServerDto>> GetServerInvitations([FromRoute] Guid id, [FromQuery] string? sortBy, [FromQuery] Guid? next, [FromQuery] bool descending, [FromQuery] int pageSize, CancellationToken ct)
+        {
+            var userId = User.FindFirstValue("sub");
+            if (userId is null)
+                return Unauthorized();
+
+            var page = new PageRequest
+            {
+                Next = next,
+                Descending = descending,
+                PageSize = pageSize,
+                SortBy = sortBy
+            };
+
+            return await CommandLaunchHelper.LaunchAsync(
+               logger,
+               async () => await chatServerService.GetServerInvitationsAsync(id, Guid.Parse(userId), page, ct),
+               BadRequest,
+               (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
+           );
+        }
+
         [HttpPost("invitation")]
         public async Task<ActionResult> InviteServerMember(InviteServerMemberRequest request, CancellationToken ct)
         {
@@ -83,15 +106,23 @@ namespace HootOut.HootOutAPI.Controllers
         }
 
         [HttpGet("{id:guid}/members")]
-        public async Task<ActionResult<PageResult<ServerMemberDto>>> GetServerMembers([FromRoute] Guid id, [FromQuery] Guid? next, [FromQuery] int? pageSize, CancellationToken ct)
+        public async Task<ActionResult<PageResult<ServerMemberDto>>> GetServerMembers([FromRoute] Guid id, [FromQuery] string? sortBy, [FromQuery] Guid? next, [FromQuery] bool descending, [FromQuery] int? pageSize , CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
             if (userId is null)
                 return Unauthorized();
 
+            var page = new PageRequest
+            {
+                Next = next,
+                Descending = descending,
+                PageSize = pageSize ?? 10,
+                SortBy = sortBy
+            };
+
             return await CommandLaunchHelper.LaunchAsync(
                logger,
-               async () => await chatServerService.GetServerMemberDtosAsync(id, Guid.Parse(userId), next, pageSize ?? 10, ct),
+               async () => await chatServerService.GetServerMemberDtosAsync(id, Guid.Parse(userId), page, ct),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );

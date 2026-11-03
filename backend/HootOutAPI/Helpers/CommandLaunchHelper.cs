@@ -73,7 +73,7 @@ namespace HootOut.HootOutAPI.Helpers
                 if (logger.IsEnabled(LogLevel.Information))
                     logger.LogInformation("Validation Exception: {Message}", ex.Message);
                 return badRequest(ex.Errors);
-            } 
+            }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Internal Server Error {Message}", ex.Message);

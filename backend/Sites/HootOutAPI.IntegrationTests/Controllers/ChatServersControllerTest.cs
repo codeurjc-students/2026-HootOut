@@ -9,7 +9,6 @@ using HootOut.Contracts.ChatServers.Enums;
 using HootOut.Contracts.ChatServers.Requests;
 using HootOut.Contracts.Common;
 using HootOut.HootOutAPI.IntegrationTests.Common;
-using Microsoft.AspNetCore.Hosting.Server;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -219,7 +218,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             serverList.Should().NotBeEmpty().And.HaveCount(1);
 
             var serverMembers = await SendAuthorizeHttpRequest(
-                HttpMethod.Get, $"/api/v1/chatServers/{server.Id}/members", auth2.AccessToken!, ct);
+                HttpMethod.Get, $"/api/v1/chatServers/{server.Id}/members?pageSize=20", auth2.AccessToken!, ct);
             serverMembers.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var membersPage = await serverMembers.Content.ReadFromJsonAsync<PageResult<ServerMemberDto>>(ct);
@@ -267,7 +266,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var invitationAcceptResponse = await SendAuthorizeHttpRequest(
                 HttpMethod.Put, "/api/v1/chatServers/invitation", new UpdateServerInvitationRequest { Id = invitation.Id, Status = ServerInvitationStatus.Rejected }, auth2!.AccessToken!, ct);
 
-            invitationAcceptResponse.StatusCode.Should().Be(HttpStatusCode.NoContent); 
+            invitationAcceptResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
             var serversResponse = await SendAuthorizeHttpRequest(
                 HttpMethod.Get, "/api/v1/chatServers/joined", auth2.AccessToken!, ct);
@@ -294,7 +293,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             await RegisterAsync(ct);
 
             var loginResponse = await LoginAsync(DefaultEmail, DefaultPassword, ct);
-            var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);  
+            var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);
             Guid userId = GetUserIdFromAccessToken(auth?.AccessToken);
 
             var username2 = "Username 2";

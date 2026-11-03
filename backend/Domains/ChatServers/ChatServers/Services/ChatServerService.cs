@@ -20,6 +20,8 @@ namespace HootOut.ChatServers.Services
         private readonly ISaver<ServerMember> memberSaver;
         private readonly ISaver<ServerInvitation> serverInvitationSaver;
         private readonly IChatServerRepository serverRepository;
+        private readonly IServerMemberRepository memberRepository;
+        private readonly IServerInvitationRepository invitationRepository;
         private readonly IUserService userService;
 
         public ChatServerService(
@@ -27,7 +29,9 @@ namespace HootOut.ChatServers.Services
             ISaver<ServerMember> memberSaver,
             ISaver<ServerInvitation> serverInvitationSaver,
             IChatServerRepository serverRepository,
-            IUserService userService
+            IUserService userService,
+            IServerInvitationRepository invitationRepository,
+            IServerMemberRepository memberRepository
             )
         {
             this.serverSaver = serverSaver ?? throw new ArgumentNullException(nameof(serverSaver));
@@ -35,6 +39,8 @@ namespace HootOut.ChatServers.Services
             this.memberSaver = memberSaver ?? throw new ArgumentNullException(nameof(memberSaver));
             this.serverInvitationSaver = serverInvitationSaver ?? throw new ArgumentNullException(nameof(serverInvitationSaver));
             this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            this.invitationRepository = invitationRepository ?? throw new ArgumentNullException(nameof(invitationRepository));
+            this.memberRepository = memberRepository ?? throw new ArgumentNullException(nameof(memberRepository));
         }
 
         public async Task<ChatServerDto> CreateChatServerAsync(CreateChatServerRequest request, Guid ownerId, CancellationToken ct = default)
@@ -69,15 +75,22 @@ namespace HootOut.ChatServers.Services
 
         public async Task<ChatServerDto?> GetServerDtoByIdAsync(Guid serverId, Guid userId, CancellationToken ct = default)
         {
-            await ValidateUserIsInServer(serverId, userId, ct); 
+            await ValidateUserIsInServer(serverId, userId, ct);
             return await serverRepository.GetServerDtoByIdAsync(serverId, ct);
-        } 
+        }
 
-        public async Task<PageResult<ServerMemberDto>> GetServerMemberDtosAsync(Guid serverId, Guid userId, Guid? next = null, int pageSize = 10, CancellationToken ct = default)
+        public async Task<PageResult<ServerMemberDto>> GetServerMemberDtosAsync(Guid serverId, Guid userId, PageRequest request, CancellationToken ct = default)
         {
             await ValidateUserIsInServer(serverId, userId, ct);
 
-            return await serverRepository.GetServerMemberDtosAsync(serverId, next, pageSize, ct);
+            return await memberRepository.GetServerMemberDtosAsync(serverId, request, ct);
+        }
+
+        public async Task<PageResult<ServerInvitationDto>> GetServerInvitationsAsync(Guid serverId, Guid userId, PageRequest request, CancellationToken ct = default)
+        {
+            await ValidateUserIsInServer(serverId, userId, ct);
+
+            return await invitationRepository.GetServerInvitationDtosAsync(serverId, request, ct);
         }
 
         public async Task<ServerInvitationDto> InviteMemberAsync(InviteServerMemberRequest request, Guid userId, CancellationToken ct = default)
@@ -129,7 +142,7 @@ namespace HootOut.ChatServers.Services
         {
             var invitation = await ValidateServerInvitation(request.Id, userId, ct);
 
-            return await serverRepository.AcceptServerInvitationAsync(invitation, ct);
+            return await invitationRepository.AcceptServerInvitationAsync(invitation, ct);
         }
 
         private async Task<Guid?> RejectServerInvitation(UpdateServerInvitationRequest request, Guid userId, CancellationToken ct)
@@ -143,14 +156,14 @@ namespace HootOut.ChatServers.Services
         }
         private async Task<Guid?> RevokeServerInvitation(UpdateServerInvitationRequest request, Guid userId, CancellationToken ct)
         {
-            ServerInvitation? invitation = await serverRepository.GetServerInvitationByIdAsync(request.Id, ct);
+            ServerInvitation? invitation = await invitationRepository.GetServerInvitationByIdAsync(request.Id, ct);
 
             if (invitation == null)
             {
                 throw new ValidationException(new[] { new ValidationFailure("invitation", "Invalid invitation") });
             }
 
-            ServerMember? member = await serverRepository.GetServerMemberAsync(invitation.ChatServerId, userId, ct);
+            ServerMember? member = await memberRepository.GetServerMemberAsync(invitation.ChatServerId, userId, ct);
             if (member == null)
                 throw new ValidationException(new[] { new ValidationFailure("member", "User is not a member of the server") });
 
@@ -162,7 +175,7 @@ namespace HootOut.ChatServers.Services
 
         private async Task<ServerInvitation> ValidateServerInvitation(Guid invitationId, Guid userId, CancellationToken ct)
         {
-            ServerInvitation? invitation = await serverRepository.GetServerInvitationByIdAsync(invitationId, ct);
+            ServerInvitation? invitation = await invitationRepository.GetServerInvitationByIdAsync(invitationId, ct);
 
             if (invitation == null || invitation.UserId != userId || invitation.Status != ServerInvitationStatus.Pending)
             {
@@ -177,7 +190,7 @@ namespace HootOut.ChatServers.Services
 
         private async Task ValidateUserIsInServer(Guid serverId, Guid userId, CancellationToken ct)
         {
-            ServerMember? member = await serverRepository.GetServerMemberAsync(serverId, userId, ct);
+            ServerMember? member = await memberRepository.GetServerMemberAsync(serverId, userId, ct);
             if (member == null)
             {
                 throw new ValidationException(new[] { new ValidationFailure("validation", "The user is not a member of the server") });
@@ -187,7 +200,7 @@ namespace HootOut.ChatServers.Services
 
         private async Task ValidateUserIsAlreadyAMember(Guid serverId, Guid userId, CancellationToken ct)
         {
-            ServerMember? member = await serverRepository.GetServerMemberAsync(serverId, userId, ct);
+            ServerMember? member = await memberRepository.GetServerMemberAsync(serverId, userId, ct);
             if (member != null)
                 throw new ValidationException(new[] { new ValidationFailure("member", "User is already a member") });
         }

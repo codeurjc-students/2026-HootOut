@@ -7,5 +7,7 @@
         public Guid? Next { get; init; }
 
         public int PageSize { get; init; }
+
+        public int? Total { get; set; } = null;
     }
 }
