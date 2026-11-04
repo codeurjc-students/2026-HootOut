@@ -9,6 +9,7 @@ namespace HootOut.Contracts.ChatServers.Services
         Task<ChatServerDto> CreateChatServerAsync(CreateChatServerRequest request, Guid ownerId, CancellationToken ct = default);
         Task<IEnumerable<ChatServerDto>> GetServersByUserAsync(Guid userId, CancellationToken ct = default);
         Task<ChatServerDto?> GetServerDtoByIdAsync(Guid serverId, Guid userId, CancellationToken ct = default);
+        Task<PageResult<ServerInvitationDto>> GetUserServerInvitations(Guid userId, PageRequest request, CancellationToken ct = default);
         Task<PageResult<ServerInvitationDto>> GetServerInvitationsAsync(Guid serverId, Guid userId, PageRequest request, CancellationToken ct = default);
         Task<ServerInvitationDto> InviteMemberAsync(InviteServerMemberRequest request, Guid invitedBy, CancellationToken ct = default);
         Task<Guid?> UpdateServerInvitationAsync(UpdateServerInvitationRequest request, Guid userId, CancellationToken ct = default);

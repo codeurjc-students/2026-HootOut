@@ -75,6 +75,29 @@ namespace HootOut.HootOutAPI.Controllers
            );
         }
 
+        [HttpGet("invitations")]
+        public async Task<ActionResult<ChatServerDto>> GetUserServerInvitations([FromRoute] Guid id, [FromQuery] string? sortBy, [FromQuery] Guid? next, [FromQuery] bool descending, [FromQuery] int? pageSize, CancellationToken ct)
+        {
+            var userId = User.FindFirstValue("sub");
+            if (userId is null)
+                return Unauthorized();
+
+            var page = new PageRequest
+            {
+                Next = next,
+                Descending = descending,
+                PageSize = pageSize ?? 10,
+                SortBy = sortBy
+            };
+
+            return await CommandLaunchHelper.LaunchAsync(
+               logger,
+               async () => await chatServerService.GetUserServerInvitations(Guid.Parse(userId), page, ct),
+               BadRequest,
+               (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
+           );
+        }
+
         [HttpPost("invitation")]
         public async Task<ActionResult> InviteServerMember(InviteServerMemberRequest request, CancellationToken ct)
         {

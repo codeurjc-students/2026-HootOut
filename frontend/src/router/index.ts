@@ -9,6 +9,7 @@ import ActiveMembers from '@/components/server/settings/Members/ActiveMembers.vu
 import ServerInvitations from '@/components/server/settings/Members/ServerInvitations.vue'
 import UserSettings from '@/views/UserSettings.vue'
 import UserSettingsProfile from '@/components/user/settings/UserSettingsProfile.vue'
+import UserServerInvitations from '@/components/user/settings/UserServerInvitations.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -107,6 +108,11 @@ const router = createRouter({
           path: 'profile',
           name: 'userSettingsProfile',
           component: UserSettingsProfile,
+        },
+        {
+          path: 'invitations',
+          name: 'userServerInvitations',
+          component: UserServerInvitations,
         },
       ],
     },

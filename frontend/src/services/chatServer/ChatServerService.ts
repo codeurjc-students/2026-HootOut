@@ -30,6 +30,12 @@ const ChatServerService = {
     return await get(`chatServers/${serverId}/invitations`, pageRequest)
   },
 
+  getUserServerInvitations: async function (
+    pageRequest: PageRequest
+  ): Promise<PageResult<ServerInvitation>> {
+    return await get(`chatServers/invitations`, pageRequest)
+  },
+
   inviteUser: async function (request: InviteServerMemberRequest): Promise<ServerInvitation> {
     return await post('chatservers/invitation', request)
   },

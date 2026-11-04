@@ -138,6 +138,11 @@ namespace HootOut.ChatServers.Services
             }
         }
 
+        public async Task<PageResult<ServerInvitationDto>> GetUserServerInvitations(Guid userId, PageRequest request, CancellationToken ct = default)
+        {
+            return await invitationRepository.GetUserServerInvitationDtosAsync(userId, request, ct);
+        }
+
         private async Task<Guid?> AcceptInvitationAsync(UpdateServerInvitationRequest request, Guid userId, CancellationToken ct)
         {
             var invitation = await ValidateServerInvitation(request.Id, userId, ct);

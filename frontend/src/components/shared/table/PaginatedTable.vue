@@ -99,7 +99,7 @@
   }
 
   onMounted(async () => {
-    sortBy.value = (headers.filter((h) => h.default).at(0) ?? headers[0])?.key
+    sortBy.value = (headers.filter((h) => h.default).at(0) ?? headers[0])?.key?.toLowerCase()
     await getFirstPage()
   })
 </script>
