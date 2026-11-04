@@ -15,7 +15,7 @@ namespace HootOut.PostgreSQL.Repositories.Users
         }
 
         private const string UserColumns =
-        """ "Id" as Id, "Username" as Username, "PasswordHash" as Password, "Email" as Email""";
+        """ "Id" as Id, "Username" as Username, "PasswordHash" as Password, "Email" as Email, "CreatedAt" """;
         public async Task<IEnumerable<UserInfo>> GetAllUsersAsync(CancellationToken ct = default)
         {
             await using var conn = await provider.OpenConnectionAsync(ct);

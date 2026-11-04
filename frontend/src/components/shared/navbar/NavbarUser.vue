@@ -5,7 +5,7 @@
   import type { UserInfo } from '@/types'
   import { storeToRefs } from 'pinia'
   import { onMounted } from 'vue'
-  import { useRouter } from 'vue-router'
+  import { RouterLink, useRouter } from 'vue-router'
 
   const userInfo = userInfoStore()
   const authStore = useAuthStore()
@@ -36,6 +36,15 @@
         role="menu"
         id="navbar-user-dropdown"
       >
+        <div class="py-1 hover:background-light">
+          <RouterLink
+            class="pointer w-full px-4 py-2 text-left text-sm"
+            role="menuitem"
+            :to="{ name: 'userSettingsProfile' }"
+          >
+            View profile
+          </RouterLink>
+        </div>
         <div class="py-1 hover:background-light">
           <button
             class="pointer w-full px-4 py-2 text-left text-sm"

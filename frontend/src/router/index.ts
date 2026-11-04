@@ -7,6 +7,8 @@ import ServerSettingsProfile from '@/components/server/settings/ServerSettingsPr
 import ServerSettingsMember from '@/components/server/settings/ServerSettingsMember.vue'
 import ActiveMembers from '@/components/server/settings/Members/ActiveMembers.vue'
 import ServerInvitations from '@/components/server/settings/Members/ServerInvitations.vue'
+import UserSettings from '@/views/UserSettings.vue'
+import UserSettingsProfile from '@/components/user/settings/UserSettingsProfile.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -92,6 +94,19 @@ const router = createRouter({
               component: ServerInvitations,
             },
           ],
+        },
+      ],
+    },
+    {
+      path: '/settings/user',
+      name: 'userSettings',
+      component: UserSettings,
+      meta: { layout: 'MainLayout' },
+      children: [
+        {
+          path: 'profile',
+          name: 'userSettingsProfile',
+          component: UserSettingsProfile,
         },
       ],
     },

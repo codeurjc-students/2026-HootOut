@@ -11,7 +11,8 @@ namespace HootOut.Users.Mappers
             {
                 Id = user.Id,
                 Username = user.Username,
-                Email = user.Email
+                Email = user.Email,
+                CreatedAt = user.CreatedAt
             };
         }
     }
