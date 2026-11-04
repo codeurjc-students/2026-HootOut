@@ -82,8 +82,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                 Take = request.Size + 1,
             }, cancellationToken: ct));
 
-            var members = (await multi.ReadAsync<ServerMemberDto>()).ToList();
-
+            var members = (await multi.ReadAsync<ServerMemberDto>()).ToList(); 
             var total = await multi.ReadSingleAsync<int>();
 
             return PaginatedQueryHelper.ToPage(members, request, x => x.Id, total);

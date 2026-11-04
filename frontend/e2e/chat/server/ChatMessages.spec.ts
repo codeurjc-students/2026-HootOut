@@ -15,9 +15,8 @@ test('test send messages in a channel', async ({ page: user1, browser, secondUse
   const channel = await createChannel(user1, server)
 
   await user2.goto(`/chat/server/${server.id}/channel/${channel.id}`)
-  const wsPromise = user2.waitForEvent('websocket', (ws) => ws.url().includes('/ws'))
+  const ws = await user2.waitForEvent('websocket', (ws) => ws.url().includes('/ws'))
 
-  const ws = await wsPromise
   const framePromise = ws.waitForEvent('framesent', {
     predicate: (event) => {
       try {
@@ -71,9 +70,8 @@ test('test send message with attachments', async ({ page: user1, browser, second
   const channel = await createChannel(user1, server)
 
   await user2.goto(`/chat/server/${server.id}/channel/${channel.id}`)
-  const wsPromise = user2.waitForEvent('websocket', (ws) => ws.url().includes('/ws'))
+  const ws = await user2.waitForEvent('websocket', (ws) => ws.url().includes('/ws'))
 
-  const ws = await wsPromise
   const framePromise = ws.waitForEvent('framesent', {
     predicate: (event) => {
       try {

@@ -51,6 +51,5 @@ export interface TableHeader {
   name: string
   canSort?: boolean | undefined
   default?: boolean | undefined
+  mapper?: (value: any) => string
 }
-
-export interface TableItem extends Object {}

@@ -25,7 +25,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
         {
             { "createdat", """m."CreatedAt" """ },
             { "status", """ m."Status" """ },
-            { "username", """ u."Username" """ }
+            { "username", """ lower(u."Username") COLLATE "es-x-icu" """ }
         };
 
         public async Task<PageResult<ServerInvitationDto>> GetServerInvitationDtosAsync(Guid serverId, PageRequest request, CancellationToken ct = default)
@@ -57,6 +57,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                     {invitationsFrom}
                     {invitationsWhere}
                     {PaginatedQueryHelper.CursorFilter(invitationsFrom, sort, request)}
+                    {PaginatedQueryHelper.OrderBy(sort, request)}
                     LIMIT @Take;
 
                     SELECT COUNT(*)

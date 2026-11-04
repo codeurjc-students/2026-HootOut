@@ -1,13 +1,13 @@
 <script setup lang="ts">
   import { computed, onMounted, ref } from 'vue'
-  import type { PageRequest, PageResult, TableHeader, TableItem } from '@/types'
+  import type { PageRequest, PageResult, TableHeader } from '@/types'
 
   const { headers, queryFunction } = defineProps<{
     headers: TableHeader[]
     queryFunction: Function
   }>()
 
-  let items = ref<TableItem[]>([])
+  const tableRows = ref<Object[]>([])
 
   const sortBy = ref<string>()
   const descending = ref<boolean>(true)
@@ -18,17 +18,19 @@
   const showPage = computed(() => currentPage.value + 1)
   const totalPages = ref<number>(1)
 
-  const tableRows = computed(() => {
-    let rows: TableItem[] = []
-    for (let item of items.value) {
+  function buildRows(items: any[]): Object[] {
+    let rows: Object[] = []
+    for (let item of items) {
       const row: any = {}
       for (let header of headers) {
-        row[header.key as keyof TableItem] = item[header.key as keyof TableItem]
+        let col = item[header.key as keyof Object]
+        col = header.mapper ? (header.mapper(col) ?? col) : col
+        row[header.key] = col
       }
       rows.push(row)
     }
     return rows
-  })
+  }
 
   async function getPage(dir: number): Promise<void> {
     currentPage.value += dir
@@ -43,7 +45,7 @@
     const page: PageResult<unknown> = await queryFunction(nextPageRequest)
     if (!page) return
 
-    items.value = page.items as TableItem[]
+    tableRows.value = buildRows(page.items)
     hasNext.value = !!page.next
 
     totalPages.value = Math.floor(page.total / page.pageSize) + 1
@@ -114,7 +116,7 @@
       <tbody class="overflow-y-auto">
         <tr v-for="row in tableRows" class="border-bottom-1 h-4 hover:background-light">
           <td v-for="header in headers" class="py-2">
-            {{ row[header.key as keyof TableItem] }}
+            {{ row[header.key as keyof Object] }}
           </td>
         </tr>
       </tbody>

@@ -53,7 +53,7 @@ namespace HootOut.HootOutAPI.Controllers
         }
 
         [HttpGet("{id:guid}/invitations")]
-        public async Task<ActionResult<ChatServerDto>> GetServerInvitations([FromRoute] Guid id, [FromQuery] string? sortBy, [FromQuery] Guid? next, [FromQuery] bool descending, [FromQuery] int pageSize, CancellationToken ct)
+        public async Task<ActionResult<ChatServerDto>> GetServerInvitations([FromRoute] Guid id, [FromQuery] string? sortBy, [FromQuery] Guid? next, [FromQuery] bool descending, [FromQuery] int? pageSize, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
             if (userId is null)
@@ -63,7 +63,7 @@ namespace HootOut.HootOutAPI.Controllers
             {
                 Next = next,
                 Descending = descending,
-                PageSize = pageSize,
+                PageSize = pageSize ?? 10,
                 SortBy = sortBy
             };
 

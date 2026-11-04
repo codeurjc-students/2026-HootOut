@@ -21,6 +21,16 @@ export enum ServerInvitationStatus {
   Revoked = 30,
 }
 
+const serverInvitationStatusDict: Record<ServerInvitationStatus, string> = {
+  0: 'Pending',
+  10: 'Accepted',
+  20: 'Rejected',
+  30: 'Revoked',
+}
+
+export const ServerInvitationsStatusMapper = (status: ServerInvitationStatus): string =>
+  serverInvitationStatusDict[status]
+
 export interface InviteServerMemberRequest {
   chatServerId: string
   username: string

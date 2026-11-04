@@ -23,8 +23,11 @@ const ChatServerService = {
     return await get(`chatServers/${serverId}`)
   },
 
-  getServerInvitations: async function (serverId: string): Promise<PageResult<ServerInvitation>> {
-    return await get(`chatServers/${serverId}/invitations`)
+  getServerInvitations: async function (
+    serverId: string,
+    pageRequest: PageRequest
+  ): Promise<PageResult<ServerInvitation>> {
+    return await get(`chatServers/${serverId}/invitations`, pageRequest)
   },
 
   inviteUser: async function (request: InviteServerMemberRequest): Promise<ServerInvitation> {
