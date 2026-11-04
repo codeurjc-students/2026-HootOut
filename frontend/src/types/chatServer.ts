@@ -28,7 +28,7 @@ const serverInvitationStatusDict: Record<ServerInvitationStatus, string> = {
   30: 'Revoked',
 }
 
-export const ServerInvitationsStatusMapper = (status: ServerInvitationStatus): string =>
+export const serverInvitationStatusMapper = (status: ServerInvitationStatus): string =>
   serverInvitationStatusDict[status]
 
 export interface InviteServerMemberRequest {

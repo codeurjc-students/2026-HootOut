@@ -19,3 +19,10 @@ export function getValidationErrors(err: ValidationError): Map<string, Map<strin
   })
   return result
 }
+
+export function dateTimeMapper(date_string: string) {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  }).format(new Date(date_string))
+}

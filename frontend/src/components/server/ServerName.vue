@@ -13,17 +13,21 @@
   function openInviteToServerModal() {
     inviteMemberModal.value?.open()
   }
+
+  function closeInviteModal() {
+    inviteMemberModal.value?.close()
+  }
 </script>
 
 <template>
   <div class="server-name border-bottom-1 flex justify-between p-4 text-xl font-semibold">
     <div>{{ currentServer?.name }}</div>
-    <div class="flex gap-2">
+    <div class="flex items-center gap-2">
       <button @click="openInviteToServerModal" type="button" class="inline-btn pointer">
         <span class="material-symbols-sharp text-xl!"> group_add </span>
       </button>
       <RouterLink
-        :to="{ name: 'serverSettings', params: { serverId: currentServer.id } }"
+        :to="{ name: 'serverProfile', params: { serverId: currentServer.id } }"
         class="inline-btn pointer"
       >
         <span class="material-symbols-sharp text-xl!"> settings </span>

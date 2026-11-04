@@ -53,7 +53,9 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                     m."UserId",
                     m."Status",
                     u."Username",
-                    s."Name" as ServerName
+                    s."Name" as ServerName,
+                    m."CreatedAt",
+                    m."ModifiedAt"
                     {invitationsFrom}
                     {invitationsWhere}
                     {PaginatedQueryHelper.CursorFilter(invitationsFrom, sort, request)}

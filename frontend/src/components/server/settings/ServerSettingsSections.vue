@@ -16,7 +16,7 @@
         >Server Profile</RouterLink
       >
       <RouterLink
-        :to="{ name: 'serverMembers' }"
+        :to="{ name: 'serverActiveMembers' }"
         class="pointer border-bottom-1 px-4 py-2 hover:background-light"
         :class="route.path.includes('members') ? 'background-light' : ''"
         >Server Members</RouterLink
