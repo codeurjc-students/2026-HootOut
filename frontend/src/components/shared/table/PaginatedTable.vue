@@ -59,7 +59,7 @@
       if (currentPage.value >= pages.length - 1) {
         pages.push(page.next ?? null)
       } else {
-        pages[currentPage.value] = page.next ?? null
+        pages[currentPage.value + 1] = page.next ?? null
       }
     }
   }
