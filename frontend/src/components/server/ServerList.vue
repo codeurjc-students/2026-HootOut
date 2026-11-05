@@ -1,9 +1,8 @@
 <script setup lang="ts">
   import { serverInfoStore } from '@/stores/serverInfo'
   import { storeToRefs } from 'pinia'
-  import { computed, onMounted, ref } from 'vue'
+  import { computed, onMounted } from 'vue'
   import InfiniteScrollList from '../shared/infiniteScroll/InfiniteScrollList.vue'
-  import type { ChatServer } from '@/types/chatServer.ts'
 
   const serverInfo = serverInfoStore()
   const { servers, currentServer } = storeToRefs(serverInfo)
@@ -19,7 +18,10 @@
 
   const serverList = computed(() => {
     const result = []
-    if (servers.value.filter((x) => x.id == currentServer?.value?.id).length == 0) {
+    if (
+      currentServer?.value &&
+      servers.value?.filter((x) => x.id == currentServer?.value?.id).length == 0
+    ) {
       result.push(currentServer.value)
     }
     result.push(...servers.value)
@@ -28,15 +30,9 @@
 </script>
 
 <template>
-  <InfiniteScrollList
-    :items="serverList"
-    :load-more="getServerList"
-    class="flex flex-col"
-    v-if="currentServer"
-  >
+  <InfiniteScrollList :items="serverList" :load-more="getServerList" class="flex flex-col">
     <template v-slot:scroll-item="{ item }">
       <RouterLink
-        v-if="currentServer?.id != (item as any).id"
         :to="{ name: 'server', params: { serverId: (item as any).id } }"
         class="round-btn pointer mb-2 flex h-full justify-center self-center"
         :class="{ 'background-light': currentServer?.id == (item as any).id }"

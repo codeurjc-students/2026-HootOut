@@ -68,11 +68,11 @@
     <ValidationErrors :errors="formErrors" />
     <div class="custom-form-row">
       <div class="custom-form-label-wrapper">
-        <label for="server-name">Username *</label>
+        <label for="username">Username *</label>
       </div>
       <div class="custom-form-input-wrapper">
         <input
-          id="server-name"
+          id="username"
           class="custom-form-text-input"
           v-model="form.username"
           type="text"
@@ -85,7 +85,7 @@
       </div>
 
       <p class="mt-2">Please check the username before sending a request.</p>
-      <p>You can cancel an invitation at any time.</p>
+      <p>You can revoke an invitation at any time.</p>
     </div>
 
     <button class="button-action" type="submit" :disabled="submitting || !form.username">

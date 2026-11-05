@@ -23,7 +23,11 @@
   <div class="server-name border-bottom-1 flex justify-between p-4 text-xl font-semibold">
     <div>{{ currentServer?.name }}</div>
     <div class="flex items-center gap-2">
-      <button @click="openInviteToServerModal" type="button" class="inline-btn pointer">
+      <button
+        @click="openInviteToServerModal"
+        type="button"
+        class="inline-btn pointer inviteMemberBtn"
+      >
         <span class="material-symbols-sharp text-xl!"> group_add </span>
       </button>
       <RouterLink
@@ -35,7 +39,7 @@
     </div>
     <Modal title="Invite Member" ref="invite-member-modal">
       <template v-slot:body>
-        <InviteMemberForm @success="" :server="currentServer" />
+        <InviteMemberForm @success="closeInviteModal" :server="currentServer" />
       </template>
     </Modal>
   </div>

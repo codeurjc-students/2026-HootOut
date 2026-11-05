@@ -3,6 +3,7 @@ import { expect } from '../../fixtures.js'
 
 export type Server = { id: string; name: string; description: string }
 export type Channel = { id: string; serverId: string; name: string }
+export type ServerInvitation = { id: string; serverId: string; status: number; userId: string }
 
 export async function createTestServer(page: Page): Promise<Server> {
   await page.locator('#new-server-btn').click()
@@ -80,4 +81,62 @@ export async function createChannel(page: Page, server: Server): Promise<Channel
   await expect(page.locator('.modal')).not.toBeVisible()
 
   return { id: channelId, serverId: server.id, name: channel.name }
+}
+
+export async function inviteUserToServer(
+  page: Page,
+  server: Server,
+  username2: string
+): Promise<Channel> {
+  await page.locator('.inviteMemberBtn').click()
+
+  await expect(page.locator('.modal')).toBeVisible()
+  await expect(page.locator('.modal-title')).toContainText('Invite Member')
+  await expect(
+    page.locator('#invite-member-form').locator(`[aria-label="${server.name}"]`)
+  ).toContainText(server.name)
+
+  const submitInvitationBtn = page.getByRole('button', { name: 'Invite Member' })
+  await expect(submitInvitationBtn).toBeDisabled()
+
+  const sendInvitationPromise = page.waitForResponse(
+    (res) =>
+      res.url().includes('/api/v1/chatservers/invitation') && res.request().method() === 'POST'
+  )
+
+  await page.getByLabel('Username').fill(username2)
+
+  await expect(submitInvitationBtn).toBeEnabled()
+  await submitInvitationBtn.click()
+
+  const responseInvitation = await sendInvitationPromise
+  expect(responseInvitation.status()).toBe(200)
+  const invitation = await responseInvitation.json()
+
+  expect(invitation).toBeTruthy()
+  expect(invitation.id).toBeTruthy()
+  expect(invitation.chatServerId).toBe(server.id)
+
+  return invitation
+}
+
+export async function acceptInvitation(page: Page): Promise<void> {
+  await page.goto('/chat')
+  page.locator('#navbar-user').locator(`[aria-controls="navbar-user-dropdown"]`).click()
+
+  page.locator('#navbar-user').locator('[href="/settings/user/profile"]').click()
+  await expect(page).toHaveURL(new RegExp(`.*settings/user/profile`))
+
+  page.locator('[href="/settings/user/invitations"]').click()
+  await expect(page).toHaveURL(new RegExp(`.*settings/user/invitations`))
+
+  const joinRequest = page.waitForResponse(
+    (res) =>
+      res.url().includes('/api/v1/chatservers/invitation') && res.request().method() === 'PUT'
+  )
+
+  await page.getByRole('button', { name: 'Join' }).click()
+
+  const joinRespone = await joinRequest
+  expect(joinRespone.status()).toBe(200)
 }

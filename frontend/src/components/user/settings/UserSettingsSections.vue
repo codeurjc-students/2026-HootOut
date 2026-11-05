@@ -6,7 +6,7 @@
 
 <template>
   <div>
-    <h1 class="p-4 text-xl font-semibold">User Settings</h1>
+    <h1 class="border-bottom-1 p-4 text-xl font-semibold">User Settings</h1>
     <div class="flex flex-col">
       <RouterLink
         :to="{ name: 'userSettingsProfile' }"

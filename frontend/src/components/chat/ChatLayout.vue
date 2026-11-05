@@ -22,8 +22,6 @@
     async (newId, oldId) => {
       if (newId) {
         await serverInfo.setCurrentServer(newId as string)
-      } else {
-        serverInfo.setCurrentServer('')
       }
 
       if (route.params.channelId) {
