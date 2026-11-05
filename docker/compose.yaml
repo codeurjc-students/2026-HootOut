@@ -8,9 +8,9 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    environment: 
+    environment:
       ASPNETCORE_ENVIRONMENT: Release
-      ASPNETCORE_URLS: http://+:8080  
+      ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-hootout};Username=${POSTGRES_USER:?Define POSTGRES_USER};Password=${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}"
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?Define RABBITMQ_USER}
@@ -21,6 +21,7 @@ services:
       S3_SECRET_KEY: ${RUSTFS_SECRET_KEY:?Define RUSTFS_SECRET_KEY}
       SSL_CERT_FILE: /certs/ca.pem
       LOGS_FOLDER: /var/logs
+      INIT_DATA: ${INIT_DATA:-false}
     volumes:
       - ${KEYS_DIR:?Define KEYS_DIR}:/app/keys:rw
       - ${CERTS_DIR:?Define CERTS_DIR}:/certs:ro
@@ -34,7 +35,7 @@ services:
       postgres:
         condition: service_healthy
       rabbitmq:
-        condition: service_healthy 
+        condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Release
       ASPNETCORE_URLS: http://+:8080
@@ -47,7 +48,7 @@ services:
       S3_SECRET_KEY: ${RUSTFS_SECRET_KEY:?Define RUSTFS_SECRET_KEY}
       SSL_CERT_FILE: /certs/ca.pem
       LOGS_FOLDER: /var/logs
-    volumes: 
+    volumes:
       - ${CERTS_DIR:-./certs}:/certs:ro
       - logs:/var/logs
 
@@ -62,14 +63,18 @@ services:
       - pgdata:/var/lib/postgresql
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:?Define POSTGRES_USER} -d ${POSTGRES_DB:-hootout}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:?Define POSTGRES_USER} -d ${POSTGRES_DB:-hootout}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  rabbitmq: 
+  rabbitmq:
     image: rabbitmq:4.3.6
-    restart: unless-stopped 
+    restart: unless-stopped
     environment:
       RABBITMQ_HOST: ${RABBIT_HOSTNAME:-hootout}
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?Define RABBITMQ_USER}
@@ -78,22 +83,22 @@ services:
       - source: rabbitmq_cfg
         target: /etc/rabbitmq/rabbitmq.conf
     volumes:
-      - rabbitmq:/var/lib/rabbitmq/ 
+      - rabbitmq:/var/lib/rabbitmq/
       - ${CERTS_DIR:?Define CERTS_DIR}:/certs:ro
 
     healthcheck:
-      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
       retries: 3
       timeout: 5s
-      interval: 30s  
+      interval: 30s
 
   rustfs:
     image: rustfs/rustfs:1.0.3
-    ports: 
+    ports:
       - "9000:9000"
     environment:
       RUSTFS_TLS_PATH: /opt/tls
-      RUSTFS_ACCESS_KEY:  ${RUSTFS_ACCESS_KEY:?Define RUSTFS_ACCESS_KEY}
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?Define RUSTFS_ACCESS_KEY}
       RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:?Define RUSTFS_SECRET_KEY}
       RUSTFS_ADDRESS: ":9000"
     volumes:
@@ -110,7 +115,7 @@ services:
     configs:
       - source: haproxy_cfg
         target: /usr/local/etc/haproxy/haproxy.cfg
-    volumes: 
+    volumes:
       - ${CERTS_DIR:?Define CERTS_DIR}/hootout.pem:/usr/local/etc/haproxy/certs/hootout.pem:ro
     ports:
       - "80:80"
@@ -174,7 +179,6 @@ configs:
       ssl_options.keyfile    = /certs/key.pem
       ssl_options.verify     = verify_none
       ssl_options.fail_if_no_peer_cert = false
-
 
 volumes:
   pgdata:

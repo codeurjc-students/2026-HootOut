@@ -11,6 +11,7 @@ using HootOut.Contracts.ChatServers.Requests;
 using HootOut.Contracts.ChatServers.Services;
 using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.Users.Services;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace HootOut.HootOutAPI.Init
 {
@@ -21,18 +22,21 @@ namespace HootOut.HootOutAPI.Init
         private readonly IAuthenticationService authService;
         private readonly IChatChannelsService channelsService;
         private readonly IChatMessageService messageService;
+        private readonly ILogger<DataInit> logger;
 
         public DataInit(IUserService userService,
             IChatServerService serverService,
             IAuthenticationService authService,
             IChatChannelsService channelsService,
-            IChatMessageService messageService)
+            IChatMessageService messageService,
+            ILogger<DataInit> logger)
         {
             this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
             this.serverService = serverService ?? throw new ArgumentNullException(nameof(serverService));
             this.authService = authService ?? throw new ArgumentNullException(nameof(authService));
             this.channelsService = channelsService ?? throw new ArgumentNullException(nameof(channelsService));
             this.messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task InitAsync(CancellationToken ct = default)
@@ -40,6 +44,9 @@ namespace HootOut.HootOutAPI.Init
             string? initString = Environment.GetEnvironmentVariable("INIT_DATA");
             if (initString == null || !string.Equals("true", initString, StringComparison.InvariantCultureIgnoreCase))
                 return;
+
+            // Create main user
+            logger.LogInformation("Creating main user");
 
             var mainName = "adminTest";
             var mainUser = await userService.GetUserDtoByUsernameAsync(mainName, ct);
@@ -54,17 +61,42 @@ namespace HootOut.HootOutAPI.Init
                     Password = "Passwordtest123"
                 };
 
-                await authService.RegisterUserAsync(req, ct);
+                var token = await authService.RegisterUserAsync(req, ct);
                 mainUser = await userService.GetUserDtoByUsernameAsync(mainName, ct);
             }
 
+            logger.LogInformation("Creating test user");
+            var testUserName = "testUser";
+            var testUser = await userService.GetUserDtoByUsernameAsync(testUserName, ct);
+            if (testUser == null)
+            {
+
+                var req = new AuthRegistrationRequest
+                {
+                    Username = testUserName,
+                    Email = "testUser@hootout.com",
+                    Password = "Passwordtest123"
+                };
+
+                var token = await authService.RegisterUserAsync(req, ct);
+                testUser = await userService.GetUserDtoByUsernameAsync(testUserName, ct);
+            }
+
             // Create Users
+            logger.LogInformation("Creating users");
             var users = await CreateUsers(ct);
+
+            if (testUser != null)
+            {
+                users.Add(testUser!.Id, testUser);
+            }
+
             // Create Servers
+            logger.LogInformation("Creating servers");
             var servers = await CreateServers(mainUser!, ct);
 
             //Invite all the users all the servers
-
+            logger.LogInformation("Invite users to servers");
             Dictionary<Guid, List<ServerInvitationDto>> userInvitations = new();
             foreach (var server in servers.Values)
             {
@@ -84,32 +116,34 @@ namespace HootOut.HootOutAPI.Init
                 }
             }
 
-            var halfTheUsers = users.Values.Take(users.Count / 2).ToList();
-            //Make half of the users members of all the servers
+            Random random = new();
 
-            foreach (var user in halfTheUsers)
+            // The users join random servers
+            logger.LogInformation("Users joing random servers");
+            foreach (var user in users.Values)
             {
                 foreach (var invitation in userInvitations[user.Id])
                 {
-                    //var invitation = serverService.getUserInvitations()
-                    await serverService.UpdateServerInvitationAsync(new UpdateServerInvitationRequest
+                    if (random.Next(0, 100) < 50) // Random 50%
                     {
-                        Id = invitation.Id,
-                        Status = ServerInvitationStatus.Accepted
-                    }, user.Id, ct);
+                        await serverService.UpdateServerInvitationAsync(new UpdateServerInvitationRequest
+                        {
+                            Id = invitation.Id,
+                            Status = ServerInvitationStatus.Accepted
+                        }, user.Id, ct);
+                    }
                 }
             }
 
             // Send some messages on the servers (randomly)
-            Random random = new();
-
-            foreach (var user in halfTheUsers)
+            logger.LogInformation("Users send messages in random servers");
+            foreach (var user in users.Values)
             {
                 foreach (var server in servers.Values)
                 {
                     foreach (var channel in server.Channels)
                     {
-                        if (random.Next(0, 100) < 50) // Random 50%
+                        if (random.Next(0, 100) < 10) // Random 10%
                         {
                             await messageService.CreateChatMessageAsync(new CreateChatMessageRequest
                             {
@@ -121,10 +155,14 @@ namespace HootOut.HootOutAPI.Init
                     }
                 }
             }
+
+            logger.LogInformation("Data init finished.");
         }
 
         private async Task<Dictionary<Guid, UserDto>> CreateUsers(CancellationToken ct)
         {
+            JsonWebTokenHandler jtwHandler = new();
+
             Dictionary<Guid, UserDto> users = new();
             for (int i = 0; i < 150; i++)
             {
@@ -136,8 +174,12 @@ namespace HootOut.HootOutAPI.Init
                     Password = Guid.NewGuid().ToString()
                 };
 
-                await authService.RegisterUserAsync(req, ct);
-                var userDto = await userService.GetUserDtoByUsernameAsync(username, ct);
+                var token = await authService.RegisterUserAsync(req, ct);
+                var userDto = new UserDto
+                {
+                    Id = Guid.Parse(jtwHandler.ReadJsonWebToken(token.AccessToken!).GetClaim("sub").Value),
+                    Username = username,
+                };
                 users.Add(userDto!.Id, userDto);
             }
 

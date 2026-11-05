@@ -46,7 +46,7 @@ namespace HootOut.PostgreSQL.Repositories.Users
             await using var conn = await provider.OpenConnectionAsync(ct);
 
             return await conn.QuerySingleOrDefaultAsync<UserInfo>(new CommandDefinition(
-                $"""SELECT {UserColumns} FROM "HootOut"."UserInfo" where "Username" = @Username""",
+                $"""SELECT {UserColumns} FROM "HootOut"."UserInfo" where lower("Username") = lower(@Username)""",
                     new { Username = username }, cancellationToken: ct));
         }
     }

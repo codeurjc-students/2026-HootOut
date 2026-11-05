@@ -26,6 +26,7 @@ services:
       S3_SECRET_KEY: ${RUSTFS_SECRET_KEY:?Define RUSTFS_SECRET_KEY}
       SSL_CERT_FILE: /certs/ca.pem
       LOGS_FOLDER: /var/logs
+      INIT_DATA: ${INIT_DATA:-false}
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
       - ./keys:/app/keys:rw
@@ -73,7 +74,7 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      - pgdata:/var/lib/postgresql
+      - pgdata2:/var/lib/postgresql
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -132,7 +133,7 @@ services:
       - ${HOOTOUTAPI_HTTPS_PORTS}:8443
 
 volumes:
-  pgdata:
+  pgdata2:
   s3-data:
   logs:
   rabbitmq:
