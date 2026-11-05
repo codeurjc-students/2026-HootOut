@@ -24,14 +24,14 @@ namespace HootOut.HootOutAPI.Controllers
         }
 
         [HttpGet("joined")]
-        public async Task<ActionResult<IEnumerable<ChatServerDto>>> GetChatServersAsync(CancellationToken ct)
+        public async Task<ActionResult<PageResult<ChatServerDto>>> GetChatServersAsync(PageRequest request, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
             if (userId is null)
                 return Unauthorized();
             return await CommandLaunchHelper.LaunchAsync(
                logger,
-               async () => await chatServerService.GetServersByUserAsync(Guid.Parse(userId), ct),
+               async () => await chatServerService.GetServerDtosByUserIdAsync(request, Guid.Parse(userId), ct),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );
@@ -129,7 +129,7 @@ namespace HootOut.HootOutAPI.Controllers
         }
 
         [HttpGet("{id:guid}/members")]
-        public async Task<ActionResult<PageResult<ServerMemberDto>>> GetServerMembers([FromRoute] Guid id, [FromQuery] string? sortBy, [FromQuery] Guid? next, [FromQuery] bool descending, [FromQuery] int? pageSize , CancellationToken ct)
+        public async Task<ActionResult<PageResult<ServerMemberDto>>> GetServerMembers([FromRoute] Guid id, [FromQuery] string? sortBy, [FromQuery] Guid? next, [FromQuery] bool descending, [FromQuery] int? pageSize, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
             if (userId is null)

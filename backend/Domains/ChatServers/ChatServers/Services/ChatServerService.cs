@@ -66,11 +66,9 @@ namespace HootOut.ChatServers.Services
             return newServer.ToDto();
         }
 
-        public async Task<IEnumerable<ChatServerDto>> GetServersByUserAsync(Guid userId, CancellationToken ct = default)
+        public async Task<PageResult<ChatServerDto>> GetServerDtosByUserIdAsync(PageRequest request, Guid userId, CancellationToken ct = default)
         {
-            return (await serverRepository.GetServersByUserAsync(userId, ct))
-                .Select(x => x.ToDto())
-                .ToList();
+            return await serverRepository.GetServerDtosByUserIdAsync(request, userId, ct);
         }
 
         public async Task<ChatServerDto?> GetServerDtoByIdAsync(Guid serverId, Guid userId, CancellationToken ct = default)

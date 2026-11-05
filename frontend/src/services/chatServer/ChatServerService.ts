@@ -15,8 +15,8 @@ const ChatServerService = {
     return await post('chatServers', request)
   },
 
-  getServers: async function (): Promise<ChatServer[]> {
-    return await get('chatServers/joined')
+  getServers: async function (next: string | null): Promise<PageResult<ChatServer>> {
+    return await get('chatServers/joined', { next, pageSize: 20 })
   },
 
   getServerById: async function (serverId: string): Promise<ChatServer> {

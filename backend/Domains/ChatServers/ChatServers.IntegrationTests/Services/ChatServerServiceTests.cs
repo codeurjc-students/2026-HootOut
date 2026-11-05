@@ -65,7 +65,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
         {
             var ct = TestContext.Current.CancellationToken;
 
-            (await chatServerService.GetServersByUserAsync(Guid.NewGuid(), ct)).Should().BeEmpty();
+            (await chatServerService.GetServerDtosByUserIdAsync(new PageRequest(), Guid.NewGuid(), ct)).Items.Should().BeEmpty();
         }
 
         [Fact]
@@ -88,21 +88,21 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             server.Name.Should().Be(name);
             server.Description.Should().Be(description);
 
-            var servers = await chatServerService.GetServersByUserAsync(userId, ct);
+            var servers = await chatServerService.GetServerDtosByUserIdAsync(new PageRequest(), userId, ct);
 
             servers.Should().NotBeNull();
-            servers.Should().HaveCount(1);
+            servers.Items.Should().HaveCount(1);
 
-            var first = servers.FirstOrDefault();
+            var first = servers.Items.FirstOrDefault();
             first.Should().NotBeNull();
             first.Id.Should().Be(server.Id);
             first.OwnerId.Should().Be(server.OwnerId);
             first.Name.Should().Be(server.Name);
             first.Description.Should().Be(server.Description);
 
-            var emptyServers = await chatServerService.GetServersByUserAsync(await CreateUserAsync(ct), ct);
+            var emptyServers = await chatServerService.GetServerDtosByUserIdAsync(new PageRequest(), await CreateUserAsync(ct), ct);
             emptyServers.Should().NotBeNull();
-            emptyServers.Should().BeEmpty();
+            emptyServers.Items.Should().BeEmpty();
         }
 
         [Fact]
@@ -122,22 +122,64 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             await chatServerService.CreateChatServerAsync(new CreateChatServerRequest { Name = "test555" }, await CreateUserAsync(ct), ct);
             await chatServerService.CreateChatServerAsync(new CreateChatServerRequest { Name = "Different names" }, await CreateUserAsync(ct), ct);
 
-            var servers = await chatServerService.GetServersByUserAsync(userId, ct);
+            var servers = await chatServerService.GetServerDtosByUserIdAsync(new PageRequest(), userId, ct);
 
             servers.Should().NotBeNull();
-            servers.Should().HaveCount(3);
+            servers.Items.Should().HaveCount(3);
 
-            var first = servers.Where(x => x.Id == server1.Id).FirstOrDefault();
+            var first = servers.Items.Where(x => x.Id == server1.Id).FirstOrDefault();
             first.Should().NotBeNull();
             first.OwnerId.Should().Be(server1.OwnerId);
 
-            var servers2 = await chatServerService.GetServersByUserAsync(userId2, ct);
+            var servers2 = await chatServerService.GetServerDtosByUserIdAsync(new PageRequest(), userId2, ct);
             servers2.Should().NotBeNull();
-            servers2.Should().HaveCount(2);
+            servers2.Items.Should().HaveCount(2);
 
-            var emptyServers = await chatServerService.GetServersByUserAsync(await CreateUserAsync(ct), ct);
+            var emptyServers = await chatServerService.GetServerDtosByUserIdAsync(new PageRequest(), await CreateUserAsync(ct), ct);
             emptyServers.Should().NotBeNull();
-            emptyServers.Should().BeEmpty();
+            emptyServers.Items.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task GetChatServersByUser_Paginated()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            Guid userId = await CreateUserAsync(ct);
+
+            var servers = new List<ChatServerDto>();
+            var serversCount = 100;
+            for (int i = 0; i < 100; i++)
+            {
+                servers.Add(await chatServerService.CreateChatServerAsync(new CreateChatServerRequest { Name = "test1" }, userId, ct));
+            }
+
+            int pageSize = 20;
+            var pagedMembers = new List<ChatServerDto>();
+            Guid? next = null;
+            do
+            {
+                var page = await chatServerService.GetServerDtosByUserIdAsync(new PageRequest
+                {
+                    Next = next,
+                    Descending = false,
+                    PageSize = pageSize
+                }, userId, ct);
+
+                if (page.Next != null)
+                {
+                    page.Items.Should().NotBeNullOrEmpty();
+                    page.Items.Count.Should().Be(pageSize);
+                    page.PageSize.Should().Be(pageSize);
+                    page.Total.Should().Be(serversCount);
+                }
+
+                pagedMembers.AddRange(page.Items);
+                next = page.Next;
+
+            } while (next != null);
+
+            pagedMembers.Should().HaveCount(serversCount);
+            pagedMembers.Select(x => x.Id).ToList().Should().Contain(servers.Select(x => x.Id).ToList());
         }
 
 
@@ -153,13 +195,13 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var server = await chatServerService.CreateChatServerAsync(new CreateChatServerRequest { Name = "test1" }, userId, ct);
 
             // Only Creator is the member
-            var servers = await chatServerService.GetServersByUserAsync(userId, ct);
+            var servers = await chatServerService.GetServerDtosByUserIdAsync(new PageRequest(), userId, ct);
             servers.Should().NotBeNull();
-            servers.Should().HaveCount(1);
+            servers.Items.Should().HaveCount(1);
 
-            var servers2 = await chatServerService.GetServersByUserAsync(userId2, ct);
+            var servers2 = await chatServerService.GetServerDtosByUserIdAsync(new PageRequest(), userId2, ct);
             servers2.Should().NotBeNull();
-            servers2.Should().BeEmpty();
+            servers2.Items.Should().BeEmpty();
 
             // Invite the second user to the server. It is not a member yet
 
@@ -183,8 +225,8 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             Guid userId2 = await CreateUserAsync(ct, username2);
             var server = await chatServerService.CreateChatServerAsync(new CreateChatServerRequest { Name = "test1" }, userId, ct);
 
-            var servers = await chatServerService.GetServersByUserAsync(userId2, ct);
-            servers.Should().BeEmpty();
+            var servers = await chatServerService.GetServerDtosByUserIdAsync(new PageRequest(), userId2, ct);
+            servers.Items.Should().BeEmpty();
 
             var member = await memberRepository.GetServerMemberAsync(server.Id, userId, ct);
             member.Should().NotBeNull();
@@ -222,9 +264,9 @@ namespace HootOut.ChatServers.IntegrationTests.Services
 
             await ValidateServerInvitationAcceptedAsync(memberRepository, invitationRepository, invitation, userId, userId2, server.Id, ct);
 
-            servers = await chatServerService.GetServersByUserAsync(userId2, ct);
-            servers.Should().HaveCount(1);
-            servers.First().Id.Should().Be(server.Id);
+            servers = await chatServerService.GetServerDtosByUserIdAsync(new PageRequest(), userId2, ct);
+            servers.Items.Should().HaveCount(1);
+            servers.Items.First().Id.Should().Be(server.Id);
         }
 
         [Fact]
@@ -554,8 +596,8 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             // Validate rejection and user is not a member
             await ValidateServerInvitationRejectedAsync(memberRepository, invitationRepository, invitation, userId, userId2, server.Id, ct);
 
-            var servers = await chatServerService.GetServersByUserAsync(userId2, ct);
-            servers.Should().BeEmpty();
+            var servers = await chatServerService.GetServerDtosByUserIdAsync(new PageRequest(), userId2, ct);
+            servers.Items.Should().BeEmpty();
         }
 
         [Fact]
@@ -727,8 +769,8 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             // Validate rejection and user is not a member
             await ValidateServerInvitationRevokedAsync(memberRepository, invitationRepository, invitation, userId, userId2, server.Id, ct);
 
-            var servers = await chatServerService.GetServersByUserAsync(userId2, ct);
-            servers.Should().BeEmpty();
+            var servers = await chatServerService.GetServerDtosByUserIdAsync(new PageRequest(), userId2, ct);
+            servers.Items.Should().BeEmpty();
         }
 
         [Fact]
@@ -808,7 +850,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             int membersCount = 30;
             for (int i = 0; i < membersCount; i++)
             {
-                users.Add(await CreateUserDtoAsync(ct,  $"{i}-{Guid.NewGuid().ToString()}"));
+                users.Add(await CreateUserDtoAsync(ct, $"{i}-{Guid.NewGuid().ToString()}"));
             }
 
             // Shuffle users 
@@ -845,7 +887,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             members.Items.Should().NotBeNullOrEmpty();
             members.Items.Should().HaveCount(membersCount);
 
-            var sortedUsernames = users.Select(x => x.Username).OrderBy(x => x!, StringComparer.InvariantCultureIgnoreCase).ToList();  
+            var sortedUsernames = users.Select(x => x.Username).OrderBy(x => x!, StringComparer.InvariantCultureIgnoreCase).ToList();
             sortedUsernames.Should().ContainInConsecutiveOrder(members.Items.Select(x => x.Username).ToList());
 
             // Test Pagination 
@@ -876,7 +918,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             } while (next != null);
 
             pagedMembers.Should().NotBeEmpty();
-            pagedMembers.Select(x=> x.Username).ToList().Should().ContainInConsecutiveOrder(sortedUsernames);
+            pagedMembers.Select(x => x.Username).ToList().Should().ContainInConsecutiveOrder(sortedUsernames);
 
         }
 

@@ -1,10 +1,10 @@
 ﻿using Dapper;
-using HootOut.ChatServers.Entities;
 using HootOut.ChatServers.Repositories;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.ChatChannels.Dtos;
-using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatServers.Dtos;
+using HootOut.Contracts.Common;
+using HootOut.PostgreSQL.Helpers;
 
 namespace HootOut.PostgreSQL.Repositories.ChatServers
 {
@@ -17,24 +17,57 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
             this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
         }
         private const string serverColumns =
-            """ server."Id", server."Name", server."Description", server."OwnerId", server."CreatedAt", server."ModifiedAt" """;
+            """ m."Id", m."Name", m."Description", m."OwnerId", m."CreatedAt", m."ModifiedAt" """;
 
-        public async Task<IEnumerable<ChatServer>> GetServersByUserAsync(Guid userId, CancellationToken ct = default)
+        private Dictionary<string, string> sortColumns = new()
+        {
+            { "createdat", """ m."CreatedAt" """ },
+            { "name", """ lower(m."Name") COLLATE "es-x-icu" """ }
+        };
+
+        public async Task<PageResult<ChatServerDto>> GetServerDtosByUserIdAsync(PageRequest request, Guid userId, CancellationToken ct = default)
         {
             await using var conn = await provider.OpenConnectionAsync(ct);
 
-            return await conn.QueryAsync<ChatServer>(new CommandDefinition($"""
-                SELECT 
-                    {serverColumns}
-                FROM "HootOut"."ChatServer" server
+            if (!sortColumns.TryGetValue(request.SortBy?.ToLowerInvariant() ?? "", out var sort))
+            {
+                sort = sortColumns["createdat"];
+            }
+
+            var serversFrom = """
+                FROM "HootOut"."ChatServer" m
                 INNER JOIN "HootOut"."ServerMember" member
-                    ON server."Id" = member."ChatServerId"
-                WHERE member."UserId" = @UserId 
-                    AND server."Deleted" = FALSE AND member."Deleted" = FALSE
-                ORDER BY server."CreatedAt" DESC
-                """,
-                new { UserId = userId },
-                cancellationToken: ct));
+                    ON m."Id" = member."ChatServerId" AND member."UserId" = @UserId AND member."Deleted" = FALSE
+                """;
+
+            var serversWhere = """ WHERE m."Deleted" = FALSE """;
+
+            var sql =
+            $"""
+                SELECT
+                {serverColumns}
+                {serversFrom}
+                {serversWhere}
+                {PaginatedQueryHelper.CursorFilter(serversFrom, sort, request)}
+                {PaginatedQueryHelper.OrderBy(sort, request)}
+                LIMIT @TAKE;
+
+                SELECT COUNT(*)
+                {serversFrom}
+                {serversWhere};
+            """;
+
+            using var multi = await conn.QueryMultipleAsync(new CommandDefinition(sql, new
+            {
+                UserId = userId,
+                request.Next,
+                Take = request.Size + 1,
+            }, cancellationToken: ct));
+
+            var members = (await multi.ReadAsync<ChatServerDto>()).ToList();
+            var total = await multi.ReadSingleAsync<int>();
+
+            return PaginatedQueryHelper.ToPage(members, request, x => x.Id, total);
         }
 
         public async Task<ChatServerDto?> GetServerDtoByIdAsync(Guid serverId, CancellationToken ct)
@@ -46,10 +79,10 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                     channel."Id", 
                     channel."ChatServerId",
                     channel."Name"
-                FROM "HootOut"."ChatServer" server
+                FROM "HootOut"."ChatServer" m
                 LEFT JOIN "HootOut"."ChatChannel" channel
-                    ON server."Id" = channel."ChatServerId" AND channel."Deleted" = FALSE
-                WHERE server."Id" = @ServerId AND server."Deleted" = FALSE 
+                    ON m."Id" = channel."ChatServerId" AND channel."Deleted" = FALSE
+                WHERE m."Id" = @ServerId AND m."Deleted" = FALSE 
                 """;
 
             ChatServerDto? result = null;

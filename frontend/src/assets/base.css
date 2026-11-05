@@ -1,4 +1,3 @@
-
 :root {
   --c-white: 255, 255, 255;
   --c-white-soft: 248, 248, 248;
@@ -62,7 +61,7 @@
   background-color: transparent;
   text-decoration: none rgb(var(--color-inverse-light)) solid;
   text-decoration-thickness: auto;
-  color: rgb(var(--color-text)); 
+  color: rgb(var(--color-text));
   transition: all 0.2s ease-in-out;
 }
 

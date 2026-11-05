@@ -14,6 +14,7 @@
 
   const userInfo = userInfoStore()
   const { user } = storeToRefs(userInfo)
+  const InvitationStatus = ServerInvitationStatus // To fix build error TS2339: Property 'value' does not exist on type 'typeof ServerInvitationStatus'
 
   const table = ref<InstanceType<typeof PaginatedTable> | null>(null)
 
@@ -50,13 +51,13 @@
         <div class="flex justify-center gap-2">
           <button
             class="pointer button-action py-1!"
-            @click="async () => await updateInvitation(row, ServerInvitationStatus.Accepted)"
+            @click="async () => await updateInvitation(row, InvitationStatus.Accepted)"
           >
             Join
           </button>
           <button
             class="pointer button-action py-1!"
-            @click="async () => await updateInvitation(row, ServerInvitationStatus.Rejected)"
+            @click="async () => await updateInvitation(row, InvitationStatus.Rejected)"
           >
             Reject
           </button>

@@ -31,7 +31,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
         private Dictionary<string, string> userInvitationsSortColumns = new()
         {
             { "createdat", """m."CreatedAt" """ },
-            { "status", """ m."Status" """ }, 
+            { "status", """ m."Status" """ },
             { "servername", """ lower(s."Name") COLLATE "es-x-icu" """ },
             { "invitedBy", """ lower(u."Username") COLLATE "es-x-icu" """ }
         };

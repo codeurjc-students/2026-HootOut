@@ -111,9 +111,12 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     }
   }
 
-  async function getChatServers(): Promise<Ref<ChatServer[]>> {
-    servers.value = await ChatServerService.getServers()
-    return servers
+  async function getChatServers(next: string | null): Promise<PageResult<ChatServer>> {
+    const page = await ChatServerService.getServers(next)
+    if (page.items) {
+      servers.value.push(...page.items)
+    }
+    return page
   }
 
   function addChatServer(chatServer: ChatServer): void {

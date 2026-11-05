@@ -67,9 +67,9 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var servers = await response.Content.ReadFromJsonAsync<IEnumerable<ChatServerDto>>(ct);
+            var servers = await response.Content.ReadFromJsonAsync<PageResult<ChatServerDto>>(ct);
             servers.Should().NotBeNull();
-            servers.Should().BeEmpty();
+            servers.Items.Should().BeEmpty();
         }
 
         [Fact]
@@ -101,8 +101,8 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
                 HttpMethod.Get, "/api/v1/chatServers/joined", auth.AccessToken!, ct);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var serverList = await response.Content.ReadFromJsonAsync<IEnumerable<ChatServerDto>>(ct);
-            var serverDto = (serverList)?.FirstOrDefault();
+            var serverList = await response.Content.ReadFromJsonAsync<PageResult<ChatServerDto>>(ct);
+            var serverDto = (serverList)?.Items.FirstOrDefault();
             serverDto.Should().NotBeNull();
             serverDto.Id.Should().Be(server.Id);
             serverDto.Name.Should().Be(name);
@@ -144,9 +144,9 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
                 HttpMethod.Get, "/api/v1/chatServers/joined", auth.AccessToken!, ct);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var serverList = await response.Content.ReadFromJsonAsync<IEnumerable<ChatServerDto>>(ct);
+            var serverList = await response.Content.ReadFromJsonAsync<PageResult<ChatServerDto>>(ct);
             serverList.Should().NotBeNull();
-            serverList.Should().HaveCount(2);
+            serverList.Items.Should().HaveCount(2);
         }
 
         [Fact]
@@ -214,8 +214,9 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
                 HttpMethod.Get, "/api/v1/chatServers/joined", auth2.AccessToken!, ct);
             serversResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var serverList = await serversResponse.Content.ReadFromJsonAsync<IEnumerable<ChatServerDto>>(ct);
-            serverList.Should().NotBeEmpty().And.HaveCount(1);
+            var serverList = await serversResponse.Content.ReadFromJsonAsync<PageResult<ChatServerDto>>(ct);
+            serverList.Should().NotBeNull();
+            serverList.Items.Should().NotBeEmpty().And.HaveCount(1);
 
             var serverMembers = await SendAuthorizeHttpRequest(
                 HttpMethod.Get, $"/api/v1/chatServers/{server.Id}/members?pageSize=20", auth2.AccessToken!, ct);
@@ -272,8 +273,9 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
                 HttpMethod.Get, "/api/v1/chatServers/joined", auth2.AccessToken!, ct);
             serversResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var serverList = await serversResponse.Content.ReadFromJsonAsync<IEnumerable<ChatServerDto>>(ct);
-            serverList.Should().BeEmpty();
+            var serverList = await serversResponse.Content.ReadFromJsonAsync<PageResult<ChatServerDto>>(ct);
+            serverList.Should().NotBeNull();
+            serverList.Items.Should().BeEmpty();
 
             var serverMembers = await SendAuthorizeHttpRequest(
                 HttpMethod.Get, $"/api/v1/chatServers/{server.Id}/members", auth.AccessToken!, ct);
