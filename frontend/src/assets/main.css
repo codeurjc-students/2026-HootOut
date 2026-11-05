@@ -53,6 +53,10 @@ ul {
   border-bottom: 1px solid rgb(var(--color-border));
 }
 
+.border-bottom-1-dark {
+  border-bottom: 1px solid rgba(var(--color-border-dark), .4);
+}
+
 @utility background-primary {
   background-color: rgb(var(--color-background));
 }

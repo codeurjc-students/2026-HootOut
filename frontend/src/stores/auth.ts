@@ -11,6 +11,10 @@ async function withRefreshLock(fn: () => Promise<boolean>): Promise<boolean> {
   return await navigator.locks.request('auth-refresh', fn)
 }
 
+// Responses that mean the server rejected the session. Any other error (5xx, network...)
+// is treated as temporary and keeps the current state.
+const SESSION_REJECTED_STATUSES = [400, 401, 403]
+
 export const useAuthStore = defineStore('auth', () => {
   // Memory only. Never persist this (no localStorage, no pinia-plugin-persistedstate).
   const accessToken = ref<string | null>(null)
@@ -22,15 +26,24 @@ export const useAuthStore = defineStore('auth', () => {
 
   let inFlight: Promise<boolean> | null = null
 
+  // Incremented on every login, register, logout or clear. A refresh that started with
+  // an older version finished after the session changed, so its result is ignored.
+  let sessionVersion = 0
+
+  function setSession(token: string | null): void {
+    sessionVersion++
+    accessToken.value = token
+  }
+
   async function login(email: string, password: string): Promise<void> {
     const auth = await post<AuthResponse>('auth/login', { email, password })
-    accessToken.value = auth.accessToken
+    setSession(auth.accessToken)
   }
 
   async function register(username: string, email: string, password: string): Promise<void> {
     // Registering also signs the user in, so the response carries tokens like a login.
     const auth = await post<AuthResponse>('auth/register', { username, email, password })
-    accessToken.value = auth.accessToken
+    setSession(auth.accessToken)
   }
 
   async function logout(): Promise<void> {
@@ -43,21 +56,31 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // Trades the refresh cookie for a new access token. Parallel callers share one request.
-  function refresh(): Promise<boolean> {
-    inFlight ??= withRefreshLock(async () => {
-      try {
-        const auth = await post<AuthResponse>('auth/refresh')
-        accessToken.value = auth.accessToken
-        return true
-      } catch (err) {
-        if (err instanceof ApiError) accessToken.value = null // the server rejected the session
-        return false // network error: keep state
+  async function requestRefresh(version: number): Promise<boolean> {
+    try {
+      const auth = await post<AuthResponse>('auth/refresh')
+      // The session changed while refreshing (e.g. logout): don't overwrite it
+      if (version !== sessionVersion) return isAuthenticated.value
+      accessToken.value = auth.accessToken
+      return true
+    } catch (err) {
+      if (version !== sessionVersion) return isAuthenticated.value
+      if (err instanceof ApiError && SESSION_REJECTED_STATUSES.includes(err.status)) {
+        accessToken.value = null // the server rejected the session
       }
-    }).finally(() => {
-      inFlight = null
-    })
+      return false // temporary error: keep state
+    }
+  }
 
+  // Trades the refresh cookie for a new access token. Parallel callers share one request.
+  // Returns whether there is a valid session afterwards.
+  function refresh(): Promise<boolean> {
+    if (!inFlight) {
+      const version = sessionVersion
+      inFlight = withRefreshLock(() => requestRefresh(version)).finally(() => {
+        inFlight = null
+      })
+    }
     return inFlight
   }
 
@@ -69,7 +92,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function clear(): void {
-    accessToken.value = null
+    setSession(null)
   }
 
   return { accessToken, ready, isAuthenticated, login, register, logout, refresh, init, clear }

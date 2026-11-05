@@ -9,10 +9,8 @@ export class WebSocketService {
   private socket: WebSocket | null = null
 
   connect(url: string, handlers: WebSocketHandlers = {}): void {
-    if (this.socket != null) {
-      //Close old socket
-      this.close()
-    }
+    // Close the previous socket, if any, so its events never reach the new handlers
+    this.close()
 
     this.socket = new WebSocket(url)
     this.socket.onopen = (event) => handlers.onOpen?.(event)
@@ -29,12 +27,22 @@ export class WebSocketService {
   }
 
   close(): void {
-    this.socket?.close()
+    if (!this.socket) return
+
+    // The browser fires onclose asynchronously after close(). The handlers are
+    // detached first so an intentional close does not reach them: onClose is
+    // only called when the server or the network closes the connection.
+    this.socket.onopen = null
+    this.socket.onclose = null
+    this.socket.onerror = null
+    this.socket.onmessage = null
+
+    this.socket.close()
     this.socket = null
   }
 
   isConnected(): boolean {
-    return this.socket == null ? false : this.socket?.readyState == WebSocket.OPEN
+    return this.socket?.readyState === WebSocket.OPEN
   }
 }
 

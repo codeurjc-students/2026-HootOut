@@ -50,7 +50,8 @@ export class WebSocketMessageService {
       onClose: () => this.onClose(),
       onError: () => this.onClose(),
       onMessage: (event) => {
-        const message = JSON.parse(event.data) as WebSocketMessage
+        const message = this.parseMessage(event.data)
+        if (!message) return
         if (!this.checkAck(message)) {
           this.onMessage(message)
         }
@@ -58,8 +59,21 @@ export class WebSocketMessageService {
     })
   }
 
+  // Returns null for messages that are not valid JSON, so they are ignored
+  private parseMessage(data: string): WebSocketMessage | null {
+    try {
+      return JSON.parse(data) as WebSocketMessage
+    } catch (err) {
+      return null
+    }
+  }
+
   disconnect() {
+    // Not active anymore, so the automatic reconnection does not start again
+    this.isActive = false
     this.webSocketService.close()
+    // close() does not call onClose for an intentional close, so update the state here
+    this.onClose()
   }
 
   onClose() {
@@ -73,35 +87,43 @@ export class WebSocketMessageService {
   }
 
   checkAck(message: WebSocketMessage): boolean {
-    if (message.replyTo && this.pending.has(message.replyTo)) {
-      const p = this.pending.get(message.replyTo)!
-      clearTimeout(p.timer)
-      this.pending.delete(message.replyTo)
+    if (!message.replyTo || !this.pending.has(message.replyTo)) return false
 
-      if (message.type === WSMessageType.Error) {
-        p.reject(new Error('Server errer'))
-      } else {
-        p.resolve(message)
-        return true
-      }
+    const p = this.pending.get(message.replyTo)!
+    clearTimeout(p.timer)
+    this.pending.delete(message.replyTo)
+
+    if (message.type === WSMessageType.Error) {
+      p.reject(new Error('Server error'))
+    } else {
+      p.resolve(message)
     }
-    return false
+    // Acks (including error acks) are answers to our own messages, not channel messages
+    return true
   }
 
-  sendWithAck(message: WebSocketMessage, timeoutMs = 5000): any {
+  sendWithAck(message: WebSocketMessage, timeoutMs = 5000): AckPromise {
     const id = newId()
     message.id = id
 
     return {
       id: id,
-      promise: new Promise((resolve, reject) => {
+      promise: new Promise<WebSocketMessage>((resolve, reject) => {
         const timer = setTimeout(() => {
           this.pending.delete(id)
           reject(new Error(`No ack for ${message.type} within ${timeoutMs}ms`))
         }, timeoutMs)
 
         this.pending.set(id, { resolve, reject, timer })
-        this.webSocketService.send(JSON.stringify(message))
+
+        try {
+          this.webSocketService.send(JSON.stringify(message))
+        } catch (err) {
+          // The message was never sent, so no ack will arrive
+          clearTimeout(timer)
+          this.pending.delete(id)
+          reject(err)
+        }
       }),
     }
   }
@@ -137,47 +159,58 @@ export class WebSocketMessageService {
   }
 
   subscribePendingSubscriptions(): void {
+    // Pending callbacks become active subscriptions. A pending callback replaces an
+    // existing one for the same channel, because it was registered later.
+    this.subscriptions = { ...this.subscriptions, ...this.pendingSubscriptions }
+    this.pendingSubscriptions = {}
+
+    // (Re)subscribe every channel once: after a reconnection the server has forgotten them
     for (const channel of Object.keys(this.subscriptions)) {
       const message: WebSocketMessage = { channel, type: WSMessageType.Subscribe }
       this.webSocketService.send(JSON.stringify(message))
-      delete this.pendingSubscriptions[channel]
     }
-
-    for (const channel of Object.keys(this.pendingSubscriptions)) {
-      const message: WebSocketMessage = { channel, type: WSMessageType.Subscribe }
-      this.webSocketService.send(JSON.stringify(message))
-    }
-    this.pendingSubscriptions = {}
   }
 
+  // Connects (or reconnects) when not connected. It is also used for the first connection,
+  // so it must not depend on isActive: the automatic reconnection checks that on its own.
   async tryReconnect(): Promise<void> {
-    if (!this.connected.value) {
-      await this.connect(async () => {
-        this.subscribePendingSubscriptions()
-      })
-    }
+    if (this.connected.value) return
+    await this.connect(async () => {
+      this.subscribePendingSubscriptions()
+    })
   }
 }
 
 const wsMessageService = new WebSocketMessageService()
 const recconnectInterval = 3000
 
-let reconnectTimer: number | undefined = undefined
+let reconnectTimer: ReturnType<typeof setInterval> | undefined = undefined
+
+function stopReconnecting() {
+  clearInterval(reconnectTimer)
+  reconnectTimer = undefined
+}
+
+async function reconnectAttempt() {
+  // disconnect() may be called while reconnecting
+  if (!wsMessageService.isActive) return stopReconnecting()
+  try {
+    await wsMessageService.tryReconnect()
+  } catch (err) {
+    // The next attempt runs on the next interval
+  }
+}
 
 watch(wsMessageService.connected, async (connected) => {
   if (connected || !wsMessageService.isActive) {
-    if (reconnectTimer) {
-      clearInterval(reconnectTimer)
-      reconnectTimer = undefined
-    }
+    stopReconnecting()
     return
   }
 
   if (!reconnectTimer) {
-    await wsMessageService.tryReconnect()
-    reconnectTimer = setInterval(async () => {
-      await wsMessageService.tryReconnect()
-    }, recconnectInterval)
+    // Start the interval before the first attempt, so a failed attempt does not stop it
+    reconnectTimer = setInterval(reconnectAttempt, recconnectInterval)
+    await reconnectAttempt()
   }
 })
 
