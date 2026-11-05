@@ -37,11 +37,9 @@
     return rows
   }
 
-  async function getPage(dir: number): Promise<void> {
-    currentPage.value += dir
-
+  async function loadPage(targetPage: number, cursors: (string | null)[]): Promise<void> {
     const nextPageRequest: PageRequest = {
-      next: pages[currentPage.value],
+      next: cursors[targetPage] ?? null,
       descending: descending.value,
       pageSize: 10,
       sortBy: sortBy.value,
@@ -50,57 +48,55 @@
     const page: PageResult<unknown> = await queryFunction(nextPageRequest)
     if (!page) return
 
+    pages = cursors
+    currentPage.value = targetPage
     tableRows.value = buildRows(page.items)
     hasNext.value = !!page.next
 
-    totalPages.value = Math.floor(page.total / page.pageSize) + 1
+    totalPages.value = Math.max(1, Math.ceil(page.total / page.pageSize))
 
     if (hasNext.value) {
-      if (currentPage.value >= pages.length - 1) {
-        pages.push(page.next ?? null)
-      } else {
-        pages[currentPage.value + 1] = page.next ?? null
-      }
+      pages[targetPage + 1] = page.next ?? null
+    }
+  }
+
+  async function getPage(dir: number): Promise<void> {
+    await loadPage(currentPage.value + dir, pages)
+  }
+
+  async function withLoading(action: () => Promise<void>): Promise<void> {
+    if (loading.value) return
+    loading.value = true
+    try {
+      await action()
+    } catch (err) {
+      // TO-DO Handle error
+    } finally {
+      loading.value = false
     }
   }
 
   async function getNextPage() {
-    loading.value = true
-    try {
-      await getPage(+1)
-    } catch (err) {
-      // TO-DO Handle error
-    } finally {
-      loading.value = false
-    }
+    await withLoading(() => getPage(+1))
   }
 
   async function getBeforePage() {
-    loading.value = true
-    try {
-      await getPage(-1)
-    } catch (err) {
-      // TO-DO Handle error
-    } finally {
-      loading.value = false
-    }
+    await withLoading(() => getPage(-1))
   }
 
   async function sortTable(column: string) {
     descending.value = column !== sortBy.value ? true : !descending.value
     sortBy.value = column
-    getFirstPage()
+    await withLoading(getFirstPage)
   }
 
-  async function getFirstPage() {
-    pages = [null]
-    currentPage.value = 0
-    await getPage(0)
+  async function getFirstPage(): Promise<void> {
+    await loadPage(0, [null])
   }
 
   onMounted(async () => {
     sortBy.value = (headers.filter((h) => h.default).at(0) ?? headers[0])?.key?.toLowerCase()
-    await getFirstPage()
+    await withLoading(getFirstPage)
   })
 </script>
 
