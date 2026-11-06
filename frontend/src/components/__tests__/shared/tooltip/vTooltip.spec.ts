@@ -37,7 +37,7 @@ async function hover(wrapper: VueWrapper, wait = DEFAULT_DELAY) {
 
 async function focus(wrapper: VueWrapper, wait = DEFAULT_DELAY) {
   await wrapper.trigger('focusin')
-  vi.advanceTimersByTime(wrapperait)
+  vi.advanceTimersByTime(wait)
 }
 
 function pressKey(key: string) {
