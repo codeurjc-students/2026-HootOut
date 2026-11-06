@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import GoBackLink from '@/components/shared/GoBackLink.vue'
   import PaginatedTable from '@/components/shared/table/PaginatedTable.vue'
   import ChatServerService from '@/services/chatServer/ChatServerService'
   import { dateTimeMapper } from '@/services/common/utils'
@@ -33,11 +34,13 @@
 </script>
 
 <template>
-  <h1 class="text-2xl font-semibold">Server Invitations:</h1>
-  <div class="flex flex-col p-4 text-lg" v-if="user"></div>
+  <GoBackLink class="p-2 text-sm font-semibold" :to="{ name: 'userSettings' }">
+    Server Invitations:
+  </GoBackLink>
+  <h1 class="mt-2 ml-2 hidden text-2xl font-semibold md:block">Server Invitations:</h1>
+  <div class="flex flex-col text-lg md:p-4" v-if="user"></div>
   <div class="h-[80%] max-h-[80%]">
     <PaginatedTable
-      class="background-s"
       :headers="[
         { key: 'serverName', name: 'Server', canSort: true, default: true },
         { key: 'username', name: 'Invited By', canSort: true },

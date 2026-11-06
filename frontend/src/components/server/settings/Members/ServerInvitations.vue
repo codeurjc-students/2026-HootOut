@@ -32,8 +32,14 @@
 </script>
 
 <template>
-  <div class="h-full w-full border-1 background-soft p-4">
-    <GoBackLink class="p-2" :to="{ name: 'serverMembers' }"> Server Invitations: </GoBackLink>
+  <div class="h-full w-full background-soft p-0 md:border-1 md:p-4">
+    <GoBackLink class="p-2 text-sm font-semibold" :to="{ name: 'serverMembers' }">
+      Server Invitations:
+    </GoBackLink>
+    <h2 class="px-4 pt-0 pb-2 text-sm font-semibold md:hidden">
+      Server: {{ currentServer?.name }}
+    </h2>
+
     <h1 class="py- mb-4 hidden text-2xl md:block">Server Invitations:</h1>
     <div class="h-[80%] max-h-[80%]">
       <PaginatedTable

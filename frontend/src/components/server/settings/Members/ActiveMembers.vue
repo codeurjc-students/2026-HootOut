@@ -15,9 +15,15 @@
 </script>
 
 <template>
-  <div class="h-full w-full border-1 background-soft p-4">
-    <GoBackLink class="p-2" :to="{ name: 'serverMembers' }"> Server Members: </GoBackLink>
-    <h1 class="py- mb-4 hidden text-2xl md:block">Server Members:</h1>
+  <div class="h-full w-full background-primary p-0 md:border-1 md:background-soft md:p-4">
+    <GoBackLink class="p-2 text-sm font-semibold" :to="{ name: 'serverMembers' }">
+      Active Members:
+    </GoBackLink>
+    <h2 class="px-4 pt-0 pb-2 text-sm font-semibold md:hidden">
+      Server: {{ currentServer?.name }}
+    </h2>
+
+    <h1 class="py- mb-4 hidden text-2xl md:block">Active Members:</h1>
     <div class="h-[80%] max-h-[80%]">
       <PaginatedTable
         :headers="[

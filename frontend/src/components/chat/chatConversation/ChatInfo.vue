@@ -18,5 +18,9 @@
         {{ currentChatChannel!.name }}
       </div>
     </GoBackLink>
+
+    <div class="hidden font-semibold md:block">
+      {{ currentChatChannel!.name }}
+    </div>
   </div>
 </template>

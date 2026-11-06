@@ -620,4 +620,108 @@ describe('PaginatedTable.vue', () => {
       )
     })
   })
+
+  describe('mobile layout', () => {
+    const sortSelect = (wrapper: VueWrapper) =>
+      wrapper.find<HTMLSelectElement>('.mobile-sort select')
+    const directionButton = (wrapper: VueWrapper) => wrapper.find('.mobile-sort-direction')
+
+    it('labels each data cell with the name of its header', async () => {
+      queryFunction.mockResolvedValueOnce(makePage(makeItems(1)))
+
+      const wrapper = await mountTable()
+
+      expect(
+        rows(wrapper)[0]!
+          .findAll('td')
+          .map((td) => td.attributes('data-label'))
+      ).toEqual(['ID', 'Name', 'Created', 'Status'])
+    })
+
+    it('marks the actions cell, which has no label', async () => {
+      queryFunction.mockResolvedValueOnce(makePage(makeItems(1)))
+
+      const wrapper = await mountTable({ hasActions: true }, { actions: () => h('button', 'Edit') })
+
+      const actionsCell = rows(wrapper)[0]!.findAll('td').at(-1)!
+      expect(actionsCell.classes()).toContain('actions-cell')
+      expect(actionsCell.attributes('data-label')).toBeUndefined()
+    })
+
+    it('lists only the sortable headers in the sort selector', async () => {
+      queryFunction.mockResolvedValueOnce(makePage(makeItems(1)))
+
+      const wrapper = await mountTable()
+
+      const options = sortSelect(wrapper).findAll('option')
+      expect(options.map((o) => o.text())).toEqual(['ID', 'Name', 'Created'])
+      expect(options.map((o) => o.attributes('value'))).toEqual(['id', 'name', 'createdat'])
+    })
+
+    it('selects the current sort column', async () => {
+      queryFunction.mockResolvedValueOnce(makePage(makeItems(1)))
+
+      const wrapper = await mountTable()
+
+      expect(sortSelect(wrapper).element.value).toBe('name')
+    })
+
+    it('sorts by the chosen column in descending order', async () => {
+      queryFunction.mockResolvedValue(makePage(makeItems(1)))
+      const wrapper = await mountTable()
+
+      await sortSelect(wrapper).setValue('id')
+      await flushPromises()
+
+      expect(lastRequest()).toMatchObject({ sortBy: 'id', descending: true, next: null })
+      expect(sortSelect(wrapper).element.value).toBe('id')
+    })
+
+    it('toggles the direction with the direction button', async () => {
+      queryFunction.mockResolvedValue(makePage(makeItems(1)))
+      const wrapper = await mountTable()
+
+      await directionButton(wrapper).trigger('click')
+      await flushPromises()
+
+      expect(lastRequest()).toMatchObject({ sortBy: 'name', descending: false })
+      expect(directionButton(wrapper).text()).toBe('keyboard_arrow_down')
+      expect(directionButton(wrapper).attributes('aria-label')).toBe('Sorted ascending')
+    })
+
+    it('keeps the selector in sync when sorting from the header', async () => {
+      queryFunction.mockResolvedValue(makePage(makeItems(1)))
+      const wrapper = await mountTable()
+
+      await clickHeader(wrapper, 'Created')
+
+      expect(sortSelect(wrapper).element.value).toBe('createdat')
+    })
+
+    it('disables the sort controls while loading', async () => {
+      const pending = deferred<PageResult<Item>>()
+      queryFunction
+        .mockResolvedValueOnce(makePage(makeItems(1)))
+        .mockReturnValueOnce(pending.promise)
+      const wrapper = await mountTable()
+
+      await directionButton(wrapper).trigger('click')
+      await nextTick()
+
+      expect(sortSelect(wrapper).attributes('disabled')).toBeDefined()
+      expect(directionButton(wrapper).attributes('disabled')).toBeDefined()
+
+      pending.resolve(makePage(makeItems(1)))
+      await flushPromises()
+      expect(sortSelect(wrapper).attributes('disabled')).toBeUndefined()
+    })
+
+    it('does not show the sort controls when no column can be sorted', async () => {
+      queryFunction.mockResolvedValueOnce(makePage(makeItems(1)))
+
+      const wrapper = await mountTable({ headers: headers.map((h) => ({ ...h, canSort: false })) })
+
+      expect(wrapper.find('.mobile-sort').exists()).toBe(false)
+    })
+  })
 })

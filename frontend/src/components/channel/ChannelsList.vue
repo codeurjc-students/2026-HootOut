@@ -48,10 +48,10 @@
 </script>
 
 <template>
-  <div class="overflow-y-auto">
+  <div class="mb-4 overflow-y-auto">
     <div
       v-for="channel in channels"
-      class="channel-name-row pointer border-bottom-1 flex items-center justify-between px-4 hover:background-light"
+      class="channel-name-row pointer flex items-center justify-between px-4 border-bottom-1 hover:background-light"
       :class="{ 'background-light': channel.id == currentChatChannel?.id }"
       :key="channel.id"
     >
