@@ -32,15 +32,16 @@
     </span>
     <div class="dropdown-menu hidden">
       <div
-        class="absolute right-0 mt-2 w-46 origin-top-right divide-y rounded-sm border-1 background-soft"
+        class="absolute right-0 z-30 mt-2 w-46 origin-top-right divide-y rounded-sm border-1 background-soft"
         role="menu"
         id="navbar-user-dropdown"
       >
         <div class="py-1 hover:background-light">
           <RouterLink
-            class="pointer w-full px-4 py-2 text-left text-sm"
+            class="pointer inline-block w-full px-4 py-2 text-left text-sm"
             role="menuitem"
             :to="{ name: 'userSettingsProfile' }"
+            @click="(e) => (e.target as HTMLElement)?.blur()"
           >
             View profile
           </RouterLink>
