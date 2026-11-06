@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { defineComponent, h, withDirectives, type PropType } from 'vue'
-import { vTooltip, type TooltipValue } from '@/components/shared/tooltip/vTooltip'
+import { vTooltip, type TooltipValue } from '@/components/shared/Tooltip/vTooltip'
 
 // ---------- helpers ----------
 

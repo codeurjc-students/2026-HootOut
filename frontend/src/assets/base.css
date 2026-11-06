@@ -40,7 +40,7 @@
   --color-background-input: var(--c-dark-input);
 
   --color-border: var(--c-divider-dark-2);
-  --color-border-dark: var( --c-divider-dark-3);
+  --color-border-dark: var(--c-divider-dark-3);
   --color-border-hover: var(--c-divider-dark-1);
 
   --color-heading: var(--c-text-dark-1);

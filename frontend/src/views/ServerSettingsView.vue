@@ -15,15 +15,15 @@
     await wsMessageService.tryReconnect()
   })
 
-  const mobileClass = ref('view-channels')
+  const mobileClass = ref('settings-list')
 
   watch(
-    () => route.params.channelId,
-    async (newId) => {
-      if (newId) {
-        mobileClass.value = 'view-chat'
+    () => route.name,
+    async (name) => {
+      if (name == 'serverSettings') {
+        mobileClass.value = 'settings-list'
       } else {
-        mobileClass.value = 'view-channels'
+        mobileClass.value = 'settings-view'
       }
     },
     {
@@ -34,12 +34,12 @@
 
 <template>
   <section class="server-settings grid grid-cols-[100px_300px_1fr]" :class="mobileClass">
-    <ChatSideBar class="chat-side-bar" :class="mobileClass" />
+    <ChatSideBar class="settings-side-bar" :class="mobileClass" />
     <ServerSettingsSections
-      class="chat-left-bar grid grid-rows-[auto_auto_1fr] rounded-l-[30px] background-soft max-sm:rounded-[30px]"
+      class="settings-left-bar grid grid-rows-[auto_auto_1fr] rounded-l-[30px] background-soft max-sm:rounded-[30px]"
       :class="mobileClass"
     />
-    <div class="setting" v-if="currentServer">
+    <div class="settings-view" v-if="currentServer" :class="mobileClass">
       <router-view />
     </div>
   </section>
@@ -49,5 +49,27 @@
   .server-settings {
     max-height: calc(100vh - var(--navbar-height));
     height: calc(100vh - var(--navbar-height));
+  }
+
+  @media (max-width: 520px) {
+    .server-settings.settings-view {
+      grid-template-columns: 1fr;
+    }
+
+    .server-settings.settings-list {
+      grid-template-columns: 80px 1fr;
+    }
+
+    .settings-side-bar.settings-view {
+      display: none;
+    }
+
+    .settings-left-bar.settings-view {
+      display: none;
+    }
+
+    .settings-view.settings-list {
+      display: none;
+    }
   }
 </style>

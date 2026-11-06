@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import GoBackLink from '@/components/shared/GoBackLink.vue'
   import PaginatedTable from '@/components/shared/table/PaginatedTable.vue'
   import ChatServerService from '@/services/chatServer/ChatServerService'
   import { dateTimeMapper } from '@/services/common/utils'
@@ -15,7 +16,8 @@
 
 <template>
   <div class="h-full w-full border-1 background-soft p-4">
-    <h1 class="py- mb-4 text-2xl">Server Members</h1>
+    <GoBackLink class="p-2" :to="{ name: 'serverMembers' }"> Server Members: </GoBackLink>
+    <h1 class="py- mb-4 hidden text-2xl md:block">Server Members:</h1>
     <div class="h-[80%] max-h-[80%]">
       <PaginatedTable
         :headers="[

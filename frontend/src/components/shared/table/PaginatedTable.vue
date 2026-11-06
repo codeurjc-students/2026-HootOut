@@ -145,7 +145,7 @@
         </tbody>
       </table>
     </div>
-    <div class="gap-4c mt-4 flex w-full justify-end">
+    <div class="mt-4 flex w-full justify-end gap-4">
       <button
         v-if="showPage != 1"
         class="inline-btn pointer material-symbols-sharp w-8 text-center"
