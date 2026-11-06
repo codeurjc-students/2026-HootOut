@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { defineComponent, h, withDirectives, type PropType } from 'vue'
-import { vTooltip, type TooltipValue } from '@/components/shared/Tooltip/vTooltip'
-
+import { vTooltip, type TooltipValue } from '@/components/shared/tooltip/vTooltip.ts'
 // ---------- helpers ----------
 
 const DEFAULT_DELAY = 67
@@ -38,7 +37,7 @@ async function hover(wrapper: VueWrapper, wait = DEFAULT_DELAY) {
 
 async function focus(wrapper: VueWrapper, wait = DEFAULT_DELAY) {
   await wrapper.trigger('focusin')
-  vi.advanceTimersByTime(wait)
+  vi.advanceTimersByTime(wrapperait)
 }
 
 function pressKey(key: string) {
