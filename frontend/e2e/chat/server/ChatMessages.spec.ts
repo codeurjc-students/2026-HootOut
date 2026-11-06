@@ -1,7 +1,12 @@
 import { test, expect } from '../../fixtures.js'
-import { createChannel, createTestServer } from './Common.js'
+import { acceptInvitation, createChannel, createTestServer, inviteUserToServer } from './Common.js'
 
-test('test send messages in a channel', async ({ page: user1, browser, secondUserState }) => {
+test('test send messages in a channel', async ({
+  page: user1,
+  browser,
+  secondUserState,
+  secondAccount,
+}) => {
   const user2Context = await browser.newContext({ storageState: secondUserState })
   const user2 = await user2Context.newPage()
 
@@ -14,10 +19,15 @@ test('test send messages in a channel', async ({ page: user1, browser, secondUse
   // Create Channel
   const channel = await createChannel(user1, server)
 
-  await user2.goto(`/chat/server/${server.id}/channel/${channel.id}`)
-  const wsPromise = user2.waitForEvent('websocket', (ws) => ws.url().includes('/ws'))
+  // Invite User2 to server
+  const invitation = await inviteUserToServer(user1, server, secondAccount.username)
 
-  const ws = await wsPromise
+  // Accept User2 invitation
+  await acceptInvitation(user2)
+
+  await user2.goto(`/chat/server/${server.id}/channel/${channel.id}`)
+  const ws = await user2.waitForEvent('websocket', (ws) => ws.url().includes('/ws'))
+
   const framePromise = ws.waitForEvent('framesent', {
     predicate: (event) => {
       try {
@@ -57,7 +67,12 @@ test('test send messages in a channel', async ({ page: user1, browser, secondUse
   await expect(user2.locator('#messages-list > .background-soft')).toHaveCount(0)
 })
 
-test('test send message with attachments', async ({ page: user1, browser, secondUserState }) => {
+test('test send message with attachments', async ({
+  page: user1,
+  browser,
+  secondUserState,
+  secondAccount,
+}) => {
   const user2Context = await browser.newContext({ storageState: secondUserState })
   const user2 = await user2Context.newPage()
 
@@ -70,10 +85,15 @@ test('test send message with attachments', async ({ page: user1, browser, second
   // Create Channel
   const channel = await createChannel(user1, server)
 
-  await user2.goto(`/chat/server/${server.id}/channel/${channel.id}`)
-  const wsPromise = user2.waitForEvent('websocket', (ws) => ws.url().includes('/ws'))
+  // Invite User2 to server
+  const invitation = await inviteUserToServer(user1, server, secondAccount.username)
 
-  const ws = await wsPromise
+  // Accept User2 invitation
+  await acceptInvitation(user2)
+
+  await user2.goto(`/chat/server/${server.id}/channel/${channel.id}`)
+  const ws = await user2.waitForEvent('websocket', (ws) => ws.url().includes('/ws'))
+
   const framePromise = ws.waitForEvent('framesent', {
     predicate: (event) => {
       try {

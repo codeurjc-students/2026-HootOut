@@ -1,5 +1,6 @@
 ﻿using Amazon.S3.Model;
 using FluentValidation;
+using FluentValidation.Results;
 using HootOut.CommonDomain.FileStorage;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Contracts.MediaFile.Responses;
@@ -33,7 +34,7 @@ namespace HootOut.FileStorage.Services
 
             if (bytesSize > fileStorageSettings.MaxFileBytes)
             {
-                throw new ValidationException($"File size exceeds {fileStorageSettings.MaxFileBytes}");
+                throw new ValidationException(new[] { new ValidationFailure("file", $"File size exceeds {fileStorageSettings.MaxFileBytes}") });
             }
 
             MediaFile newFile = Persistable.CreateNew<MediaFile>();

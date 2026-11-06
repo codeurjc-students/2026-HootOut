@@ -1,23 +1,24 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.Contracts.Users.Services;
 using HootOut.Users.Entities;
 using HootOut.Users.Mappers;
-using HootOut.Users.Search;
+using HootOut.Users.Repositories;
 
 namespace HootOut.Users.Services
 {
     public class UserService : IUserService
     {
         private ISaver<UserInfo> userSaver;
-        private IUserSearch userSearch;
+        private IUserRepository userRepository;
 
-        public UserService(ISaver<UserInfo> userSaver, IUserSearch userSearch)
+        public UserService(ISaver<UserInfo> userSaver, IUserRepository userRepository)
         {
             this.userSaver = userSaver ?? throw new ArgumentNullException(nameof(userSaver));
-            this.userSearch = userSearch ?? throw new ArgumentNullException(nameof(userSearch));
+            this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         }
 
         public async Task<UserDto> CreateUserAsync(CreateUserRequest createUserRequest, CancellationToken ct = default)
@@ -38,10 +39,20 @@ namespace HootOut.Users.Services
         {
             if (Guid.Empty == id)
             {
-                throw new ValidationException("Invalid Request");
+                throw new ValidationException(new[] { new ValidationFailure("userId", "Invalid Request") });
             }
 
-            return (await userSearch.GetUserByIdAsync(id, ct))?.ToDto();
+            return (await userRepository.GetUserByIdAsync(id, ct))?.ToDto();
+        }
+
+        public async Task<UserDto?> GetUserDtoByUsernameAsync(string username, CancellationToken ct = default)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                throw new ValidationException(new[] { new ValidationFailure("username", "username cannot be empty") });
+            }
+
+            return (await userRepository.GetUserByUsernameAsync(username, ct))?.ToDto();
         }
     }
 }

@@ -1,14 +1,23 @@
 ## Phase 1:
 
 #### Objective: Plan how to set up fuzzy search in messages while keeping the content encrypted.
-##### Date: 
+
+##### Date:
+
 14/09/2026
-##### Tool: 
+
+##### Tool:
+
 Claude Chat, Sonnet 5 Medium
+
 ##### Problem to solve:
+
 We want to encrypt the content of the messages at rest, and we want the user to be able to do a fuzzy text search on the contents of older messages (in a Direct Message or in a Server). We first planned to use Elasticsearch for the text search, but Elasticsearch does not support search over encrypted text. Searching for older messages is an "uncommon" operation but required.
-##### Usage: 
+
+##### Usage:
+
 Conversation with Claude about how to setup fuzzy text search on the content of the messages after encrypting the messages. We started from the scenario of having a PostgreSQL database where we want to store the encrypted messages, and Elasticsearch for the fuzzy search. We would have a global key for encrypting the messages. After a conversation, we landed on the following design:
+
 - Blind indexing to support searching encrypted data. When the server receives a message, it separates the content of the message on tokens using n-grams, and we encrypt them. We store them on Elasticsearch and when the user searches we tokenize and encrypt the search and we do a query to Elasticsearch.
 - We will have two global encryption keys. One key for encrypting the messages and another for encrypting the tokens. At the time of encryption, we derive a new key from the global key and the conversation id. We do that for the message and token encryption. For token encryption we will use HMAC-SHA256.
 - The server that receives the message will encrypt the message and the tokens. It will save the encrypted message to PostgreSQL and add a message in a RabbitMQ queue with the encrypted tokens. A different service will then read that message from the queue and save them into Elasticsearch. This is done to offset some load since this can be done later in time without affecting the functionality.
@@ -17,58 +26,117 @@ Conversation with Claude about how to setup fuzzy text search on the content of 
 - There is a possible risk of the Elasticsearch index growing too much over time. We can have a TTL on older messages, and sharding by the conversation id or date.
 - Since we have Elasticsearch on the application stack, we can use it for other non-cyphered searches, such as members of a Server or Users in a Rol.
 
-
 ## Phase 2:
+
 #### Objective: Setup Frontend Unit and Integration Testing with Websockets.
+
 ##### Date:
+
 21/09/2026
+
 ##### Tool:
+
 Claude Chat, Sonnet 5 Medium
+
 ##### Problem to solve:
-We have a Frontend application with Vue 3. We have set up testing with Vitest and @vue/test-utils. There are some tests for testing a js component and a vue component. We want to setup some tests for testing Websocket functionality and 
+
+We have a Frontend application with Vue 3. We have set up testing with Vitest and @vue/test-utils. There are some tests for testing a js component and a vue component. We want to setup some tests for testing Websocket functionality and
+
 ##### Usage:
+
 Chat with Claude. We establish the tests that already exists, and how to write the WebsocketService and tests so it can be used on a component that uses Websockets. With the tests and changes to be prepared for future usage/tests around websockets, [commit bb1795c](https://github.com/codeurjc-students/2026-HootOut/commit/bb1795c3ff40c2254ba0ec964460b43eccfccb03) was made
 
 ## Phase 3:
+
 #### Objective: Get helper functions to write WebSocket backend integration tests.
+
 ##### Date:
+
 02/10/2026
+
 ##### Tool:
+
 Claude Chat, Sonnet 5.5 Medium
+
 ##### Problem to solve:
+
 We want to test the WebSocket server itself, with multiple client connections opened on the same server and interacting. WebSockets operates on byte arrays, so we want some helper functions to convert objects to json and send/receive them with WebSockets.
+
 ##### Usage:
+
 Chat with Claude where I present the testing and working environment (ASP.NET Core 10 with Xunit, we want to test Websockets), and iterate on writing a helper class to ease sending/receiving Json objects.
 The result is on [/backend/Sites/HootOutWebsockets.IntegrationTests/Common/WSTestClient.cs](/backend/Sites/HootOutWebsockets.IntegrationTests/Common/WSTestClient.cs)
 
 #### Objective: Setup User Authentication with JWT, with the WebSocket service in mind.
+
 ##### Date:
+
 06/10/2026
+
 ##### Tool:
+
 Claude Chat, Sonnet 5.5 Medium
+
 ##### Problem to solve:
-We want to authenticate Users in the application using JWT. Since the backend is composed of a REST API and a WebSocket Server, we need the user to be able to authenticate in both applications, first in the API Rest and with the JWT in the WebSocket server. 
+
+We want to authenticate Users in the application using JWT. Since the backend is composed of a REST API and a WebSocket Server, we need the user to be able to authenticate in both applications, first in the API Rest and with the JWT in the WebSocket server.
+
 ##### Usage:
+
 Chat with Claude to see what options there are to authenticate on a WebSocket server with the JWT generated on the Rest API. We discussed some alternatives (like sending the jwt on the ws connection request, or having a ticket-based system).After some research on my own of the topic, I went with the proposed solution of having a "ticket"-based authentication system, as it is also recommended by Heroku: https://devcenter.heroku.com/articles/websocket-security. Basically, after the User successfully authenticates on the Rest API, it makes a request to it and the Rest API stores a short lived "ticket" to the DB and returns it to the client. Then the client connects to the WebSocket Server with that ticket, and the WebSocket Server validates it.
 We iterated on User registration and Authentication classes and tests on the Backend so it can compatible with JWT and the ticket-based system.
 
 #### Objective: Get images and videos from S3 having authentication and preventing server load.
+
 ##### Date:
+
 19/10/2026
+
 ##### Tool:
+
 Claude Chat, Opus 5.5 Medium
+
 ##### Problem to solve:
+
 We have user authentication via JWT. Users can upload files and they will be saved to an S3-compatible file service (in this case, RustFS). But native html elements (img, video) doesn't allow modifying the request headers, so we can't use the Bearer token. Also we don't want to add much overhead to the server when serving files, ideally most of the load goes to S3.
+
 ##### Usage:
+
 Chat with Claude to see posssible solutions and alternatives. We landed on using S3 signed Urls. When the backend gives urls of resources stored on S3, it will generate a signed url that can be used to retrieve that file from S3. The backend will know if the user have access to that resource, and generate the signed url depending on it. The signed url will also have a valid lifetime (by default 1 hour) and can only be used to get the resource associated to it.
 Claude also helped setting up RustFS with docker-compose using HTTPS
 
 #### Objective: Include Playwright tests in sonar code coverage
+
 ##### Date:
+
 24/10/2026
+
 ##### Tool:
+
 Claude Chat, Opus 5.5 Medium
+
 ##### Problem to solve:
+
 In the frontend, we had setup vitests to generate code coverage results, and then it was uploaded to sonar. But Playwright tests were not included in that coverage. We want to include them on the same sonar project.
+
 ##### Usage:
-Chat with Claude code trying to set up the code coverage with Playwright, and then uploading both vitest and playwright code coverage to Sonar. We will add monocart-reporter as a dependency to generate the test coverage, using a test fixture to link the .vue components to their build files using their js.map files. Since we use v8 as our test coverage provider, this only works on playwright runners using chromium-based browsers, but that shouldn't affect test coverage. 
+
+Chat with Claude code trying to set up the code coverage with Playwright, and then uploading both vitest and playwright code coverage to Sonar. We will add monocart-reporter as a dependency to generate the test coverage, using a test fixture to link the .vue components to their build files using their js.map files. Since we use v8 as our test coverage provider, this only works on playwright runners using chromium-based browsers, but that shouldn't affect test coverage.
+
+#### Objective: Add some unit tests to the project
+
+##### Date:
+
+05/11/2026
+
+##### Tool:
+
+Claude Chat, Opus 5.5 Medium
+
+##### Problems to solve:
+
+Add some unit test to new shared components (e.g. paginatedTable, infiniteScrollList, vTooltip)
+
+##### Usage:
+
+Chat with claude code passing tests requirements for some component testing, and making some changes suggested by claude

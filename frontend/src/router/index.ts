@@ -1,6 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.ts'
 import NotFound from '@/views/NotFound.vue'
+import ChatServerService from '@/services/chatServer/ChatServerService'
+import { serverInfoStore } from '@/stores/serverInfo'
+import ServerSettingsProfile from '@/components/server/settings/ServerSettingsProfile.vue'
+import ServerSettingsMember from '@/components/server/settings/ServerSettingsMember.vue'
+import ActiveMembers from '@/components/server/settings/Members/ActiveMembers.vue'
+import ServerInvitations from '@/components/server/settings/Members/ServerInvitations.vue'
+import UserSettings from '@/views/UserSettings.vue'
+import UserSettingsProfile from '@/components/user/settings/UserSettingsProfile.vue'
+import UserServerInvitations from '@/components/user/settings/UserServerInvitations.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -46,6 +55,66 @@ const router = createRouter({
       name: 'channel',
       component: () => import('@/views/ChatView.vue'),
       meta: { layout: 'MainLayout' },
+    },
+    {
+      path: '/settings/server/:serverId',
+      name: 'serverSettings',
+      component: () => import('@/views/ServerSettingsView.vue'),
+      meta: { layout: 'MainLayout' },
+      beforeEnter: async (to, from) => {
+        const serverId = to.params['serverId']
+        try {
+          const server = await ChatServerService.getServerById(serverId as string)
+          if (!server) {
+            return { name: 'chat' }
+          }
+          await serverInfoStore().setCurrentServerSettings(server)
+        } catch (err) {
+          return { name: 'chat' }
+        }
+      },
+      children: [
+        {
+          path: 'profile',
+          name: 'serverProfile',
+          component: ServerSettingsProfile,
+        },
+        {
+          path: 'members',
+          name: 'serverMembers',
+          component: ServerSettingsMember,
+          children: [
+            {
+              path: 'active',
+              name: 'serverActiveMembers',
+              component: ActiveMembers,
+            },
+            {
+              path: 'invitations',
+              name: 'serverInvitations',
+              component: ServerInvitations,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: '/settings/user',
+      name: 'userSettings',
+      component: UserSettings,
+      meta: { layout: 'MainLayout' },
+      children: [
+        {
+          path: 'profile',
+          name: 'userSettingsProfile',
+          component: UserSettingsProfile,
+        },
+        {
+          path: 'invitations',
+          name: 'userServerInvitations',
+          component: UserServerInvitations,
+        },
+      ],
     },
   ],
 })

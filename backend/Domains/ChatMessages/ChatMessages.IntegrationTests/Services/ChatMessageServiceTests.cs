@@ -102,7 +102,7 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
             chatMessage.Content.Should().Be(content);
             chatMessage.CreatedAt.Should().NotBe(default);
 
-            result = await chatMessageService.GetMessagesByChannelAsync(Guid.NewGuid(), ct:ct);
+            result = await chatMessageService.GetMessagesByChannelAsync(Guid.NewGuid(), ct: ct);
             result.Items.Should().BeEmpty();
         }
 

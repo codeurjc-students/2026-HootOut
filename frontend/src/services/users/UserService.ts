@@ -2,7 +2,7 @@ import { get } from '../common/api/ApiService'
 
 const UserService = {
   getAllUsers: async function (): Promise<Array<any>> {
-    return get('users/all')
+    return await get('users/all')
   },
 }
 

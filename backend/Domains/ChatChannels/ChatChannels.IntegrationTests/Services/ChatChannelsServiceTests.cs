@@ -1,6 +1,6 @@
 ﻿using Autofac;
 using FluentAssertions;
-using HootOut.ChatChannels.Search;
+using HootOut.ChatChannels.Repositories;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
@@ -98,7 +98,7 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
             Guid serverId = Guid.NewGuid();
             var newChannel = await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "test", ChatServerId = serverId }, ct);
 
-            IChatChannelSearch search = container.Resolve<IChatChannelSearch>();
+            IChatChannelRepository search = container.Resolve<IChatChannelRepository>();
             var channel = await search.GetChannelByIdAsync(newChannel.Id, ct);
 
             channel.Should().NotBeNull();
@@ -123,7 +123,7 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
             Guid serverId = Guid.NewGuid();
             var newChannel = await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "test", ChatServerId = serverId }, ct);
 
-            IChatChannelSearch search = container.Resolve<IChatChannelSearch>();
+            IChatChannelRepository search = container.Resolve<IChatChannelRepository>();
             var channel = await search.GetChannelByIdAsync(newChannel.Id, ct);
 
             var id = await chatChannelsService.DeleteChatChannelAsync(channel!.Id, ct);

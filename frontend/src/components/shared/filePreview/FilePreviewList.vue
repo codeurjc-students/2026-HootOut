@@ -40,7 +40,7 @@
   <div class="file-preview-list flex w-full gap-4 overflow-auto p-4">
     <div
       v-for="file in files"
-      class="file-preview-entry background-soft pointer relative flex justify-center rounded-lg border-1 p-4"
+      class="file-preview-entry pointer relative flex justify-center rounded-lg border-1 background-soft p-4"
       :key="file.id"
       @click="openFile(file)"
     >

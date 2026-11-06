@@ -4,7 +4,7 @@ using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.Users.Dtos.Request;
 using HootOut.Contracts.Users.Services;
 using HootOut.Users.Entities;
-using HootOut.Users.Search;
+using HootOut.Users.Repositories;
 using HootOut.Users.Services;
 using Moq;
 
@@ -13,12 +13,12 @@ namespace HootOut.Users.UnitTests.Services
     public class UserServiceTests
     {
         Mock<ISaver<UserInfo>> m_UserSaver;
-        Mock<IUserSearch> m_UserSearch;
+        Mock<IUserRepository> m_UserSearch;
 
         public UserServiceTests()
         {
             m_UserSaver = new Mock<ISaver<UserInfo>>();
-            m_UserSearch = new Mock<IUserSearch>();
+            m_UserSearch = new Mock<IUserRepository>();
 
             List<UserInfo> users = new List<UserInfo>();
 

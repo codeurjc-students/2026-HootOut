@@ -45,7 +45,7 @@
 </script>
 
 <template>
-  <section id="register" class="background-soft h-full w-full p-0 md:pt-20">
+  <section id="register" class="h-full w-full background-soft p-0 md:pt-20">
     <div class="custom-form-wrapper">
       <h1 class="text-3xl">Create Account</h1>
       <form class="custom-form" id="register-form" novalidate @submit.prevent="onSubmit">

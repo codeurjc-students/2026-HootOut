@@ -13,10 +13,13 @@ interface State {
   opts: Options
   tip?: HTMLDivElement
   timer?: number
+  hovered: boolean
+  focused: boolean
   cleanup: () => void
 }
 
 const GAP = 8
+const PLACEMENTS: readonly Placement[] = ['top', 'bottom', 'left', 'right']
 const states = new WeakMap<HTMLElement, State>()
 const flip: Record<Placement, Placement> = {
   top: 'bottom',
@@ -25,14 +28,21 @@ const flip: Record<Placement, Placement> = {
   right: 'left',
 }
 
-const parse = ({ value, arg }: DirectiveBinding<TooltipValue, string>): Options => ({
-  text: '',
-  placement: 'top',
-  delay: 67,
-  disabled: false,
-  ...(typeof value === 'object' ? value : { text: value ?? '' }),
-  ...(arg ? { placement: arg as Placement } : {}),
-})
+const isPlacement = (value: unknown): value is Placement => PLACEMENTS.includes(value as Placement)
+
+function parse({ value, arg }: DirectiveBinding<TooltipValue, string>): Options {
+  const opts: Options = {
+    text: '',
+    placement: 'top',
+    delay: 67,
+    disabled: false,
+    ...(typeof value === 'object' ? value : { text: value ?? '' }),
+    ...(arg ? { placement: arg as Placement } : {}),
+  }
+  // Fall back to 'top' for unknown placements (e.g. v-tooltip:foo)
+  if (!isPlacement(opts.placement)) opts.placement = 'top'
+  return opts
+}
 
 function coords(p: Placement, t: DOMRect, r: DOMRect) {
   const cx = t.left + (t.width - r.width) / 2,
@@ -87,19 +97,29 @@ function show(el: HTMLElement, s: State) {
 
 export const vTooltip: Directive<HTMLElement, TooltipValue, string> = {
   mounted(el, binding) {
-    const s: State = { opts: parse(binding), cleanup: () => {} }
+    const s: State = { opts: parse(binding), hovered: false, focused: false, cleanup: () => {} }
     const ctrl = new AbortController()
     const on = (t: EventTarget, ev: string, fn: (e: any) => void, capture = false) =>
       t.addEventListener(ev, fn, { signal: ctrl.signal, passive: true, capture })
 
-    const open = () => show(el, s),
-      close = () => hide(el, s),
-      reposition = () => place(el, s)
-    ;['mouseenter', 'focusin'].forEach((ev) => on(el, ev, open))
-    ;['mouseleave', 'focusout'].forEach((ev) => on(el, ev, close))
+    // The tooltip stays open while the element is either hovered or focused
+    const enter = (source: 'hovered' | 'focused') => () => {
+      s[source] = true
+      show(el, s)
+    }
+    const leave = (source: 'hovered' | 'focused') => () => {
+      s[source] = false
+      if (!s.hovered && !s.focused) hide(el, s)
+    }
+    const reposition = () => place(el, s)
+
+    on(el, 'mouseenter', enter('hovered'))
+    on(el, 'focusin', enter('focused'))
+    on(el, 'mouseleave', leave('hovered'))
+    on(el, 'focusout', leave('focused'))
     on(window, 'scroll', reposition, true)
     on(window, 'resize', reposition)
-    on(document, 'keydown', (e: KeyboardEvent) => e.key === 'Escape' && close())
+    on(document, 'keydown', (e: KeyboardEvent) => e.key === 'Escape' && hide(el, s))
 
     s.cleanup = () => {
       hide(el, s)
@@ -111,12 +131,11 @@ export const vTooltip: Directive<HTMLElement, TooltipValue, string> = {
     const s = states.get(el)
     if (!s) return
     s.opts = parse(binding)
+    // Also cancels a tooltip that is still waiting for its delay
+    if (s.opts.disabled || !s.opts.text) return hide(el, s)
     if (!s.tip) return
-    if (s.opts.disabled || !s.opts.text) hide(el, s)
-    else {
-      s.tip.textContent = s.opts.text
-      place(el, s)
-    }
+    s.tip.textContent = s.opts.text
+    place(el, s)
   },
   beforeUnmount(el) {
     states.get(el)?.cleanup()

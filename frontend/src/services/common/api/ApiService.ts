@@ -4,7 +4,7 @@ import { ApiError, ValidationError } from '@/types'
 
 const apiVersion = 'v1'
 
-type Query = Record<string, unknown>
+export type Query = Record<string, unknown>
 type Headers = Record<string, string>
 
 interface RequestOptions {

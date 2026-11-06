@@ -1,9 +1,6 @@
 <script setup lang="ts">
   import ChatSideBar from './ChatSideBar.vue'
   import { onMounted, ref, watch } from 'vue'
-  import { userInfoStore } from '@/stores/userInfo.ts'
-  import type { UserInfo } from '@/types/userInfo.ts'
-  import { get } from '@/services/common/api/ApiService.ts'
   import { useRoute } from 'vue-router'
   import { serverInfoStore } from '@/stores/serverInfo.ts'
   import ChatLeftBar from './ChatLeftBar.vue'
@@ -12,13 +9,9 @@
 
   const serverInfo = serverInfoStore()
 
-  const userInfo = userInfoStore()
   const route = useRoute()
 
   onMounted(async () => {
-    const user = await get<UserInfo>('users/me')
-    userInfo.setUser(user)
-
     await wsMessageService.tryReconnect()
   })
 
@@ -27,10 +20,6 @@
   watch(
     () => route.params.serverId,
     async (newId, oldId) => {
-      if (serverInfo.servers.length == 0) {
-        await serverInfo.getChatServers()
-      }
-
       if (newId) {
         await serverInfo.setCurrentServer(newId as string)
       }
@@ -63,7 +52,7 @@
   <section class="chat-layout grid grid-cols-[100px_300px_1fr]" :class="mobileClass">
     <ChatSideBar class="chat-side-bar" :class="mobileClass" />
     <ChatLeftBar
-      class="background-soft chat-left-bar grid grid-rows-[auto_auto_1fr] rounded-l-[30px] max-sm:rounded-[30px]"
+      class="chat-left-bar grid grid-rows-[auto_auto_1fr] rounded-l-[30px] background-soft max-sm:rounded-[30px]"
       :class="mobileClass"
     />
     <ChatConversationView :class="mobileClass" />

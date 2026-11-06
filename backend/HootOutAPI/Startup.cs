@@ -131,11 +131,11 @@ namespace HootOut.HootOutAPI
             app.UseDefaultFiles();
             app.UseStaticFiles();
 
-            app.UseRouting(); 
-            app.UseCors();  
+            app.UseRouting();
+            app.UseCors();
 
             app.UseAuthentication();
-            app.UseAuthorization(); 
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

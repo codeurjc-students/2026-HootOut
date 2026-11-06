@@ -1,7 +1,8 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using HootOut.ChatChannels.Entities;
 using HootOut.ChatChannels.Mappers;
-using HootOut.ChatChannels.Search;
+using HootOut.ChatChannels.Repositories;
 using HootOut.Contracts.ChatChannels.Dtos;
 using HootOut.Contracts.ChatChannels.Requests;
 using HootOut.Contracts.ChatChannels.Services;
@@ -12,10 +13,10 @@ namespace HootOut.ChatChannels.Services
     public class ChatChannelsService : IChatChannelsService
     {
         private readonly ISaver<ChatChannel> saver;
-        private readonly IChatChannelSearch search;
+        private readonly IChatChannelRepository search;
 
         public ChatChannelsService(ISaver<ChatChannel> saver,
-            IChatChannelSearch search)
+            IChatChannelRepository search)
         {
             this.saver = saver ?? throw new ArgumentNullException(nameof(saver));
             this.search = search ?? throw new ArgumentNullException(nameof(search));
@@ -36,7 +37,7 @@ namespace HootOut.ChatChannels.Services
 
         public async Task<IEnumerable<ChatChannelDto>> GetChannelsByServerIdAsync(Guid serverId, CancellationToken ct = default)
         {
-            return [.. (await search.GetChannelsByServerId(serverId, ct)).Select(x => x.ToDto())];
+            return (await search.GetChannelsByServerId(serverId, ct)).Select(x => x.ToDto());
         }
 
         public async Task<ChatChannelDto> UpdateChatChannelAsync(UpdateChatChannelRequest request, CancellationToken ct = default)
@@ -58,7 +59,7 @@ namespace HootOut.ChatChannels.Services
             ChatChannel? channel = await search.GetChannelByIdAsync(channelId, ct); // TO-DO Check 
             if (channel == null)
             {
-                throw new ValidationException("Channel not found");
+                throw new ValidationException(new[] { new ValidationFailure("channel", "Channel not found") });
             }
 
             await saver.DeleteAsync(channel, ct);

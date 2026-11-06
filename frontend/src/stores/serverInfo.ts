@@ -21,6 +21,10 @@ export const serverInfoStore = defineStore('serverInfo', () => {
   const currentServer = ref<ChatServer>()
   const lastPage = ref<PageResult<ChatMessage>>()
 
+  // Incremented every time the open channel changes (or is about to change). A request
+  // that started with an older value finished too late and its result is ignored.
+  let selection = 0
+
   function setCurrentChatChannel(channel: ChatChannel | undefined) {
     currentChatChannel.value = channel
   }
@@ -41,22 +45,37 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     }
   }
 
+  // Returns null when the payload is missing or is not valid JSON
+  function parseChatMessage(payload: string | undefined): ChatMessage | null {
+    if (!payload) return null
+    try {
+      return JSON.parse(payload) as ChatMessage
+    } catch {
+      return null
+    }
+  }
+
   function newMessage(message: WebSocketMessage) {
-    channelMessages.value?.unshift(JSON.parse(message.payload) as ChatMessage)
+    const chatMessage = parseChatMessage(message.payload)
+    if (!chatMessage) return
+    channelMessages.value.unshift(chatMessage)
   }
 
   function addPendingMessage(id: string, chatMessage: ChatMessage) {
     const channel = currentChatChannel.value
-    pendingMessages.value[channel!.id]![id] = chatMessage
+    if (!channel) return
+    ;(pendingMessages.value[channel.id] ??= {})[id] = chatMessage
   }
 
   function confirmMessage(message: WebSocketMessage) {
     const channel = currentChatChannel.value
-    const chatMessage = pendingMessages.value[channel!.id]![message.replyTo!]
-    if (chatMessage) {
-      delete pendingMessages.value[channel!.id]![message.replyTo!]
-      newMessage(message)
-    }
+    const pending = channel ? pendingMessages.value[channel.id] : undefined
+    // Not pending in the open channel (e.g. the ack arrived after changing channel):
+    // nothing to do, the message is loaded with the history when that channel is opened
+    if (!pending || !message.replyTo || !pending[message.replyTo]) return
+
+    delete pending[message.replyTo]
+    newMessage(message)
   }
 
   function setServerChannels(newChannels: ChatChannel[]) {
@@ -81,6 +100,8 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     const channel = channels.value.filter((x) => x.id == channelId).at(0)
     if (!channel) return
 
+    const currentSelection = ++selection
+
     try {
       wsMessageService.subscribe(channelId, (message: WebSocketMessage) => {
         newMessage(message)
@@ -92,28 +113,40 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     }
 
     const pageResult = await ChatMessageService.getMessagesByChannelId(channelId)
+    // Another channel (or server) was selected while loading: keep that one
+    if (currentSelection !== selection) return
+
     lastPage.value = pageResult
     setChannelMessages(channel, pageResult.items)
     setCurrentChatChannel(channel)
   }
 
   async function getNextMessages() {
-    if (lastPage.value) {
-      const pageResult = await ChatMessageService.getMessagesByChannelId(
-        currentChatChannel.value!.id,
-        lastPage.value.next,
-        lastPage.value.pageSize
-      )
-      lastPage.value = pageResult
-      if (pageResult.items.length > 0) {
-        channelMessages.value.push(...pageResult.items)
-      }
+    const channel = currentChatChannel.value
+    // No more pages: requesting with next = null would load the first page again
+    if (!channel || !lastPage.value?.next) return
+
+    const currentSelection = selection
+    const pageResult = await ChatMessageService.getMessagesByChannelId(
+      channel.id,
+      lastPage.value.next,
+      lastPage.value.pageSize
+    )
+    // The channel changed while loading: these messages belong to the previous one
+    if (currentSelection !== selection) return
+
+    lastPage.value = pageResult
+    if (pageResult.items.length > 0) {
+      channelMessages.value.push(...pageResult.items)
     }
   }
 
-  async function getChatServers(): Promise<Ref<ChatServer[]>> {
-    servers.value = await ChatServerService.getServers()
-    return servers
+  async function getChatServers(next: string | null): Promise<PageResult<ChatServer>> {
+    const page = await ChatServerService.getServers(next)
+    if (page.items) {
+      servers.value.push(...page.items)
+    }
+    return page
   }
 
   function addChatServer(chatServer: ChatServer): void {
@@ -121,12 +154,23 @@ export const serverInfoStore = defineStore('serverInfo', () => {
   }
 
   async function setCurrentServer(id: string): Promise<void> {
-    currentServer.value = servers.value.filter((x) => x.id == id).at(0)
+    currentServer.value = await ChatServerService.getServerById(id)
     if (currentServer?.value) await fetchServerChannels(currentServer.value)
   }
 
-  async function fetchServerChannels(chatServer: ChatServer): Promise<void> {
-    const channels = await ChatChannelService.getChannelsByServerId(chatServer.id)
+  async function setCurrentServerSettings(server: ChatServer) {
+    currentServer.value = server
+  }
+
+  async function fetchServerChannels(
+    chatServer: ChatServer,
+    makeRequest: boolean = false
+  ): Promise<void> {
+    // A channel of the previous server that is still loading must not be opened
+    selection++
+    if (makeRequest)
+      currentServer.value!.channels = await ChatChannelService.getChannelsByServerId(chatServer.id)
+    const channels = currentServer.value?.channels ?? []
     clearChannels()
     setServerChannels(channels)
     setCurrentChatChannel(undefined)
@@ -153,5 +197,6 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     currentServer,
     fetchServerChannels,
     getNextMessages,
+    setCurrentServerSettings,
   }
 })

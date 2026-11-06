@@ -72,7 +72,7 @@
     />
     <div class="m-4 mt-0">
       <div
-        class="background-primary max-width-full m-0 flex h-12 items-center rounded-[10px] border-1 p-3 md:mx-auto md:max-w-[80%]"
+        class="max-width-full m-0 flex h-12 items-center rounded-[10px] border-1 background-primary p-3 md:mx-auto md:max-w-[80%]"
       >
         <div id="message-box-icons" class="flex items-center">
           <div class="inline-btn material-symbols-sharp pointer" @click="selectFile">add</div>

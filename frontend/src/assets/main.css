@@ -42,15 +42,31 @@ ul {
   list-style: none;
 }
 
-.border-1 {
+@utility border-1 {
   border: 1px solid rgb(var(--color-border));
 }
-.border-top-1 {
+@utility border-top-1 {
   border-top: 1px solid rgb(var(--color-border));
 }
 
-.border-bottom-1 {
+@utility border-bottom-1 {
   border-bottom: 1px solid rgb(var(--color-border));
+}
+
+@utility border-bottom-1-dark {
+  border-bottom: 1px solid rgba(var(--color-border-dark), 0.4);
+}
+
+@utility background-primary {
+  background-color: rgb(var(--color-background));
+}
+
+@utility background-soft {
+  background-color: rgb(var(--color-background-soft));
+}
+
+@utility background-light {
+  background-color: rgb(var(--color-background-light));
 }
 
 @theme {

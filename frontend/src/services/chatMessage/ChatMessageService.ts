@@ -4,10 +4,10 @@ import type { ChatMessage, PageResult } from '@/types'
 const ChatMessageService = {
   getMessagesByChannelId: async function (
     channelId: string,
-    next: string | undefined = undefined,
+    next: string | undefined | null = undefined,
     pageSize: number = 20
   ): Promise<PageResult<ChatMessage>> {
-    return get('chatMessages/channelMessages', { channelId, next, pageSize })
+    return await get('chatMessages/channelMessages', { channelId, next, pageSize })
   },
 }
 

@@ -30,12 +30,12 @@
   <Teleport to="body">
     <div
       v-if="show"
-      class="modal-background background-primary fixed top-0 left-0 z-990 h-screen w-screen opacity-50"
+      class="modal-background fixed top-0 left-0 z-990 h-screen w-screen background-primary opacity-50"
       @click="close"
     ></div>
     <div
       v-if="show"
-      class="modal custom-form-wrapper fixed top-0 left-0 z-999 flex max-h-screen min-h-screen max-w-screen min-w-screen flex-col overflow-y-auto p-8 md:top-[20%] md:left-[50%] md:min-h-[30vh] md:min-w-[30rem] md:-translate-x-[50%]"
+      class="modal custom-form-wrapper fixed top-0 left-0 z-999 flex max-h-screen min-h-screen max-w-screen min-w-screen flex-col overflow-y-auto p-4! md:top-[20%] md:left-[50%] md:min-h-[30vh] md:min-w-[30rem] md:-translate-x-[50%] md:p-8!"
       :class="modalClass"
     >
       <div class="modal-title grid grid-cols-[1fr_auto]">

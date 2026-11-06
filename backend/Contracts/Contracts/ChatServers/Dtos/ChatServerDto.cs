@@ -2,7 +2,7 @@
 
 namespace HootOut.Contracts.ChatServers.Dtos
 {
-    public class ChatServerDto
+    public sealed record ChatServerDto
     {
         public Guid Id { get; set; }
 
@@ -12,7 +12,7 @@ namespace HootOut.Contracts.ChatServers.Dtos
 
         public string Description { get; set; } = string.Empty;
 
-        public IEnumerable<ChatChannelDto> Channels { get; set; } = [];
+        public List<ChatChannelDto> Channels { get; set; } = [];
 
         public DateTime CreatedAt { get; set; }
 

@@ -10,7 +10,7 @@
   const router = useRouter()
 
   const serverInfo = serverInfoStore()
-  const { channels, currentChatChannel, currentServer } = storeToRefs(serverInfo) as any
+  const { channels, currentChatChannel, currentServer } = storeToRefs(serverInfo)
 
   const channelToEdit = ref<ChatChannel>()
   const updateChannelModal = useTemplateRef('update-channel-form-modal')
@@ -18,7 +18,7 @@
   async function selectChannel(channel: ChatChannel) {
     router.push({
       name: 'channel',
-      params: { serverId: currentServer.id, channelId: channel.id },
+      params: { serverId: currentServer.value?.id, channelId: channel.id },
     })
   }
 
@@ -37,24 +37,26 @@
     updateChannelModal.value?.close()
     const channel = currentChatChannel.value
 
-    await serverInfo.fetchServerChannels(currentServer.value)
+    await serverInfo.fetchServerChannels(currentServer.value!, true)
 
     if (channel?.id != id) {
       serverInfo.setCurrentChatChannel(channel)
+    } else {
+      router.push({ name: 'server', params: { serverId: currentServer.value!.id } })
     }
   }
 </script>
 
 <template>
-  <div class="overflow-y-auto">
+  <div class="mb-4 overflow-y-auto">
     <div
       v-for="channel in channels"
-      class="channel-name-row pointer hover:background-light border-bottom-1 flex items-center justify-between px-4"
+      class="channel-name-row pointer flex items-center justify-between px-4 border-bottom-1 hover:background-light"
       :class="{ 'background-light': channel.id == currentChatChannel?.id }"
       :key="channel.id"
     >
       <RouterLink
-        :to="{ name: 'channel', params: { serverId: currentServer.id, channelId: channel.id } }"
+        :to="{ name: 'channel', params: { serverId: currentServer!.id, channelId: channel.id } }"
         class="channel-name flex-1 py-2"
         >{{ channel.name }}
       </RouterLink>
@@ -79,9 +81,3 @@
     </template>
   </Modal>
 </template>
-
-<style>
-  .channel-name-row:hover {
-    background-color: rgb(var(--color-background-light));
-  }
-</style>
