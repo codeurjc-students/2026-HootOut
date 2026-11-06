@@ -60,7 +60,8 @@ function mountScroll(items: Item[] = makeItems(3)) {
   return mount(InfiniteScroll, {
     props: { items, loadMore },
     slots: {
-      'scroll-item': ({ item }: { item: Item }) => h('p', { class: 'scroll-item' }, item.name),
+      'scroll-item': ({ item }: { item: unknown }) =>
+        h('p', { class: 'scroll-item' }, (item as Item).name),
     },
   })
 }
