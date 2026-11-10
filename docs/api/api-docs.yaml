@@ -3,7 +3,573 @@ info:
   title: HootOut.HootOutAPI
   version: '1.0'
 paths:
-  /api/v1/Users/all:
+  /api/v1/auth/register:
+    post:
+      tags:
+        - Authentication
+      parameters:
+        - name: X-Token-Delivery
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRegistrationRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/AuthRegistrationRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/AuthRegistrationRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Authentication
+      parameters:
+        - name: X-Token-Delivery
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /api/v1/auth/refresh:
+    post:
+      tags:
+        - Authentication
+      parameters:
+        - name: X-Token-Delivery
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRefreshRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/AuthRefreshRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/AuthRefreshRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /api/v1/auth/logout:
+    post:
+      tags:
+        - Authentication
+      parameters:
+        - name: X-Token-Delivery
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRefreshRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/AuthRefreshRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/AuthRefreshRequest'
+      responses:
+        '200':
+          description: OK
+  /api/v1/auth/ws-ticket:
+    post:
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/WSTicketResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WSTicketResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/WSTicketResponse'
+  /api/v1/ChatChannels/getByServerId:
+    get:
+      tags:
+        - ChatChannels
+      parameters:
+        - name: serverId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatChannelDto'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatChannelDto'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatChannelDto'
+  /api/v1/ChatChannels:
+    post:
+      tags:
+        - ChatChannels
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChatChannelRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/CreateChatChannelRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/CreateChatChannelRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ChatChannelDto'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatChannelDto'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ChatChannelDto'
+    put:
+      tags:
+        - ChatChannels
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateChatChannelRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/UpdateChatChannelRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/UpdateChatChannelRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ChatChannelDto'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatChannelDto'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ChatChannelDto'
+  '/api/v1/ChatChannels/{id}':
+    delete:
+      tags:
+        - ChatChannels
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: uuid
+            application/json:
+              schema:
+                type: string
+                format: uuid
+            text/json:
+              schema:
+                type: string
+                format: uuid
+  /api/v1/ChatMessages/channelMessages:
+    get:
+      tags:
+        - ChatMessages
+      parameters:
+        - name: channelId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: next
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ChatMessageDtoPageResult'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessageDtoPageResult'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessageDtoPageResult'
+  /api/v1/ChatServers/joined:
+    get:
+      tags:
+        - ChatServers
+      parameters:
+        - name: Next
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: SortBy
+          in: query
+          schema:
+            type: string
+        - name: Descending
+          in: query
+          schema:
+            type: boolean
+        - name: PageSize
+          in: query
+          schema:
+            type: integer
+            format: int32
+        - name: Size
+          in: query
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ChatServerDtoPageResult'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatServerDtoPageResult'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ChatServerDtoPageResult'
+  /api/v1/ChatServers:
+    post:
+      tags:
+        - ChatServers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChatServerRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/CreateChatServerRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/CreateChatServerRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ChatServerDto'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatServerDto'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ChatServerDto'
+  '/api/v1/ChatServers/{id}/invitations':
+    get:
+      tags:
+        - ChatServers
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+        - name: next
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: descending
+          in: query
+          schema:
+            type: boolean
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ChatServerDto'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatServerDto'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ChatServerDto'
+  /api/v1/ChatServers/invitations:
+    get:
+      tags:
+        - ChatServers
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+        - name: next
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: descending
+          in: query
+          schema:
+            type: boolean
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ChatServerDto'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatServerDto'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ChatServerDto'
+  /api/v1/ChatServers/invitation:
+    post:
+      tags:
+        - ChatServers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteServerMemberRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/InviteServerMemberRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/InviteServerMemberRequest'
+      responses:
+        '200':
+          description: OK
+    put:
+      tags:
+        - ChatServers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateServerInvitationRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/UpdateServerInvitationRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/UpdateServerInvitationRequest'
+      responses:
+        '200':
+          description: OK
+  '/api/v1/ChatServers/{id}/members':
+    get:
+      tags:
+        - ChatServers
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+        - name: next
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: descending
+          in: query
+          schema:
+            type: boolean
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServerMemberDtoPageResult'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerMemberDtoPageResult'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServerMemberDtoPageResult'
+  '/api/v1/ChatServers/{id}':
+    get:
+      tags:
+        - ChatServers
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ChatServerDto'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatServerDto'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ChatServerDto'
+  /api/v1/Files:
+    post:
+      tags:
+        - Files
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+            encoding:
+              file:
+                style: form
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/UploadFileResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadFileResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/UploadFileResponse'
+  /api/v1/Users/me:
     get:
       tags:
         - Users
@@ -13,32 +579,25 @@ paths:
           content:
             text/plain:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserDto'
+                $ref: '#/components/schemas/UserDto'
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserDto'
+                $ref: '#/components/schemas/UserDto'
             text/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserDto'
+                $ref: '#/components/schemas/UserDto'
 components:
   schemas:
-    UserDto:
-      required:
-        - email
-        - password
-        - uid
-        - username
+    AuthRefreshRequest:
       type: object
       properties:
-        uid:
+        refreshToken:
           type: string
-          format: uuid
+          nullable: true
+      additionalProperties: false
+    AuthRegistrationRequest:
+      type: object
+      properties:
         username:
           type: string
           nullable: true
@@ -49,5 +608,314 @@ components:
           type: string
           nullable: true
       additionalProperties: false
+    AuthRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          nullable: true
+        password:
+          type: string
+          nullable: true
+      additionalProperties: false
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          nullable: true
+        tokenType:
+          type: string
+          nullable: true
+        expiresIn:
+          type: integer
+          format: int32
+        refreshToken:
+          type: string
+          nullable: true
+      additionalProperties: false
+    ChatChannelDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        chatServerId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        modifiedAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ChatMessageAttachmentDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        messageId:
+          type: string
+          format: uuid
+        mediaFileId:
+          type: string
+          format: uuid
+        fileName:
+          type: string
+          nullable: true
+        contentType:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+        downloadUrl:
+          type: string
+          nullable: true
+      additionalProperties: false
+    ChatMessageDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        modifiedAt:
+          type: string
+          format: date-time
+        author:
+          $ref: '#/components/schemas/UserDto'
+        content:
+          type: string
+          nullable: true
+        chatChannelId:
+          type: string
+          format: uuid
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessageAttachmentDto'
+          nullable: true
+      additionalProperties: false
+    ChatMessageDtoPageResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessageDto'
+          nullable: true
+        next:
+          type: string
+          format: uuid
+          nullable: true
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int32
+          nullable: true
+      additionalProperties: false
+    ChatServerDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        channels:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatChannelDto'
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        modifiedAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ChatServerDtoPageResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatServerDto'
+          nullable: true
+        next:
+          type: string
+          format: uuid
+          nullable: true
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int32
+          nullable: true
+      additionalProperties: false
+    CreateChatChannelRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        chatServerId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    CreateChatServerRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+      additionalProperties: false
+    InviteServerMemberRequest:
+      type: object
+      properties:
+        chatServerId:
+          type: string
+          format: uuid
+        username:
+          type: string
+          nullable: true
+      additionalProperties: false
+    ServerInvitationStatus:
+      enum:
+        - 0
+        - 10
+        - 20
+        - 30
+      type: integer
+      format: int32
+    ServerMemberDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+          nullable: true
+        userId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ServerMemberDtoPageResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServerMemberDto'
+          nullable: true
+        next:
+          type: string
+          format: uuid
+          nullable: true
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int32
+          nullable: true
+      additionalProperties: false
+    UpdateChatChannelRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+      additionalProperties: false
+    UpdateServerInvitationRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/ServerInvitationStatus'
+      additionalProperties: false
+    UploadFileResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          nullable: true
+        downloadUrl:
+          type: string
+          nullable: true
+        contentType:
+          type: string
+          nullable: true
+        fileName:
+          type: string
+          nullable: true
+        bytesSize:
+          type: integer
+          format: int64
+      additionalProperties: false
+    UserDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+    WSTicketResponse:
+      type: object
+      properties:
+        ticket:
+          type: string
+          nullable: true
+        expiresIn:
+          type: integer
+          format: int32
+      additionalProperties: false
 tags:
+  - name: Authentication
+  - name: ChatChannels
+  - name: ChatMessages
+  - name: ChatServers
+  - name: Files
   - name: Users
