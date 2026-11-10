@@ -11,6 +11,10 @@
       type: Boolean,
       default: false,
     },
+    canDownload: {
+      type: Boolean,
+      default: false,
+    },
   })
 
   const modalFilePreview = useTemplateRef('view-file-modal')
@@ -63,6 +67,7 @@
         <a
           class="material-symbols-sharp file-download px-2"
           :href="modalFile?.downloadUrl"
+          v-if="canDownload"
           download
         >
           download

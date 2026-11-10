@@ -42,9 +42,15 @@
 </script>
 
 <template>
-  <div class="add-channel border-bottom-1 flex justify-between p-4">
+  <div class="add-channel flex justify-between p-4 border-bottom-1">
     <span>Channels</span>
-    <button @click="openCreateChannelModal" type="button" class="inline-btn pointer">+</button>
+    <button
+      @click="openCreateChannelModal"
+      type="button"
+      class="inline-btn pointer material-symbols-sharp"
+    >
+      add
+    </button>
   </div>
   <Modal title="Create New Channel" ref="create-channel-form-modal">
     <template v-slot:body>

@@ -63,7 +63,7 @@
 </script>
 
 <template>
-  <div class="border-top-1 max-w-screen pt-2">
+  <div class="max-w-screen pt-2 border-top-1">
     <FilePreviewList
       v-if="attachments.length > 0"
       :files="attachments"

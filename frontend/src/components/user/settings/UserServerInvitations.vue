@@ -12,12 +12,14 @@
   } from '@/types'
   import { storeToRefs } from 'pinia'
   import { ref } from 'vue'
+  import { useRouter } from 'vue-router'
 
   const userInfo = userInfoStore()
   const { user } = storeToRefs(userInfo)
   const InvitationStatus = ServerInvitationStatus // To fix build error TS2339: Property 'value' does not exist on type 'typeof ServerInvitationStatus'
 
   const table = ref<InstanceType<typeof PaginatedTable> | null>(null)
+  const router = useRouter()
 
   async function getUserInvitations(request: PageRequest): Promise<PageResult<ServerInvitation>> {
     return await ChatServerService.getUserServerInvitations(request)
@@ -29,7 +31,11 @@
       status: status,
     })
 
-    await table.value?.getPage(0)
+    if (status == ServerInvitationStatus.Accepted) {
+      router.go(0)
+    } else {
+      await table.value?.getPage(0)
+    }
   }
 </script>
 

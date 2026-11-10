@@ -1,12 +1,15 @@
-
-
 ## [0.0.2] - Unreleased
 
 #### Added
+
+- Users can see the members of a Server
+- Users can see and revoke Server invitations inside a Server
+- Users can see, accept or reject their invitations to Servers
+- Users can invite other Users to a Server
 - Messages are retrieved paginated on the frontend, and the user can request more if there are any.
 - Users can preview the attachments on the chat view, open them in a modal and download those files.
 - Users can send images, gifs, videos, audio and document files as message attachments.
-- Users can Create, Edit and Delete Channels inside Servers. Channels have only a name. 
+- Users can Create, Edit and Delete Channels inside Servers. Channels have only a name.
 - Users can Create Servers with a Name and Description.
 - Added RabbitMQ to the Backend, so we can have multiple WSServices running at the same time
 - Added Home page
@@ -30,7 +33,7 @@
 - Minimal frontend page in / to show backend connection.
 - Mininal backend API and Websocket services that connects to the PostgresDB.
 - Initial frontend unit, component and E2E tests.
-- Initial backend unit, integration and API tests. 
+- Initial backend unit, integration and API tests.
 - Continuos Integration with Github Actions on the .github/workflows folder.
 - Docker compose file to run the backend locally.
 - /docs folder to keep the project documentation.
