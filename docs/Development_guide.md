@@ -2,23 +2,23 @@
 
 ## Introduction:
 
-HootOut is a distributed web application, the client application is called frontend and all the server services are called backend. 
+HootOut is a distributed web application, the client application is called frontend and all the server services are called backend.
 
 The frontend is a Single Page Application ([SPA](https://developer.mozilla.org/en-US/docs/Glossary/SPA)) with [Vue.js 3](https://vuejs.org/).
 
 The backend will consist of two applications built with [ASP.NET Core 10](https://dotnet.microsoft.com/en-us/apps/aspnet). One will be a REST API server and the other a WebSocket server. We will use RabbitMQ as a message broker to handle communication between servers. The main database will be PostgreSQL and later we will include Elasticsearch for searchs.
 
-| Servcie | Type | Technologies | Tools | Quality Assurance | Deployment | Development Proccess |
-|---------|------|--------------|-------|-----------------|------------|----------------------|
-| Fronted | SPA  | Vue.js 3, HTML, CSS, JS and TS| Visual Studio Code | Vitest, Playwright, Sonar | HTML, CSS and JS artifact | Iterative and incremental with git, CI with Github Actions |
-| Backend API | REST API | ASP.NET Core 10 | Visual Studio, Visual Studio Code | XUnit, TestContainers, Microsoft.AspNetCore.Mvc.Testing Sonar | Docker Image | Iterative and incremental with git, CI with Github Actions |
-| Backend WebSockets | WebSocket Server | ASP.NET Core 10 | Visual Studio, Visual Studio Code | XUnit, TestContainers, Microsoft.AspNetCore.Mvc.Testing Sonar | Docker Image | Iterative and incremental with git, CI with Github Actions |
-| PostgreSQL DB | Relational DB | PostgreSQL v18.6 | pgadmin 4 | | Docker Image, dedicated service | Iterative and Incremental |
-| RabbitMQ | Message Broker | RabbitMQ 4.3.6 | Management Plugin | | Docker Image, dedicated service | Iterative and Incremental |
+| Servcie            | Type             | Technologies                   | Tools                             | Quality Assurance                                             | Deployment                      | Development Proccess                                       |
+| ------------------ | ---------------- | ------------------------------ | --------------------------------- | ------------------------------------------------------------- | ------------------------------- | ---------------------------------------------------------- |
+| Fronted            | SPA              | Vue.js 3, HTML, CSS, JS and TS | Visual Studio Code                | Vitest, Playwright, Sonar                                     | HTML, CSS and JS artifact       | Iterative and incremental with git, CI with Github Actions |
+| Backend API        | REST API         | ASP.NET Core 10                | Visual Studio, Visual Studio Code | XUnit, TestContainers, Microsoft.AspNetCore.Mvc.Testing Sonar | Docker Image                    | Iterative and incremental with git, CI with Github Actions |
+| Backend WebSockets | WebSocket Server | ASP.NET Core 10                | Visual Studio, Visual Studio Code | XUnit, TestContainers, Microsoft.AspNetCore.Mvc.Testing Sonar | Docker Image                    | Iterative and incremental with git, CI with Github Actions |
+| PostgreSQL DB      | Relational DB    | PostgreSQL v18.6               | pgadmin 4                         |                                                               | Docker Image, dedicated service | Iterative and Incremental                                  |
+| RabbitMQ           | Message Broker   | RabbitMQ 4.3.6                 | Management Plugin                 |                                                               | Docker Image, dedicated service | Iterative and Incremental                                  |
 
 ## Technologies:
 
-### Frontend: 
+### Frontend:
 
 #### [Vue.js](https://vuejs.org/)
 
@@ -36,7 +36,7 @@ Vite is a build tool that aims to provide a faster and leaner development experi
 
 ### Backend:
 
-#### [ASP.NET Core 10](https://dotnet.microsoft.com/en-us/apps/aspnet) 
+#### [ASP.NET Core 10](https://dotnet.microsoft.com/en-us/apps/aspnet)
 
 .NET is a developer platform made up of tools, programming languages, and libraries for building many different types of applications.
 
@@ -52,7 +52,7 @@ PostgreSQL has earned a strong reputation for its proven architecture, reliabili
 
 Autofac is an addictive Inversion of Control container for .NET Core, ASP.NET Core and more.
 
-#### [Npgsql](https://www.npgsql.org/) 
+#### [Npgsql](https://www.npgsql.org/)
 
 Npgsql is an open source ADO.NET Data Provider for PostgreSQL, it allows programs written in C#, Visual Basic, F# to access the PostgreSQL database server. It is implemented in 100% C# code, is free and is open source.
 
@@ -70,13 +70,13 @@ RabbitMQ is a powerful, enterprise grade open source messaging and streaming bro
 
 #### [Visual Studio Code](https://code.visualstudio.com/)
 
-Visual Studio Code is an IDE developed by Microsoft for Windows, Linux, macOS and web browsers. It has extensions to add functionality and to support most programming languages. 
+Visual Studio Code is an IDE developed by Microsoft for Windows, Linux, macOS and web browsers. It has extensions to add functionality and to support most programming languages.
 
 Features include support for debugging, syntax highlighting, intelligent code completion, snippets, code refactoring, and embedded version control with Git. Visual Studio Code provides a fully featured integrated terminal that opens at the root of the current workspace
 
 #### [Visual Studio 2026](https://visualstudio.microsoft.com/es/)
 
-Visual Studio is and IDE developed by Microsoft. It supports syntax highlighting and code completion using IntelliSense for variables, functions, methods, loops, and LINQ queries. Visual Studio includes a debugger that works both as a source-level debugger and as a machine-level debugger. Visual Studio allows developers to write extensions for Visual Studio to extend its capabilities. These extensions "plug into" Visual Studio and extend its functionality. Extensions come in the form of macros, add-ins, and packages. 
+Visual Studio is and IDE developed by Microsoft. It supports syntax highlighting and code completion using IntelliSense for variables, functions, methods, loops, and LINQ queries. Visual Studio includes a debugger that works both as a source-level debugger and as a machine-level debugger. Visual Studio allows developers to write extensions for Visual Studio to extend its capabilities. These extensions "plug into" Visual Studio and extend its functionality. Extensions come in the form of macros, add-ins, and packages.
 
 #### [Docker](https://www.docker.com/)
 
@@ -84,9 +84,19 @@ Docker is a set of products that uses operating system-level virtualization to d
 
 #### [OpenAPI V3](https://www.openapis.org/)
 
-The OpenAPI Specification (OAS) defines a standard, programming language-agnostic interface description for HTTP APIs, which allows both humans and computers to discover and understand the capabilities of a service without requiring access to source code, additional documentation, or inspection of network traffic. 
+The OpenAPI Specification (OAS) defines a standard, programming language-agnostic interface description for HTTP APIs, which allows both humans and computers to discover and understand the capabilities of a service without requiring access to source code, additional documentation, or inspection of network traffic.
 
 ## Architecture:
+
+### Domain Model:
+
+![Domain Model](/docs/images/development-process/DomainModel.png)
+
+### Backend Architecture:
+
+![Backend Architecture](/docs/images/development-process/BackendArchitecture.jpg)
+
+### Client Architecture:
 
 ### Deployment:
 
@@ -125,11 +135,12 @@ The REST API will be documented with OpenAPI, and can be found in this repositor
 ## Quality Assurance:
 
 ### Automatic Testing:
-Automatic testing is in place for both backend and frontend. 
+
+Automatic testing is in place for both backend and frontend.
 
 - Unit tests are meant to test isolated pieces of code (functions, classes) without dependencies.
 - Integration tests are meant to test larger parts of the aplication (services, workflows) and their interaction with their dependencies. These tests can interact with external components (like databases). In our backend tests, these external components will be managed with TestContainers.
-- Backend API tests are meant to test api endpoints (urls) rather than internal parts of the application. They are used to validate the content of the replies/responses. 
+- Backend API tests are meant to test api endpoints (urls) rather than internal parts of the application. They are used to validate the content of the replies/responses.
 - Frontend component tests are used to validate Vue.js components behavior mocking the backend API.
 - Frontend E2E tests are used to validate the browser behavior of the frontend, making API requests to the backend.
 
@@ -142,18 +153,21 @@ Automatic testing is in place for both backend and frontend.
 We will use [Vitest](https://vitest.dev/) for Unit and Component testing. We will also use @vue/test-utils.
 
 Test can be run with npm:
+
 ```sh
 npm run test:unit
 ```
+
 And this will be the ouptut at this stage.
 ![vitest terminal output](/docs/images/tests/Frontend-vitest.png)
 
 #### E2E Testing with Playwright:
+
 We will use [Playwright](https://playwright.dev/) for E2E testing. These tests require a the backend to be running. They will generate at the end a test report, and will run the tests on various browsers.
 
 ![playwright terminal output](/docs/images/tests/Frontend-playwright-1.png)
 
-After running ```npx playwright show-report``` we can open the report on the browser
+After running `npx playwright show-report` we can open the report on the browser
 ![playwright test report 1](/docs/images/tests/Frontend-playwright-2.png)
 
 Here we test that the user list on the page is not empty.
@@ -162,7 +176,6 @@ Here we test that the user list on the page is not empty.
 Here we tests the interaction with the webSocket server, where it returns "HELLO FROM THE SERVER " + the messaged to uppercase.
 ![playwright test report 1](/docs/images/tests/Frontend-playwright-4.png)
 
-
 ### Backend:
 
 ### Unit Testing
@@ -170,9 +183,11 @@ Here we tests the interaction with the webSocket server, where it returns "HELLO
 We use [xUnit.net v3 MTP v2](https://xunit.net/?tabs=cs) as the testing framework along with [Fluent Assertions](https://fluentassertions.com/). For unit tests, we use [Moq](https://github.com/devlooped/moq) as our mocking library. We separate the unit test of a project on their UnitTest project.
 
 This is a output example of running: (We ignore exit code 8 is because we only run Unit Tests Projects and we skip Integration Tests projects)
+
 ```sh
 dotnet test --filter DisplayName~UnitTests --ignore-exit-code 8
 ```
+
 ![Backend Unit Test](/docs/images/tests/Backend-UnitTests.png)
 
 ### Backend Integration and API Testing
@@ -182,6 +197,7 @@ We use the same tools we use on Unit Testing (xUnit, Moq, FluentAssertions) and 
 For API testing, we have API Integration test projects, and we use [ASP.NET Core MVC Tesing](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.Testing). We start the API server and we send it requests with a test client.
 
 This is a output example of running:
+
 ```sh
 dotnet test --filter DisplayName~IntegrationTests --ignore-exit-code 8
 ```
@@ -189,11 +205,12 @@ dotnet test --filter DisplayName~IntegrationTests --ignore-exit-code 8
 ![Backend Integration Test](/docs/images/tests/Backend-IntegrationTests.png)
 
 To run all the test we can simply run:
+
 ```sh
 dotnet test
 ```
-![Backend All Tests](/docs/images/tests/Backend-AllTests.png)
 
+![Backend All Tests](/docs/images/tests/Backend-AllTests.png)
 
 ### Static Code Analysis with Sonar:
 
@@ -206,14 +223,17 @@ For the Backend we use [dotnet-coverage](https://www.nuget.org/packages/dotnet-c
 As of now, we don't have any real functionality implemented, but we have Sonar setup for the future. We added it to the CI pipeline to generate reports on pull request to main and on code changes in main.
 
 #### Frontend Summary:
+
 ![Sonar Frontend](/docs/images/sonar/sonar-frontend.png)
 
 #### Backend Summary:
+
 ![Sonar Backend](/docs/images/sonar/sonar-backend.png)
 
 ## Development Process:
 
 ### Tasks Management:
+
 The development process is iterative and incremental, following Agile principles and Extreme Programming and Kanban practices.
 
 There is a Github Project with a Kanban board, where Github Issues are the tasks to be completed. They are first added to the Backlog, and then moved to different columns following the task progress (Ready, In Progress, In Review, Done).
@@ -252,6 +272,7 @@ We have a basic workflow called "push-unit-tests-workflow.yml" that runs each ti
 
 We have a complete workflow called "pr-main-tests-workflow.yml" that runs each time we open, synchronize or reopen a pull request to main and when we merge the pull request to main. It builds the applications, runs all the tests (unit, integration, e2e) and uploads a new Sonar scan.
 The workflow also generates a Playwright result artifact that we can check locally with the command:
+
 ```sh
 npx playwright show-report playwright-report.zip
 ```
