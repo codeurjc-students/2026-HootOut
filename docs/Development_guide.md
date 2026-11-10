@@ -98,6 +98,8 @@ The OpenAPI Specification (OAS) defines a standard, programming language-agnosti
 
 ### Client Architecture:
 
+![Client Architecture](/docs/images/development-process/FrontendArchitecture.png)
+
 ### Deployment:
 
 The Frontend compiled at build time, and generates an HTML, CSS and JS file. These three files. This is the client code.
@@ -143,8 +145,6 @@ Automatic testing is in place for both backend and frontend.
 - Backend API tests are meant to test api endpoints (urls) rather than internal parts of the application. They are used to validate the content of the replies/responses.
 - Frontend component tests are used to validate Vue.js components behavior mocking the backend API.
 - Frontend E2E tests are used to validate the browser behavior of the frontend, making API requests to the backend.
-
-**Since the project is still on a very early stage of development, most of the existing tests are meant to be a guide for future testing**
 
 ### Frontend:
 
@@ -216,7 +216,7 @@ dotnet test
 
 We added [SonarQube](https://www.sonarsource.com/products/sonarqube/) code analysis to have insights and traceability of code coverage, analytics, etc. We set up a project for the Backend and another one for the Frontend. We can see the results on a dashboard on SonarCloud
 
-![Sonar Dashboard](/docs/images/sonar/sonar-projects.png)
+![Sonar Dashboard](/docs/images/sonar/sonar-projects-phase3.png)
 
 For the Backend we use [dotnet-coverage](https://www.nuget.org/packages/dotnet-coverage) to get all the tests coverage results, and for the Frontend we use [V8 Code Coverage](https://v8.dev/blog/javascript-code-coverage)
 
@@ -224,11 +224,18 @@ As of now, we don't have any real functionality implemented, but we have Sonar s
 
 #### Frontend Summary:
 
-![Sonar Frontend](/docs/images/sonar/sonar-frontend.png)
+![Sonar Frontend](/docs/images/sonar/sonar-frontend-phase3.png)
 
 #### Backend Summary:
 
-![Sonar Backend](/docs/images/sonar/sonar-backend.png)
+![Sonar Backend](/docs/images/sonar/sonar-backend-phase3.png)
+
+## Deployment:
+
+The /docker folder has all the necessary files to make a deployment using Docker compose.
+There are two Dockerfiles, one for the REST API + web application and the other for the Websockets Servcie. The web application is bundled with the REST API server. It is build and copied to the wwwroot folder. It will be served on the same port as the REST API and Websockets service with Haproxy. Haproxy will manage the https certificate, the port and the routing based on the url (/api goes to the REST API service and /ws to the Webscokets service.)
+An example .env file is also provided on the /docker folder, along with the docker compose files. To generate your own https certificates follow the README.md on /backend.
+The docker images, and docker compose OCI files can be found on Dockerhub: https://hub.docker.com/u/ivanmotos
 
 ## Development Process:
 
@@ -270,16 +277,18 @@ We have a basic workflow called "push-unit-tests-workflow.yml" that runs each ti
 
 ![Github actions frontend](/docs/images/development-process/github-actions-basic-frontend.png)
 
-We have a complete workflow called "pr-main-tests-workflow.yml" that runs each time we open, synchronize or reopen a pull request to main and when we merge the pull request to main. It builds the applications, runs all the tests (unit, integration, e2e) and uploads a new Sonar scan.
-The workflow also generates a Playwright result artifact that we can check locally with the command:
+We have three workflows depending on what triggers it. They use independent workflows for frontend testing, backend testing and docker hub publishing.
 
-```sh
-npx playwright show-report playwright-report.zip
-```
+- pr_open_main.yml triggers when a pull request is open, synchronized or reopened against main. It will run only backend and frontend tests.
+- push_main.yml will run backend and frontend tests. If they succeed, the docker images will be published with the tag 'dev'
+- release_trigger.yml will trigger on a release, and runs backend and frontend tests. If they succeed, the docker images will be published with the tag of the release and also with the tag 'latest'
+- manual_publish_trigger.yml can be triggered at any point and with any branch (that has this workflow in it.) . It will run backend and frontend tests. If they succeed, the docker images will be published with the tag 'branchName-date-commitHash'
 
-![Github actions backend](/docs/images/development-process/github-actions-complete-backend.png)
-
-![Github actions frontend](/docs/images/development-process/github-actions-complete-frontend.png)
+![Github actions frontend](/docs/images/development-process/github-actions-push-main.png)
+![Github actions frontend](/docs/images/development-process/github-actions-pr-open-main.png)
+![Github actions frontend](/docs/images/development-process/github-actions-release-trigger.png)
+![Github actions frontend](/docs/images/development-process/github-actions-manual-trigger.png)
+![Github actions frontend](/docs/images/development-process/docker-hub-tags.png)
 
 ## Code Editing and Execution:
 
