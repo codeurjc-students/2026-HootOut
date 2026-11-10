@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue'
-import { defineStore } from 'pinia'
+import { defineStore, getActivePinia } from 'pinia'
 import { post } from '@/services/common/api/ApiService'
 import { ApiError, type AuthResponse } from '@/types'
 
@@ -93,6 +93,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function clear(): void {
     setSession(null)
+    window.location.assign('/')
   }
 
   return { accessToken, ready, isAuthenticated, login, register, logout, refresh, init, clear }

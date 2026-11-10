@@ -82,7 +82,7 @@
           v-model="form.name"
           type="text"
           required
-          placeholder="Server name"
+          placeholder="Channel name"
           minlength="3"
           maxlength="50"
           autocomplete="off"
