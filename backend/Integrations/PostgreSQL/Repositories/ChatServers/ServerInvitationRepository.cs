@@ -60,7 +60,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                     m."Id",
                     m."UserId",
                     m."Status",
-                    m."ChatServerId"
+                    m."ChatServerId",
                     u."Username",
                     s."Name" as ServerName,
                     m."CreatedAt",
@@ -113,7 +113,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                     m."Id",
                     m."UserId",
                     m."Status",
-                    m."ChatServerId"
+                    m."ChatServerId",
                     u."Username",
                     s."Name" as ServerName,
                     m."CreatedAt",
@@ -160,7 +160,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
         public async Task<Guid?> AcceptServerInvitationAsync(ServerInvitation invitation, CancellationToken ct = default)
         {
             await using var conn = await provider.OpenConnectionAsync(ct);
-             
+
             const string sql = """
                 WITH pending AS (
                     SELECT "Id", "ChatServerId", "UserId"

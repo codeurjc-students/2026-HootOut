@@ -246,17 +246,23 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
         }
 
         [Fact]
-        public async Task GetServerInvitationDtos_CursorFromOtherServer_ReturnsEmptyItems()
+        public async Task GetServerInvitationDtos_CursorFromOtherServer_IsUsedAsPositionWithoutLeakingRows()
         {
             var ct = TestContext.Current.CancellationToken;
-            var (server, _) = await CreateServerWithInviteesAsync(["a", "b"], ct);
-            var (_, otherInvitations) = await CreateServerWithInviteesAsync(["c"], ct, ownerName: "owner2", serverName: "other");
+            var (server, invitations) = await CreateServerWithInviteesAsync(["a", "b", "c"], ct);
+            var outsider = await CreateUserAsync("outsider", ct);
+            var otherServer = await CreateServerAsync("other", outsider.Id, ct);
+            var invitee = await CreateUserAsync("invitee", ct);
+            // Created between "b" (minute 1) and "c" (minute 2)
+            var foreign = await CreateInvitationAsync(otherServer.Id, outsider.Id, invitee.Id, ServerInvitationStatus.Pending, BaseDate.AddMinutes(1).AddSeconds(30), ct);
 
-            var request = new PageRequest { Next = otherInvitations[0].Id };
+            var request = new PageRequest { Next = foreign.Id };
             var result = await repository.GetServerInvitationDtosAsync(server.Id, request, ct);
 
-            result.Items.Should().BeEmpty();
-            result.Total.Should().Be(2);
+            // The cursor subquery is not filtered by server, so the foreign row only sets the position
+            result.Items.Select(i => i.Id).Should().Equal(invitations[1].Id, invitations[0].Id);
+            result.Items.Should().OnlyContain(i => i.ChatServerId == server.Id);
+            result.Total.Should().Be(3);
         }
 
         #endregion

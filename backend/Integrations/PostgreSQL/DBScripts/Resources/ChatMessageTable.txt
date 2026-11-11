@@ -27,14 +27,18 @@ then
 		"Content" TEXT NOT NULL,
 		"Deleted" boolean NOT NULL DEFAULT false,
 		"CreatedAt" timestamptz  NOT NULL,
-		"ModifiedAt" timestamptz NOT NULL
+		"ModifiedAt" timestamptz NOT NULL,
+		CONSTRAINT fk_chat_message_author FOREIGN KEY ("AuthorId") REFERENCES "HootOut"."UserInfo" ("Id"),
+		CONSTRAINT fk_chat_message_channel FOREIGN KEY ("ChatChannelId") REFERENCES "HootOut"."ChatChannel" ("Id")
 	); 
-
+ 
 end if;
 
 CREATE INDEX IF NOT EXISTS ix_chat_message_channel_created
 ON "HootOut"."ChatMessage" ("ChatChannelId", "CreatedAt" DESC, "Id" DESC)
 WHERE "Deleted" = false; 
- 
+
+CREATE INDEX IF NOT EXISTS ix_chat_message_author
+ON "HootOut"."ChatMessage" ("AuthorId"); 
 
 end $$;

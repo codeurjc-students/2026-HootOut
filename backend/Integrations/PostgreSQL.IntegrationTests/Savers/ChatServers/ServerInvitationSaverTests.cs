@@ -5,6 +5,7 @@ using HootOut.ChatServers.Entities;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
+using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.ChatServers.Enums;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Infraestructure.DI;
@@ -14,7 +15,7 @@ using Npgsql;
 namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
 {
     [Collection("IntegrationTests")]
-    public class ServerInvitationSaverTests : IClassFixture<PostgresTestContainer>, IAsyncLifetime
+    public class ServerInvitationSaverTests : IClassFixture<PostgresTestContainer>, IClassFixture<TestS3Container>, IAsyncLifetime
     {
         private readonly IContainer container;
 

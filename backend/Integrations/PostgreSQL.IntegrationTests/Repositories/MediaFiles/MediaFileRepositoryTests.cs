@@ -1,5 +1,5 @@
 ﻿using Autofac;
-using Dapper; 
+using Dapper;
 using FluentAssertions;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;

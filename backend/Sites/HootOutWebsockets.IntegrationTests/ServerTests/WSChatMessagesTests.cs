@@ -7,9 +7,13 @@ using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.CommonIntegrationTests.Services;
 using HootOut.Contracts.Authentication.Requests;
 using HootOut.Contracts.Authentication.Services;
+using HootOut.Contracts.ChatChannels.Requests;
+using HootOut.Contracts.ChatChannels.Services;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
+using HootOut.Contracts.ChatServers.Requests;
+using HootOut.Contracts.ChatServers.Services;
 using HootOut.Contracts.WebSockets.Dtos;
 using HootOut.Contracts.WebSockets.Handlers;
 using HootOut.Contracts.WebSockets.Services;
@@ -27,30 +31,30 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
     [Collection("IntegrationTests")]
     public class WSChatMessagesTests : IClassFixture<WebSocketServerFixture>, IClassFixture<TestContaineRabbitConnectionFactory>, IDisposable
     {
-        private readonly WebSocketServerFixture server;
+        private readonly WebSocketServerFixture serverFixture;
         private readonly ILifetimeScope container;
         private ClearAllTables clearTables;
         private readonly JsonWebTokenHandler jtwHandler = new();
 
         private readonly TestContaineRabbitConnectionFactory rabbitConnectionFactory;
 
-        public WSChatMessagesTests(WebSocketServerFixture server, TestContaineRabbitConnectionFactory rabbitConnectionFactory)
+        public WSChatMessagesTests(WebSocketServerFixture serverFixture, TestContaineRabbitConnectionFactory rabbitConnectionFactory)
         {
-            this.server = server;
+            this.serverFixture = serverFixture;
             var rsaKeyProvider = new DevelopmentRsaKeyProvider("keys/jwt-private.pem");
 
             this.rabbitConnectionFactory = rabbitConnectionFactory;
 
-            this.server.RegisterDependencies = (ContainerBuilder? builder) =>
+            this.serverFixture.RegisterDependencies = (ContainerBuilder? builder) =>
             {
                 builder?.RegisterInstance(rsaKeyProvider).As<IRsaKeyProvider>().SingleInstance(); //Used for creating the account
                 builder?.RegisterInstance(rabbitConnectionFactory).As<IRabbitConnectionFactory>().SingleInstance();
             };
 
-            container = server.AutofacRoot.BeginLifetimeScope();
+            container = serverFixture.AutofacRoot.BeginLifetimeScope();
 
             var testPersistenceProvider = container.Resolve<IPersistenceProvider>();
-            Assert.Same(server.PostgreSQLProvider, testPersistenceProvider);
+            Assert.Same(serverFixture.PostgreSQLProvider, testPersistenceProvider);
 
             var resolvedRabbitConnectionFactory = container.Resolve<IRabbitConnectionFactory>();
             Assert.Same(this.rabbitConnectionFactory, resolvedRabbitConnectionFactory);
@@ -111,6 +115,22 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
             var userId2 = Guid.Parse(jtwHandler.ReadJsonWebToken(auth2.AccessToken!).GetClaim("sub").Value);
             var ticket2 = await authService.CreateWebSocketTicketAsync(userId2, username2, ct);
 
+            IChatServerService serverService = container.Resolve<IChatServerService>();
+            var server = await serverService.CreateChatServerAsync(new CreateChatServerRequest
+            {
+                Name = "test123"
+            }, userId1, ct);
+
+
+            IChatChannelsService channelService = container.Resolve<IChatChannelsService>();
+            var channel = await channelService.CreateChatChannelAsync(new CreateChatChannelRequest
+            {
+                ChatServerId = server.Id,
+                Name = "test123"
+            }, ct);
+
+            var channelId = channel.Id;
+
             WSConnectionManager? connectionManager = null;
             if (IconnectionManager is WSConnectionManager)
             {
@@ -119,19 +139,17 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 
             connectionManager!.Connections.Count.Should().Be(0);
 
-            await using var socket1 = await WSTestClient.ConnectAsync(server, wsTicket: ticket1.Ticket, ct: ct);
+            await using var socket1 = await WSTestClient.ConnectAsync(serverFixture, wsTicket: ticket1.Ticket, ct: ct);
             await Task.Delay(100, ct); //TO-DO Replace with ACK from Server
 
             socket1.Socket.State.Should().Be(WebSocketState.Open);
             connectionManager!.Connections.Count.Should().Be(1);
 
-            await using var socket2 = await WSTestClient.ConnectAsync(server, wsTicket: ticket2.Ticket, ct: ct);
+            await using var socket2 = await WSTestClient.ConnectAsync(serverFixture, wsTicket: ticket2.Ticket, ct: ct);
             await Task.Delay(100, ct); //TO-DO Replace with ACK from Server
 
             socket2.Socket.State.Should().Be(WebSocketState.Open);
-            connectionManager!.Connections.Count.Should().Be(2);
-
-            Guid channelId = Guid.NewGuid();
+            connectionManager!.Connections.Count.Should().Be(2); 
 
             var id1 = Guid.NewGuid();
             await socket1.SendWithAckAsync(new WebSocketMessageDto

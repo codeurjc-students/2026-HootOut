@@ -50,7 +50,6 @@ namespace HootOut.Users.IntegrationTests.Services
         public async ValueTask DisposeAsync()
         {
             await clearTables.ClearTablesAsync();
-            await container.DisposeAsync();
             GC.SuppressFinalize(this);
         }
 

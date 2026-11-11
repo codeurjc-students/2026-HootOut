@@ -51,7 +51,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.Users
 
         public async ValueTask DisposeAsync()
         {
-            await clearTables.ClearTablesAsync(); 
+            await clearTables.ClearTablesAsync();
             GC.SuppressFinalize(this);
         }
 

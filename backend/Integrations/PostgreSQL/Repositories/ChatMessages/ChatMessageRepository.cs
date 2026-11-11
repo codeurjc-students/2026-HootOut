@@ -47,11 +47,11 @@ namespace HootOut.PostgreSQL.Repositories.ChatMessages
                 FROM page p
                 LEFT JOIN "HootOut"."UserInfo" u
                        ON u."Id" = p."AuthorId"
-                LEFT JOIN "HootOut"."ChatMessageAttachment" a
-                       ON a."MessageId" = p."Id" AND a."Deleted" = false
-                LEFT JOIN "HootOut"."MediaFile" mf
-                       ON mf."Id" = a."MediaFileId" AND a."Deleted" = false
-                ORDER BY p."CreatedAt" DESC, p."Id" DESC, a."CreatedAt";
+                LEFT JOIN ("HootOut"."ChatMessageAttachment" a
+                    INNER JOIN "HootOut"."MediaFile" mf
+                            ON mf."Id" = a."MediaFileId" AND mf."Deleted" = false)
+                ON a."MessageId" = p."Id" AND a."Deleted" = false
+                ORDER BY p."CreatedAt" DESC, p."Id" DESC, a."CreatedAt", a."Id";
                 """;
 
             var messages = new List<ChatMessageDto>();
