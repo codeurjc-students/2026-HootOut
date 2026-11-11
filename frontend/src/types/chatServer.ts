@@ -3,7 +3,7 @@ import type { ChatChannel } from './chatChannel'
 export interface ChatServer {
   id: string
   name: string
-  description: string
+  description?: string | null
   channels: ChatChannel[]
   createdAt: string | null
   modifiedAt: string | null

@@ -42,7 +42,7 @@ namespace HootOut.PostgreSQL.Savers.MediaFiles
             }
             catch (Exception ex)
             {
-                var msg = $"Error while trying to save the chat server {item.Id}";
+                var msg = $"Error while trying to save the media file {item.Id}";
                 throw new Exception(msg, ex);
             }
         }

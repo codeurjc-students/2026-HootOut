@@ -29,17 +29,15 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
         public async Task<ServerMember?> GetServerMemberAsync(Guid serverId, Guid userId, CancellationToken ct = default)
         {
             await using var conn = await provider.OpenConnectionAsync(ct);
-            return (await conn.QueryAsync<ServerMember?>(new CommandDefinition($"""
+            return (await conn.QuerySingleOrDefaultAsync<ServerMember?>(new CommandDefinition($"""
                 SELECT 
                     {serverMemberColumns}
                 FROM "HootOut"."ServerMember" member
                 WHERE member."ChatServerId" = @ChatServerId AND member."UserId" = @UserId 
-                    AND member."Deleted" = FALSE
-                    ORDER BY "ModifiedAt" DESC
+                    AND member."Deleted" = FALSE 
                 """,
                 new { ChatServerId = serverId, UserId = userId },
-             cancellationToken: ct)))
-             .FirstOrDefault();
+             cancellationToken: ct)));
         }
 
         public async Task<PageResult<ServerMemberDto>> GetServerMemberDtosAsync(Guid serverId, PageRequest request, CancellationToken ct = default)
@@ -56,7 +54,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                 INNER JOIN "HootOut"."UserInfo" u
                     ON m."UserId" = u."Id"
                 """;
-            var membersWhere = """ WHERE m."ChatServerId" = @ServerId """;
+            var membersWhere = """ WHERE m."ChatServerId" = @ServerId AND m."Deleted" = FALSE """;
 
             var sql = $"""
                 SELECT

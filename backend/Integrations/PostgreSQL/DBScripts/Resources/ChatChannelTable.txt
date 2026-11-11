@@ -22,7 +22,7 @@ if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
 then
 	CREATE TABLE "HootOut"."ChatChannel"(
 		"Id" UUID NOT NULL PRIMARY KEY ,
-		"ChatServerId" UUID NOT NULL, 
+		"ChatServerId" UUID NOT NULL REFERENCES "HootOut"."ChatServer"("Id"), 
 		"Name" VARCHAR(255) NOT NULL, 
 		"Deleted" boolean NOT NULL DEFAULT false,
 		"CreatedAt" timestamptz  NOT NULL,

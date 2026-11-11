@@ -4,9 +4,13 @@ using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.Contracts.Authentication.Responses;
+using HootOut.Contracts.ChatChannels.Requests;
+using HootOut.Contracts.ChatChannels.Services;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
+using HootOut.Contracts.ChatServers.Requests;
+using HootOut.Contracts.ChatServers.Services;
 using HootOut.Contracts.Common;
 using HootOut.HootOutAPI.IntegrationTests.Common;
 using System.Net;
@@ -83,30 +87,54 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 
             Guid authorId = GetUserIdFromAccessToken(auth?.AccessToken);
 
-            Guid channelId = Guid.NewGuid();
+            IChatServerService serverService = container.Resolve<IChatServerService>();
+            var server = await serverService.CreateChatServerAsync(new CreateChatServerRequest
+            {
+                Name = "test123"
+            }, authorId, ct);
+
+
+            IChatChannelsService channelService = container.Resolve<IChatChannelsService>();
+            var channel = await channelService.CreateChatChannelAsync(new CreateChatChannelRequest
+            {
+                ChatServerId = server.Id,
+                Name = "test123"
+            }, ct);
+             
             string content = "test1";
 
             IChatMessageService chatMessageService = container.Resolve<IChatMessageService>();
             await chatMessageService.CreateChatMessageAsync(
                 new CreateChatMessageRequest
                 {
-                    ChatChannelId = channelId,
+                    ChatChannelId = channel.Id,
                     AuthorId = authorId,
                     Content = content
                 }, ct);
+
+            var server2 = await serverService.CreateChatServerAsync(new CreateChatServerRequest
+            {
+                Name = "test123"
+            }, authorId, ct);
+
+            var channel2 = await channelService.CreateChatChannelAsync(new CreateChatChannelRequest
+            {
+                ChatServerId = server2.Id,
+                Name = "test123"
+            }, ct);
 
             // store another message so there are more messages
             await chatMessageService.CreateChatMessageAsync(
                 new CreateChatMessageRequest
                 {
-                    ChatChannelId = Guid.NewGuid(),
+                    ChatChannelId = channel2.Id,
                     AuthorId = authorId,
                     Content = content
                 }, ct);
 
             var response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get,
-                $"/api/v1/chatMessages/channelMessages?channelId={channelId.ToString()}",
+                $"/api/v1/chatMessages/channelMessages?channelId={channel.Id.ToString()}",
                 auth?.AccessToken!,
                 ct
             );
@@ -124,7 +152,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             message.Id.Should().NotBeEmpty();
             message.Author.Should().NotBeNull();
             message.Author.Id.Should().Be(authorId);
-            message.ChatChannelId.Should().Be(channelId);
+            message.ChatChannelId.Should().Be(channel.Id);
             message.Content.Should().Be(content);
 
             response = await SendAuthorizeHttpRequest(

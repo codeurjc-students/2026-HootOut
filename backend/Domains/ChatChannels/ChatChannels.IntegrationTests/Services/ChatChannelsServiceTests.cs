@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using FluentAssertions;
 using HootOut.ChatChannels.Repositories;
+using HootOut.ChatServers.Entities;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
@@ -8,6 +9,7 @@ using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.ChatChannels.Dtos;
 using HootOut.Contracts.ChatChannels.Requests;
 using HootOut.Contracts.ChatChannels.Services;
+using HootOut.Contracts.Common.Saver;
 
 namespace HootOut.ChatChannels.IntegrationTests.Services
 {
@@ -18,6 +20,7 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
         private ClearAllTables clearTables;
 
         private IChatChannelsService chatChannelsService;
+        private ISaver<ChatServer> serverSaver;
 
         public ChatChannelsServiceTests(PostgresTestContainer postgresContainer)
         {
@@ -36,6 +39,7 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
             }
 
             chatChannelsService = container.Resolve<IChatChannelsService>();
+            serverSaver = container.Resolve<ISaver<ChatServer>>();
         }
         public async ValueTask InitializeAsync()
         {
@@ -61,6 +65,13 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
             var ct = TestContext.Current.CancellationToken;
             string name = "nameTest";
             Guid serverId = Guid.NewGuid();
+
+            await serverSaver.SaveAsync(new ChatServer
+            {
+                Id = serverId,
+                Name = "test",
+            }, ct);
+
             await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest
             {
                 Name = name,
@@ -83,10 +94,24 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
         {
             var ct = TestContext.Current.CancellationToken;
             Guid serverId = Guid.NewGuid();
+
+            await serverSaver.SaveAsync(new ChatServer
+            {
+                Id = serverId,
+                Name = "test",
+            }, ct);
+
+            var serverId2 = Guid.NewGuid();
+            await serverSaver.SaveAsync(new ChatServer
+            {
+                Id = serverId2,
+                Name = "other test server",
+            }, ct);
+
             await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "1", ChatServerId = serverId }, ct);
             await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "2", ChatServerId = serverId }, ct);
             await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "1", ChatServerId = serverId }, ct);
-            await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "1", ChatServerId = Guid.NewGuid() }, ct);
+            await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "1", ChatServerId = serverId2 }, ct);
 
             (await chatChannelsService.GetChannelsByServerIdAsync(serverId, ct)).Should().HaveCount(3);
         }
@@ -96,6 +121,13 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
         {
             var ct = TestContext.Current.CancellationToken;
             Guid serverId = Guid.NewGuid();
+
+            await serverSaver.SaveAsync(new ChatServer
+            {
+                Id = serverId,
+                Name = "test",
+            }, ct);
+
             var newChannel = await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "test", ChatServerId = serverId }, ct);
 
             IChatChannelRepository search = container.Resolve<IChatChannelRepository>();
@@ -121,6 +153,13 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
         {
             var ct = TestContext.Current.CancellationToken;
             Guid serverId = Guid.NewGuid();
+
+            await serverSaver.SaveAsync(new ChatServer
+            {
+                Id = serverId,
+                Name = "test",
+            }, ct);
+
             var newChannel = await chatChannelsService.CreateChatChannelAsync(new CreateChatChannelRequest { Name = "test", ChatServerId = serverId }, ct);
 
             IChatChannelRepository search = container.Resolve<IChatChannelRepository>();

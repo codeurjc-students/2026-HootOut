@@ -23,7 +23,7 @@
       Server: {{ currentServer?.name }}
     </h2>
 
-    <h1 class="py- mb-4 hidden text-2xl md:block">Active Members:</h1>
+    <h1 class="mb-4 hidden text-2xl md:block">Active Members:</h1>
     <div class="h-[80%] max-h-[80%]">
       <PaginatedTable
         :headers="[

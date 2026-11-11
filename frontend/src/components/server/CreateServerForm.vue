@@ -2,7 +2,7 @@
   import ChatServerService from '@/services/chatServer/ChatServerService'
   import { getValidationErrors } from '@/services/common/utils'
   import { ApiError, ValidationError, type ChatServer } from '@/types'
-  import { computed, onMounted, reactive, ref } from 'vue'
+  import { computed, reactive, ref } from 'vue'
 
   defineExpose({
     cleanForm,

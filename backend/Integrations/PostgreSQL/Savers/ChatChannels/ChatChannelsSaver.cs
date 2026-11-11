@@ -5,7 +5,7 @@ using HootOut.Contracts.Common.Saver;
 
 namespace HootOut.PostgreSQL.Savers.ChatChannels
 {
-    internal class ChatChannelsSaver : ISaver<ChatChannel>
+    public class ChatChannelsSaver : ISaver<ChatChannel>
     {
         private IPersistenceProvider provider;
 

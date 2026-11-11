@@ -83,6 +83,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                 LEFT JOIN "HootOut"."ChatChannel" channel
                     ON m."Id" = channel."ChatServerId" AND channel."Deleted" = FALSE
                 WHERE m."Id" = @ServerId AND m."Deleted" = FALSE 
+                ORDER BY channel."Name"
                 """;
 
             ChatServerDto? result = null;

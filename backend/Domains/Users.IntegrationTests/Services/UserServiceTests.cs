@@ -54,7 +54,7 @@ namespace HootOut.Users.IntegrationTests.Services
         }
 
         [Theory]
-        [InlineData("email@test.com", "username1", "password12345")]
+        [InlineData("username1", "email@test.com", "password12345")]
         public async Task GetUserDtoById_One(string username, string email, string password)
         {
             var ct = TestContext.Current.CancellationToken;

@@ -140,3 +140,21 @@ Add some unit test to new shared components (e.g. paginatedTable, infiniteScroll
 ##### Usage:
 
 Chat with claude code passing tests requirements for some component testing, and making some changes suggested by claude
+
+#### Objective: Add some unit and integration tests to the project
+
+##### Date:
+
+11/11/2026
+
+##### Tool:
+
+Claude Chat, Opus 5.5 Medium
+
+##### Problems to solve:
+
+Add some unit and integration test to the project, both in the backend and in the frontend.
+
+##### Usage:
+
+Chat with claude code passing tests requirements for some component testing in the frontend, and in the backend for testing the postgresql repositories, and making some changes suggested by claude

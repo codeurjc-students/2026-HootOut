@@ -23,7 +23,8 @@ namespace HootOut.PostgreSQL.Repositories.ChatMessages
             FROM "HootOut"."ChatMessageAttachment" AS attachment
             INNER JOIN "HootOut"."MediaFile" AS mediaFile
                 ON attachment."MediaFileId" = mediaFile."Id"
-            WHERE attachment."MessageId" = @MessageId
+            WHERE attachment."MessageId" = @MessageId AND attachment."Deleted" = FALSE AND mediaFile."Deleted" = FALSE
+            ORDER BY attachment."CreatedAt", attachment."Id"
             """;
 
         public async Task<IEnumerable<ChatMessageAttachmentDto>> GetChatMessageAttachmentDtos(Guid messageId, CancellationToken ct = default)

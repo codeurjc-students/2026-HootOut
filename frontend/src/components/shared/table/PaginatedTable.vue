@@ -8,7 +8,7 @@
     hasActions?: boolean
   }>()
 
-  defineExpose({ getFirstPage, getPage })
+  defineExpose({ getFirstPage, getPage, refresh })
 
   const tableRows = ref<any[]>([])
 
@@ -71,6 +71,10 @@
     await loadPage(currentPage.value + dir, pages)
   }
 
+  async function getFirstPage(): Promise<void> {
+    await loadPage(0, [null])
+  }
+
   async function withLoading(action: () => Promise<void>): Promise<void> {
     loading.value = true
     try {
@@ -80,6 +84,12 @@
     } finally {
       loading.value = false
     }
+  }
+
+  // Reloads the current page (e.g. after a row was changed from outside), with the same
+  // loading state and error handling as the pagination buttons
+  async function refresh() {
+    await withLoading(() => getPage(0))
   }
 
   async function getNextPage() {
@@ -96,10 +106,6 @@
     await withLoading(getFirstPage)
   }
 
-  async function getFirstPage(): Promise<void> {
-    await loadPage(0, [null])
-  }
-
   onMounted(async () => {
     sortBy.value = (headers.filter((h) => h.default).at(0) ?? headers[0])?.key?.toLowerCase()
     await withLoading(getFirstPage)
@@ -108,12 +114,12 @@
 
 <template>
   <div
-    class="flex h-full max-h-full w-full flex-col justify-between overflow-x-auto overflow-y-hidden background-primary p-4 md:rounded-xl md:border-1"
+    class="flex h-full max-h-full w-full flex-col justify-between overflow-x-auto overflow-y-hidden rounded-xl border-1 background-primary p-4"
   >
     <!-- Mobile only (hidden from 520px by CSS): the header row is hidden there -->
     <div
       v-if="sortableHeaders.length > 0"
-      class="mobile-sort mb-4 flex items-center justify-end gap-2 md:hidden"
+      class="mobile-sort mb-4 flex items-center justify-end gap-2"
     >
       <label for="mobile-sort-by">Sort by</label>
       <select
@@ -142,7 +148,6 @@
       </button>
     </div>
     <div class="max-h-full grow overflow-auto">
-      <div class="" v-if="tableRows?.length == 0">The table is empty</div>
       <table class="responsive-table max-h-full w-full table-fixed text-center">
         <thead class="sticky top-0 background-primary">
           <tr class="border-bottom-1">
@@ -253,6 +258,12 @@
 
     .responsive-table td.actions-cell::before {
       content: none;
+    }
+  }
+
+  @media (min-width: 520px) {
+    .mobile-sort {
+      display: none;
     }
   }
 </style>

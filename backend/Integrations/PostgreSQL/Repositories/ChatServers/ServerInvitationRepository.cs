@@ -33,7 +33,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
             { "createdat", """m."CreatedAt" """ },
             { "status", """ m."Status" """ },
             { "servername", """ lower(s."Name") COLLATE "es-x-icu" """ },
-            { "invitedBy", """ lower(u."Username") COLLATE "es-x-icu" """ }
+            { "invitedby", """ lower(u."Username") COLLATE "es-x-icu" """ }
         };
 
         public async Task<PageResult<ServerInvitationDto>> GetServerInvitationDtosAsync(Guid serverId, PageRequest request, CancellationToken ct = default)
@@ -60,6 +60,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                     m."Id",
                     m."UserId",
                     m."Status",
+                    m."ChatServerId",
                     u."Username",
                     s."Name" as ServerName,
                     m."CreatedAt",
@@ -112,6 +113,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                     m."Id",
                     m."UserId",
                     m."Status",
+                    m."ChatServerId",
                     u."Username",
                     s."Name" as ServerName,
                     m."CreatedAt",
@@ -155,42 +157,44 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
             .FirstOrDefault();
         }
 
-        public async Task<Guid> AcceptServerInvitationAsync(ServerInvitation invitaiton, CancellationToken ct = default)
+        public async Task<Guid?> AcceptServerInvitationAsync(ServerInvitation invitation, CancellationToken ct = default)
         {
             await using var conn = await provider.OpenConnectionAsync(ct);
 
             const string sql = """
-                    WITH accepted AS (
-                        UPDATE "HootOut"."ServerInvitation"
-                        SET "Status" = @Accepted,
-                            "ModifiedAt" = @now
-                        WHERE "Id" = @InvitationId
-                          AND "UserId" = @UserId
-                          AND "Status" = @Pending 
-                        RETURNING "Id", "ChatServerId", "UserId"
-                    )
+                WITH pending AS (
+                    SELECT "Id", "ChatServerId", "UserId"
+                    FROM "HootOut"."ServerInvitation"
+                    WHERE "Id" = @InvitationId
+                      AND "UserId" = @UserId
+                      AND "Status" = @Pending
+                    FOR UPDATE
+                ),
+                inserted AS (
                     INSERT INTO "HootOut"."ServerMember" ("Id", "ChatServerId", "UserId", "InvitationId", "CreatedAt", "ModifiedAt")
-                    SELECT @NewMemberId, "ChatServerId", "UserId", "Id", @now, @now
-                    FROM accepted
-                    ON CONFLICT ("ChatServerId", "UserId") DO NOTHING;
-                    """;
+                    SELECT @NewMemberId, "ChatServerId", "UserId", "Id", @Now, @Now
+                    FROM pending
+                    ON CONFLICT ("ChatServerId", "UserId") WHERE "Deleted" = FALSE DO NOTHING
+                    RETURNING "Id", "InvitationId"
+                ),
+                accepted AS (
+                    UPDATE "HootOut"."ServerInvitation"
+                    SET "Status" = @Accepted,
+                        "ModifiedAt" = @Now
+                    WHERE "Id" IN (SELECT "InvitationId" FROM inserted)
+                )
+                SELECT "Id" FROM inserted;
+        """;
 
-            var memberId = Guid.CreateVersion7();
-
-            var now = DateTime.UtcNow;
-            await conn.ExecuteAsync(
-                new CommandDefinition(sql, new
-                {
-                    Accepted = ServerInvitationStatus.Accepted,
-                    Pending = ServerInvitationStatus.Pending,
-                    NewMemberId = memberId,
-                    ChatServerId = invitaiton.ChatServerId,
-                    UserId = invitaiton.UserId,
-                    InvitationId = invitaiton.Id,
-                    now
-                }, cancellationToken: ct));
-
-            return memberId;
+            return await conn.ExecuteScalarAsync<Guid?>(new CommandDefinition(sql, new
+            {
+                Accepted = ServerInvitationStatus.Accepted,
+                Pending = ServerInvitationStatus.Pending,
+                NewMemberId = Guid.CreateVersion7(),
+                UserId = invitation.UserId,
+                InvitationId = invitation.Id,
+                Now = DateTime.UtcNow
+            }, cancellationToken: ct));
         }
     }
 }
