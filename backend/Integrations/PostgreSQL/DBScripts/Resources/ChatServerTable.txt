@@ -73,8 +73,9 @@ then
 
 end if; 
 
-CREATE UNIQUE INDEX IF NOT EXISTS ux_server_member
-ON "HootOut"."ServerMember" ("ChatServerId", "UserId");
+CREATE UNIQUE INDEX IF NOT EXISTS ux_server_member_active
+ON "HootOut"."ServerMember" ("ChatServerId", "UserId")
+WHERE "Deleted" = FALSE;
 
 CREATE INDEX IF NOT EXISTS ix_server_member_server_createdAt
 ON "HootOut"."ServerMember" ("ChatServerId", "CreatedAt" DESC, "Id" DESC);

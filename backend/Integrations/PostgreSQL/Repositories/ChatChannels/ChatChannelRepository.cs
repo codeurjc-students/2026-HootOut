@@ -42,7 +42,6 @@ namespace HootOut.PostgreSQL.Repositories.ChatChannels
                         {ChatChannelColums}
                     FROM "HootOut"."ChatChannel"
                     WHERE "Id" = @Id AND "Deleted" = False
-                    ORDER BY "Name"
                 """,
                 new { Id = channelId },
                 cancellationToken: ct))).FirstOrDefault();
