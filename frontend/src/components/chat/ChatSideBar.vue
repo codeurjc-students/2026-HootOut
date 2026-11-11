@@ -15,16 +15,16 @@
     createServerFormModal.value?.open()
   }
 
-  function setCurrentServer(server: ChatServer) {
-    router.push({ name: 'server', params: { serverId: server.id } })
+  async function setCurrentServer(server: ChatServer) {
+    await router.push({ name: 'server', params: { serverId: server.id } })
   }
 
-  function onCreateServerSuccess(server: ChatServer) {
+  async function onCreateServerSuccess(server: ChatServer) {
     serverstore.addChatServer(server)
     serverstore.setCurrentServer(server.id)
     createServerFormModal.value?.close()
 
-    setCurrentServer(server)
+    await setCurrentServer(server)
   }
 </script>
 

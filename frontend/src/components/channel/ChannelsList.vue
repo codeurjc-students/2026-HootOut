@@ -37,7 +37,7 @@
       await serverInfo.fetchServerChannels(server, true)
 
       if (openChannel?.id == id) {
-        router.push({ name: 'server', params: { serverId: server.id } })
+        await router.push({ name: 'server', params: { serverId: server.id } })
       } else if (openChannel) {
         // Open it again so its messages are loaded again
         await serverInfo.selectChannel(openChannel.id)

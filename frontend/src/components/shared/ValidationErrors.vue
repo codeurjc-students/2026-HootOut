@@ -5,8 +5,8 @@
 </script>
 
 <template>
-  <div v-for="val in errors?.values()">
-    <p v-for="err in val.values()" :key="err" class="custom-form-field-error">
+  <div v-for="key in errors?.keys()" :key="key">
+    <p v-for="err in errors?.get(key)?.values() ?? []" :key="err" class="custom-form-field-error">
       {{ err }}
     </p>
   </div>
