@@ -1,24 +1,22 @@
 <script setup lang="ts">
-  import { useRoute } from 'vue-router'
   import ServerName from '../ServerName.vue'
-
-  const route = useRoute()
 </script>
 
 <template>
   <div>
     <ServerName />
     <div class="flex flex-col">
+      <!-- active-class: highlighted on its own route and on its child routes -->
       <RouterLink
         :to="{ name: 'serverProfile' }"
-        class="pointer border-bottom-1 px-4 py-2 hover:background-light"
-        :class="route.path.includes('profile') ? 'background-light' : ''"
+        class="pointer px-4 py-2 border-bottom-1 hover:background-light"
+        active-class="background-light"
         >Server Profile</RouterLink
       >
       <RouterLink
         :to="{ name: 'serverMembers' }"
-        class="pointer border-bottom-1 px-4 py-2 hover:background-light"
-        :class="route.path.includes('members') ? 'background-light' : ''"
+        class="pointer px-4 py-2 border-bottom-1 hover:background-light"
+        active-class="background-light"
         >Server Members</RouterLink
       >
     </div>

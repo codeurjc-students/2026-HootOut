@@ -3,7 +3,6 @@
   import FilePreview from './FilePreview.vue'
   import Modal from '../modal/Modal.vue'
   import { computed, ref, useTemplateRef } from 'vue'
-  import { getBlob } from '@/services/common/api/ApiService.ts'
 
   const { files, canRemove } = defineProps({
     files: Array<any>,

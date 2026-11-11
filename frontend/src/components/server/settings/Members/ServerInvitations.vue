@@ -21,13 +21,25 @@
     return await ChatServerService.getServerInvitations(currentServer.value!.id, request)
   }
 
-  async function revokeInvitation(invitation: any) {
-    await ChatServerService.updateServerInvitation({
-      id: invitation.id,
-      status: ServerInvitationStatus.Revoked,
-    })
+  // Ids of the invitations being revoked, to disable their button and ignore double clicks
+  const revoking = ref(new Set<string>())
 
-    await table.value?.getPage(0)
+  async function revokeInvitation(invitation: any) {
+    if (revoking.value.has(invitation.id)) return
+
+    revoking.value.add(invitation.id)
+    try {
+      await ChatServerService.updateServerInvitation({
+        id: invitation.id,
+        status: ServerInvitationStatus.Revoked,
+      })
+      // Reloads the current page with the table's own loading state and error handling
+      await table.value?.refresh()
+    } catch (err) {
+      // TODO: show the error to the user. The invitation stays as it was.
+    } finally {
+      revoking.value.delete(invitation.id)
+    }
   }
 </script>
 
@@ -40,7 +52,7 @@
       Server: {{ currentServer?.name }}
     </h2>
 
-    <h1 class="py- mb-4 hidden text-2xl md:block">Server Invitations:</h1>
+    <h1 class="mb-4 hidden text-2xl md:block">Server Invitations:</h1>
     <div class="h-[80%] max-h-[80%]">
       <PaginatedTable
         :headers="[
@@ -56,6 +68,7 @@
         <template v-slot:actions="{ row }">
           <button
             class="pointer button-action py-1!"
+            :disabled="revoking.has(row.id)"
             @click="async () => await revokeInvitation(row)"
             v-if="row.status.value == ServerInvitationStatus.Pending"
           >
