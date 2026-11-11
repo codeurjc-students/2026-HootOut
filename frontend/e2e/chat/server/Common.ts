@@ -96,7 +96,7 @@ export async function inviteUserToServer(
     page.locator('#invite-member-form').locator(`[aria-label="${server.name}"]`)
   ).toContainText(server.name)
 
-  const submitInvitationBtn = page.getByRole('button', { name: 'Invite Member' })
+  const submitInvitationBtn = page.locator('.modal').getByRole('button', { name: 'Invite Member' })
   await expect(submitInvitationBtn).toBeDisabled()
 
   const sendInvitationPromise = page.waitForResponse(
