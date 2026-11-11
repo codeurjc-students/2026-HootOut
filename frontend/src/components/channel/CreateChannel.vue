@@ -15,7 +15,7 @@
   const router = useRouter()
 
   async function selectChannel(channel: ChatChannel) {
-    router.push({
+    await router.push({
       name: 'channel',
       params: { serverId: currentServer.value?.id, channelId: channel.id },
     })

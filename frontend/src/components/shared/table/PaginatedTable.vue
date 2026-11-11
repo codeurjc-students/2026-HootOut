@@ -153,6 +153,7 @@
           <tr class="border-bottom-1">
             <th
               v-for="header in headers"
+              :key="header.key"
               class="py-2"
               :class="header.canSort ? 'pointer' : ''"
               @click="
@@ -177,9 +178,9 @@
           </tr>
         </thead>
         <tbody class="overflow-y-auto">
-          <tr v-for="row in tableRows" class="border-bottom-1 hover:background-light">
+          <tr v-for="row in tableRows" :key="row" class="border-bottom-1 hover:background-light">
             <!-- data-label is shown next to the value in the mobile card layout -->
-            <td v-for="header in headers" class="py-4" :data-label="header.name">
+            <td v-for="header in headers" class="py-4" :key="header.key" :data-label="header.name">
               {{ row[header.key].display }}
             </td>
             <td v-if="hasActions" class="actions-cell">

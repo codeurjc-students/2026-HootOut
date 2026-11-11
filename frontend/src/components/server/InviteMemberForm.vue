@@ -35,7 +35,7 @@
         username: form.username,
         chatServerId: props.server?.id,
       })
-      cleanForm()
+      await cleanForm()
       emit('success', invitation)
     } catch (err) {
       error.value =
