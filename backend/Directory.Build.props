@@ -2,5 +2,6 @@
   <PropertyGroup> 
     <RootNamespace>HootOut.$(MSBuildProjectName)</RootNamespace>
     <AssemblyName>HootOut.$(MSBuildProjectName)</AssemblyName>
+    <Version>0.1.0</Version>
   </PropertyGroup>
 </Project>
