@@ -1,6 +1,6 @@
 services:
   hootoutapi:
-    image: ivanmotos/hootout_api:0.1
+    image: ivanmotos/hootout_api:0.1.0
     deploy:
       replicas: 1
     depends_on:
@@ -25,7 +25,7 @@ services:
       - logs:/var/logs
 
   hootoutwebsockets:
-    image: ivanmotos/hootout_websockets:0.1
+    image: ivanmotos/hootout_websockets:0.1.0
     deploy:
       replicas: 2
     depends_on:
