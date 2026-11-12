@@ -2,7 +2,7 @@ services:
   hootoutapi:
     image: ivanmotos/hootout_api:0.1.0
     deploy:
-      replicas: 2
+      replicas: 1
     depends_on:
       postgres:
         condition: service_healthy
@@ -12,9 +12,6 @@ services:
       ASPNETCORE_ENVIRONMENT: Release
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-hootout};Username=${POSTGRES_USER:?Define POSTGRES_USER};Password=${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}"
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?Define RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Define RABBITMQ_PASSWORD}
       S3_URL: "https://rustfs:9000"
       S3_Public_URL: ${S3_PUBLIC_URL:-https://localhost:9000}
       S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?Define RUSTFS_ACCESS_KEY}
@@ -161,7 +158,7 @@ configs:
         option httpchk
         http-check send meth GET uri /health ver HTTP/1.1 hdr Host localhost hdr X-Forwarded-Proto https
         http-check expect status 200
-        server-template api 2 hootoutapi:8080  check inter 10s fastinter 2s downinter 5s rise 2 fall 3 resolvers docker init-addr none
+        server-template api 1 hootoutapi:8080  check inter 10s fastinter 2s downinter 5s rise 2 fall 3 resolvers docker init-addr none
 
       backend be_ws
         balance leastconn

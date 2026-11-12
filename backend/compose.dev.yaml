@@ -2,7 +2,7 @@ services:
   hootoutapi:
     image: hootoutapi
     deploy:
-      replicas: 2
+      replicas: 1
     build:
       context: .
       dockerfile: HootOutAPI/Dockerfile
@@ -17,9 +17,6 @@ services:
       ASPNETCORE_ENVIRONMENT: Release
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-hootout};Username=${POSTGRES_USER:?Define POSTGRES_USER};Password=${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}"
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?Define RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Define RABBITMQ_PASSWORD}
       S3_URL: "https://rustfs:9000"
       S3_Public_URL: ${S3_PUBLIC_URL:-https://localhost:9000}
       S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?Define RUSTFS_ACCESS_KEY}
