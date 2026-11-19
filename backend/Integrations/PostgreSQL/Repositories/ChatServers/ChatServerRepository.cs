@@ -109,5 +109,32 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
 
             return result;
         }
+
+        public async Task<Guid?> GetServerIdByConversationAndUserIdAsync(Guid conversationId, Guid userId, CancellationToken ct)
+        {
+            await using var conn = await provider.OpenConnectionAsync(ct);
+
+            return await conn.QueryFirstOrDefaultAsync<Guid?>(new CommandDefinition("""
+                WITH channel AS (
+                    SELECT channel."Id", channel."ChatServerId"
+                    FROM "HootOut"."ChatConversation" conversation
+                    INNER JOIN "HootOut"."ChatChannel" channel
+                        ON conversation."Id" = channel."ChatConversationId"
+                    WHERE conversation."Id" = @ConversationId
+                )
+                SELECT 
+                    s."Id"
+                FROM "HootOut"."ChatServer" s
+                INNER JOIN "HootOut"."ServerMember" m
+                    ON s."Id" = m."ChatServerId" AND m."UserId" = @UserId
+                INNER JOIN channel
+                    ON s."Id" = channel."ChatServerId"
+                """
+                , new
+                {
+                    ConversationId = conversationId,
+                    UserId = userId,
+                }, cancellationToken: ct));
+        }
     }
 }

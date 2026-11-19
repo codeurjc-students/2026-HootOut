@@ -2,6 +2,7 @@
 using FluentAssertions;
 using HootOut.ChatChannels.Entities;
 using HootOut.ChatServers.Entities;
+using HootOut.ChatServers.Services;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.FileStorage;
 using HootOut.CommonDomain.Persistence;
@@ -10,13 +11,13 @@ using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
+using HootOut.Contracts.ChatServers.Requests;
+using HootOut.Contracts.ChatServers.Services;
 using HootOut.Contracts.Common;
 using HootOut.Contracts.Common.Saver;
-using HootOut.Contracts.Users.Dtos.Request;
-using HootOut.Contracts.Users.Services;
 using HootOut.Users.Entities;
 using Moq;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
+using System.Threading.Channels;
 
 namespace HootOut.ChatMessages.IntegrationTests.Services
 {
@@ -24,10 +25,9 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
     public class ChatMessageServiceTests : IClassFixture<PostgresTestContainer>, IClassFixture<TestS3Container>, IAsyncLifetime
     {
         private IContainer container;
-        private ClearAllTables clearTables;
-
+        private ClearAllTables clearTables; 
         private IChatMessageService chatMessageService;
-        private ISaver<ChatServer> serverSaver;
+        private IChatServerService chatServerService;
         private ISaver<ChatChannel> channelSaver;
         private ISaver<UserInfo> userSaver;
 
@@ -58,7 +58,7 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
             }
 
             chatMessageService = container.Resolve<IChatMessageService>();
-            serverSaver = container.Resolve<ISaver<ChatServer>>();
+            chatServerService = container.Resolve<IChatServerService>();
             channelSaver = container.Resolve<ISaver<ChatChannel>>();
             userSaver = container.Resolve<ISaver<UserInfo>>();
         }
@@ -77,7 +77,7 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
         public async Task GetChatMessages_Empty()
         {
             var ct = TestContext.Current.CancellationToken;
-            (await chatMessageService.GetMessagesByChannelAsync(Guid.NewGuid(), ct: ct)).Items.Should().BeEmpty();
+            (await chatMessageService.GetMessagesByConversationIdAsync(Guid.NewGuid(), ct: ct)).Items.Should().BeEmpty();
         }
 
         [Fact]
@@ -85,8 +85,7 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
         {
             var ct = TestContext.Current.CancellationToken;
             Guid userId = Guid.NewGuid();
-            Guid channelId = Guid.NewGuid();
-            Guid serverId = Guid.NewGuid();
+            Guid channelId = Guid.NewGuid(); 
 
             await userSaver.SaveAsync(new UserInfo
             {
@@ -94,52 +93,50 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
                 Username = "test123",
                 Email = "test@test.com",
                 Password = "123451"
-            },ct);
-
-            await serverSaver.SaveAsync(new ChatServer
-            {
-                Id = serverId,
-                Name = "test123",
-                OwnerId = userId
             }, ct);
 
-            await channelSaver.SaveAsync(new ChatChannel
+            var server = await chatServerService.CreateChatServerAsync(new CreateChatServerRequest
+            {
+                Name = "test123"
+            }, userId, ct); 
+
+            var channel = new ChatChannel
             {
                 Id = channelId,
                 Name = "test",
-                ChatServerId = serverId,
-            }, ct);
+                ChatServerId = server.Id,
+            };
 
-            string content = "This is a test message for a test case"; 
+            await channelSaver.SaveAsync(channel, ct);
+
+            string content = "This is a test message for a test case";
 
             await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest
             {
-                ChatChannelId = channelId,
+                ChatConversationId = channel.ConversationId,
                 AuthorId = userId,
                 Content = content
             }, ct);
 
-            PageResult<ChatMessageDto> result = await chatMessageService.GetMessagesByChannelAsync(channelId, ct: ct);
+            PageResult<ChatMessageDto> result = await chatMessageService.GetMessagesByConversationIdAsync(channel.ConversationId, ct: ct);
             result.Items.Should().HaveCount(1);
             ChatMessageDto chatMessage = result.Items.Single();
 
             chatMessage.Id.Should().NotBeEmpty();
-            chatMessage.ChatChannelId.Should().Be(channelId);
+            chatMessage.ChatConversationId.Should().Be(channel.ConversationId);
             chatMessage.Author?.Id.Should().Be(userId);
             chatMessage.Author?.Username.Should().Be("test123");
             chatMessage.Content.Should().Be(content);
             chatMessage.CreatedAt.Should().NotBe(default);
 
-            result = await chatMessageService.GetMessagesByChannelAsync(Guid.NewGuid(), ct: ct);
+            result = await chatMessageService.GetMessagesByConversationIdAsync(Guid.NewGuid(), ct: ct);
             result.Items.Should().BeEmpty();
         }
 
         [Fact]
-        public async Task GetChannels_Many()
+        public async Task GetMessages_Many()
         {
-            var ct = TestContext.Current.CancellationToken;
-            Guid serverId = Guid.NewGuid();
-            Guid serverId2 = Guid.NewGuid();
+            var ct = TestContext.Current.CancellationToken; 
             Guid channelId = Guid.NewGuid();
             Guid channelId2 = Guid.NewGuid();
             Guid userId = Guid.NewGuid();
@@ -153,53 +150,65 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
                 Password = "123451"
             }, ct);
 
+            var username2 = "test321";
             await userSaver.SaveAsync(new UserInfo
             {
                 Id = userId2,
                 Username = "test321",
                 Email = "test2@test.com",
                 Password = "123451"
-            }, ct);
+            }, ct); 
 
-            await serverSaver.SaveAsync(new ChatServer
+            var server = await chatServerService.CreateChatServerAsync(new CreateChatServerRequest
             {
-                Id = serverId,
-                Name = "test123",
-                OwnerId = userId
-            }, ct);
+                Name = "test123"
+            }, userId, ct);
 
-            await channelSaver.SaveAsync(new ChatChannel
+            var invitation = await chatServerService.InviteMemberAsync(new InviteServerMemberRequest
+            {
+                ChatServerId = server.Id,
+                Username = username2
+            }, userId, ct);
+
+            await chatServerService.UpdateServerInvitationAsync(new UpdateServerInvitationRequest
+            {
+                Id = invitation.Id,
+                Status = Contracts.Common.Enums.InvitationStatus.Accepted
+            }, userId2, ct);
+
+
+            var channel1 = new ChatChannel
             {
                 Id = channelId,
                 Name = "test",
-                ChatServerId = serverId,
-            }, ct);
+                ChatServerId = server.Id,
+            };
 
-            await serverSaver.SaveAsync(new ChatServer
+            await channelSaver.SaveAsync(channel1, ct); 
+
+            var server2 = await chatServerService.CreateChatServerAsync(new CreateChatServerRequest
             {
-                Id = serverId2,
-                Name = "test123",
-                OwnerId = userId
-            }, ct);
+                Name = "test123"
+            }, userId2, ct);
 
-            await channelSaver.SaveAsync(new ChatChannel
+            var channel2 = new ChatChannel
             {
                 Id = channelId2,
                 Name = "test",
-                ChatServerId = serverId2,
-            }, ct);
+                ChatServerId = server2.Id,
+            };
+            await channelSaver.SaveAsync(channel2, ct);
 
+            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel1.ConversationId, AuthorId = userId, Content = "test" }, ct);
+            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel1.ConversationId, AuthorId = userId, Content = "test" }, ct);
+            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel1.ConversationId, AuthorId = userId2, Content = "test" }, ct);
+            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel1.ConversationId, AuthorId = userId2, Content = "test" }, ct);
 
-            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatChannelId = channelId, AuthorId = userId, Content = "test" }, ct);
-            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatChannelId = channelId, AuthorId = userId, Content = "test" }, ct);
-            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatChannelId = channelId, AuthorId = userId2, Content = "test" }, ct);
-            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatChannelId = channelId, AuthorId = userId2, Content = "test" }, ct);
+            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel2.ConversationId, AuthorId = userId2, Content = "test" }, ct);
+            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel2.ConversationId, AuthorId = userId2, Content = "test" }, ct);
+            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel2.ConversationId, AuthorId = userId2, Content = "test" }, ct);
 
-            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatChannelId = channelId2, AuthorId = userId2, Content = "test" }, ct);
-            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatChannelId = channelId2, AuthorId = userId2, Content = "test" }, ct);
-            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatChannelId = channelId2, AuthorId = userId2, Content = "test" }, ct);
-
-            (await chatMessageService.GetMessagesByChannelAsync(channelId, ct: ct)).Items.Should().HaveCount(4);
+            (await chatMessageService.GetMessagesByConversationIdAsync(channel1.ConversationId, ct: ct)).Items.Should().HaveCount(4);
         }
     }
 }

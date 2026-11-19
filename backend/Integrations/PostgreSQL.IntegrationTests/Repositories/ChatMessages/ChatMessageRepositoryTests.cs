@@ -90,7 +90,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
             var ct = TestContext.Current.CancellationToken;
             var (channel, _) = await CreateChannelAsync(ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, ct: ct);
 
             result.Items.Should().BeEmpty();
             result.Next.Should().BeNull();
@@ -102,9 +102,9 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            await CreateMessageAsync(channel.Id, author.Id, BaseDate, ct);
+            await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate, ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(Guid.NewGuid(), ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(Guid.NewGuid(), ct: ct);
 
             result.Items.Should().BeEmpty();
             result.Next.Should().BeNull();
@@ -115,14 +115,14 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var message = await CreateMessageAsync(channel.Id, author.Id, BaseDate, ct, "hello world");
+            var message = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate, ct, "hello world");
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, ct: ct);
 
             result.Items.Should().ContainSingle();
             var dto = result.Items[0];
             dto.Id.Should().Be(message.Id);
-            dto.ChatChannelId.Should().Be(channel.Id);
+            dto.ChatConversationId.Should().Be(channel.ConversationId);
             dto.Content.Should().Be("hello world");
             // timestamptz stores microseconds while DateTime has 100 ns ticks
             dto.CreatedAt.Should().BeCloseTo(message.CreatedAt, TimeSpan.FromMilliseconds(1));
@@ -140,14 +140,14 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
             var (otherChannel, otherAuthor) = await CreateChannelAsync(ct);
-            var first = await CreateMessageAsync(channel.Id, author.Id, BaseDate, ct);
-            var second = await CreateMessageAsync(channel.Id, author.Id, BaseDate.AddMinutes(1), ct);
-            await CreateMessageAsync(otherChannel.Id, otherAuthor.Id, BaseDate.AddSeconds(30), ct);
+            var first = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate, ct);
+            var second = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate.AddMinutes(1), ct);
+            await CreateMessageAsync(otherChannel.ConversationId, otherAuthor.Id, BaseDate.AddSeconds(30), ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, ct: ct);
 
             result.Items.Select(m => m.Id).Should().Equal(second.Id, first.Id);
-            result.Items.Should().OnlyContain(m => m.ChatChannelId == channel.Id);
+            result.Items.Should().OnlyContain(m => m.ChatConversationId == channel.ConversationId);
         }
 
         [Fact]
@@ -156,10 +156,10 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
             var otherAuthor = await CreateUserAsync("other", ct);
-            var mine = await CreateMessageAsync(channel.Id, author.Id, BaseDate, ct);
-            var theirs = await CreateMessageAsync(channel.Id, otherAuthor.Id, BaseDate.AddMinutes(1), ct);
+            var mine = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate, ct);
+            var theirs = await CreateMessageAsync(channel.ConversationId, otherAuthor.Id, BaseDate.AddMinutes(1), ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, ct: ct);
 
             result.Items.Single(m => m.Id == mine.Id).Author!.Id.Should().Be(author.Id);
             result.Items.Single(m => m.Id == theirs.Id).Author!.Id.Should().Be(otherAuthor.Id);
@@ -170,11 +170,11 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var kept = await CreateMessageAsync(channel.Id, author.Id, BaseDate, ct);
-            var deleted = await CreateMessageAsync(channel.Id, author.Id, BaseDate.AddMinutes(1), ct);
+            var kept = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate, ct);
+            var deleted = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate.AddMinutes(1), ct);
             await MarkAsDeletedAsync("ChatMessage", deleted.Id, ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, ct: ct);
 
             result.Items.Select(m => m.Id).Should().Equal(kept.Id);
         }
@@ -189,11 +189,11 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
             // Inserted out of order so the result does not depend on insertion order
-            var second = await CreateMessageAsync(channel.Id, author.Id, BaseDate.AddMinutes(1), ct);
-            var third = await CreateMessageAsync(channel.Id, author.Id, BaseDate.AddMinutes(2), ct);
-            var first = await CreateMessageAsync(channel.Id, author.Id, BaseDate, ct);
+            var second = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate.AddMinutes(1), ct);
+            var third = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate.AddMinutes(2), ct);
+            var first = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate, ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, ct: ct);
 
             result.Items.Select(m => m.Id).Should().Equal(third.Id, second.Id, first.Id);
         }
@@ -206,10 +206,10 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
             var messages = new List<ChatMessage>();
             for (var i = 0; i < 5; i++)
             {
-                messages.Add(await CreateMessageAsync(channel.Id, author.Id, BaseDate, ct));
+                messages.Add(await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate, ct));
             }
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, ct: ct);
 
             // PostgreSQL compares uuids byte by byte, which matches the order of their lowercase string form
             var expected = messages.Select(m => m.Id).OrderByDescending(id => id.ToString(), StringComparer.Ordinal);
@@ -225,11 +225,11 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var message = await CreateMessageAsync(channel.Id, author.Id, BaseDate, ct);
-            var mediaFile = await CreateMediaFileAsync("report.pdf", "application/pdf", ct);
+            var message = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate, ct);
+            var mediaFile = await CreateMediaFileAsync(author.Id, "report.pdf", "application/pdf", ct);
             var attachment = await AddAttachmentAsync(message.Id, mediaFile.Id, BaseDate, ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, ct: ct);
 
             var dto = result.Items.Should().ContainSingle().Subject.Attachments.Should().ContainSingle().Subject;
             dto.Id.Should().Be(attachment.Id);
@@ -247,15 +247,15 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var message = await CreateMessageAsync(channel.Id, author.Id, BaseDate, ct);
-            var last = await AddAttachmentAsync(message.Id, (await CreateMediaFileAsync("last.png", "image/png", ct)).Id, BaseDate.AddMinutes(1), ct);
+            var message = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate, ct);
+            var last = await AddAttachmentAsync(message.Id, (await CreateMediaFileAsync(author.Id, "last.png", "image/png", ct)).Id, BaseDate.AddMinutes(1), ct);
             var tied = new List<ChatMessageAttachment>();
             for (var i = 0; i < 3; i++)
             {
-                tied.Add(await AddAttachmentAsync(message.Id, (await CreateMediaFileAsync($"{i}.png", "image/png", ct)).Id, BaseDate, ct));
+                tied.Add(await AddAttachmentAsync(message.Id, (await CreateMediaFileAsync(author.Id, $"{i}.png", "image/png", ct)).Id, BaseDate, ct));
             }
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, ct: ct);
 
             var expected = tied.Select(a => a.Id).OrderBy(id => id.ToString(), StringComparer.Ordinal).Append(last.Id);
             result.Items.Single().Attachments.Select(a => a.Id).Should().Equal(expected);
@@ -266,17 +266,17 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var first = await CreateMessageAsync(channel.Id, author.Id, BaseDate, ct);
-            var second = await CreateMessageAsync(channel.Id, author.Id, BaseDate.AddMinutes(1), ct);
-            var withoutAttachments = await CreateMessageAsync(channel.Id, author.Id, BaseDate.AddMinutes(2), ct);
+            var first = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate, ct);
+            var second = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate.AddMinutes(1), ct);
+            var withoutAttachments = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate.AddMinutes(2), ct);
             var firstAttachments = new[]
             {
-                await AddAttachmentAsync(first.Id, (await CreateMediaFileAsync("1a.png", "image/png", ct)).Id, BaseDate, ct),
-                await AddAttachmentAsync(first.Id, (await CreateMediaFileAsync("1b.png", "image/png", ct)).Id, BaseDate.AddSeconds(1), ct)
+                await AddAttachmentAsync(first.Id, (await CreateMediaFileAsync(author.Id, "1a.png", "image/png", ct)).Id, BaseDate, ct),
+                await AddAttachmentAsync(first.Id, (await CreateMediaFileAsync(author.Id, "1b.png", "image/png", ct)).Id, BaseDate.AddSeconds(1), ct)
             };
-            var secondAttachment = await AddAttachmentAsync(second.Id, (await CreateMediaFileAsync("2.png", "image/png", ct)).Id, BaseDate, ct);
+            var secondAttachment = await AddAttachmentAsync(second.Id, (await CreateMediaFileAsync(author.Id, "2.png", "image/png", ct)).Id, BaseDate, ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, ct: ct);
 
             result.Items.Select(m => m.Id).Should().Equal(withoutAttachments.Id, second.Id, first.Id);
             result.Items[0].Attachments.Should().BeEmpty();
@@ -290,12 +290,12 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var message = await CreateMessageAsync(channel.Id, author.Id, BaseDate, ct);
-            var kept = await AddAttachmentAsync(message.Id, (await CreateMediaFileAsync("kept.png", "image/png", ct)).Id, BaseDate, ct);
-            var deleted = await AddAttachmentAsync(message.Id, (await CreateMediaFileAsync("deleted.png", "image/png", ct)).Id, BaseDate.AddSeconds(1), ct);
+            var message = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate, ct);
+            var kept = await AddAttachmentAsync(message.Id, (await CreateMediaFileAsync(author.Id, "kept.png", "image/png", ct)).Id, BaseDate, ct);
+            var deleted = await AddAttachmentAsync(message.Id, (await CreateMediaFileAsync(author.Id, "deleted.png", "image/png", ct)).Id, BaseDate.AddSeconds(1), ct);
             await MarkAsDeletedAsync("ChatMessageAttachment", deleted.Id, ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, ct: ct);
 
             result.Items.Single().Attachments.Select(a => a.Id).Should().Equal(kept.Id);
         }
@@ -305,13 +305,13 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var message = await CreateMessageAsync(channel.Id, author.Id, BaseDate, ct);
-            var kept = await AddAttachmentAsync(message.Id, (await CreateMediaFileAsync("kept.png", "image/png", ct)).Id, BaseDate, ct);
-            var deletedFile = await CreateMediaFileAsync("deleted.png", "image/png", ct);
+            var message = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate, ct);
+            var kept = await AddAttachmentAsync(message.Id, (await CreateMediaFileAsync(author.Id, "kept.png", "image/png", ct)).Id, BaseDate, ct);
+            var deletedFile = await CreateMediaFileAsync(author.Id, "deleted.png", "image/png", ct);
             await AddAttachmentAsync(message.Id, deletedFile.Id, BaseDate.AddSeconds(1), ct);
             await MarkAsDeletedAsync("MediaFile", deletedFile.Id, ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, ct: ct);
 
             result.Items.Single().Attachments.Select(a => a.Id).Should().Equal(kept.Id);
         }
@@ -321,14 +321,14 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var message = await CreateMessageAsync(channel.Id, author.Id, BaseDate, ct);
-            var deletedAttachment = await AddAttachmentAsync(message.Id, (await CreateMediaFileAsync("a.png", "image/png", ct)).Id, BaseDate, ct);
-            var deletedFile = await CreateMediaFileAsync("b.png", "image/png", ct);
+            var message = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate, ct);
+            var deletedAttachment = await AddAttachmentAsync(message.Id, (await CreateMediaFileAsync(author.Id, "a.png", "image/png", ct)).Id, BaseDate, ct);
+            var deletedFile = await CreateMediaFileAsync(author.Id, "b.png", "image/png", ct);
             await AddAttachmentAsync(message.Id, deletedFile.Id, BaseDate.AddSeconds(1), ct);
             await MarkAsDeletedAsync("ChatMessageAttachment", deletedAttachment.Id, ct);
             await MarkAsDeletedAsync("MediaFile", deletedFile.Id, ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, ct: ct);
 
             // The message must still be returned, with no null placeholder attachments
             var dto = result.Items.Should().ContainSingle().Subject;
@@ -344,15 +344,15 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
             var messages = new List<ChatMessage>();
             for (var i = 0; i < 3; i++)
             {
-                var message = await CreateMessageAsync(channel.Id, author.Id, BaseDate.AddMinutes(i), ct);
+                var message = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate.AddMinutes(i), ct);
                 for (var j = 0; j < 3; j++)
                 {
-                    await AddAttachmentAsync(message.Id, (await CreateMediaFileAsync($"{i}-{j}.png", "image/png", ct)).Id, BaseDate.AddSeconds(j), ct);
+                    await AddAttachmentAsync(message.Id, (await CreateMediaFileAsync(author.Id, $"{i}-{j}.png", "image/png", ct)).Id, BaseDate.AddSeconds(j), ct);
                 }
                 messages.Add(message);
             }
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, pageSize: 2, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, pageSize: 2, ct: ct);
 
             // LIMIT is applied to messages in the CTE, before joining the attachments
             result.Items.Select(m => m.Id).Should().Equal(messages[2].Id, messages[1].Id);
@@ -369,9 +369,9 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            await CreateMessagesAsync(channel.Id, author.Id, 11, ct);
+            await CreateMessagesAsync(channel.ConversationId, author.Id, 11, ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, ct: ct);
 
             result.PageSize.Should().Be(10);
             result.Items.Should().HaveCount(10);
@@ -386,9 +386,9 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var messages = await CreateMessagesAsync(channel.Id, author.Id, 3, ct);
+            var messages = await CreateMessagesAsync(channel.ConversationId, author.Id, 3, ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, pageSize: pageSize, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, pageSize: pageSize, ct: ct);
 
             result.PageSize.Should().Be(1);
             result.Items.Select(m => m.Id).Should().Equal(messages[^1].Id);
@@ -403,9 +403,9 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            await CreateMessagesAsync(channel.Id, author.Id, MaxPageSize + 2, ct);
+            await CreateMessagesAsync(channel.ConversationId, author.Id, MaxPageSize + 2, ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, pageSize: pageSize, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, pageSize: pageSize, ct: ct);
 
             result.PageSize.Should().Be(MaxPageSize);
             result.Items.Should().HaveCount(MaxPageSize);
@@ -421,9 +421,9 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var messages = await CreateMessagesAsync(channel.Id, author.Id, 5, ct);
+            var messages = await CreateMessagesAsync(channel.ConversationId, author.Id, 5, ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, pageSize: 2, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, pageSize: 2, ct: ct);
 
             result.Items.Select(m => m.Id).Should().Equal(messages[4].Id, messages[3].Id);
             result.Next.Should().Be(messages[3].Id);
@@ -435,9 +435,9 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            await CreateMessagesAsync(channel.Id, author.Id, 3, ct);
+            await CreateMessagesAsync(channel.ConversationId, author.Id, 3, ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, pageSize: 3, ct: ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, pageSize: 3, ct: ct);
 
             result.Items.Should().HaveCount(3);
             result.Next.Should().BeNull();
@@ -448,10 +448,10 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var messages = await CreateMessagesAsync(channel.Id, author.Id, 5, ct);
+            var messages = await CreateMessagesAsync(channel.ConversationId, author.Id, 5, ct);
 
-            var firstPage = await repository.SearchMessagesByChannelIdAsync(channel.Id, pageSize: 3, ct: ct);
-            var secondPage = await repository.SearchMessagesByChannelIdAsync(channel.Id, firstPage.Next, 3, ct);
+            var firstPage = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, pageSize: 3, ct: ct);
+            var secondPage = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, firstPage.Next, 3, ct);
 
             secondPage.Items.Select(m => m.Id).Should().Equal(messages[1].Id, messages[0].Id);
             secondPage.Next.Should().BeNull();
@@ -469,11 +469,11 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
             // Two messages per minute, so there are CreatedAt ties across page boundaries
             for (var i = 0; i < 10; i++)
             {
-                await CreateMessageAsync(channel.Id, author.Id, BaseDate.AddMinutes(i / 2), ct);
+                await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate.AddMinutes(i / 2), ct);
             }
 
-            var expected = await repository.SearchMessagesByChannelIdAsync(channel.Id, pageSize: MaxPageSize, ct: ct);
-            var walked = await ReadAllPagesAsync(channel.Id, pageSize, ct);
+            var expected = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, pageSize: MaxPageSize, ct: ct);
+            var walked = await ReadAllPagesAsync(channel.ConversationId, pageSize, ct);
 
             expected.Items.Should().HaveCount(10);
             walked.Select(m => m.Id).Should().Equal(expected.Items.Select(m => m.Id));
@@ -487,16 +487,16 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
             var expectedAttachments = new Dictionary<Guid, List<Guid>>();
             for (var i = 0; i < 5; i++)
             {
-                var message = await CreateMessageAsync(channel.Id, author.Id, BaseDate.AddMinutes(i), ct);
+                var message = await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate.AddMinutes(i), ct);
                 expectedAttachments[message.Id] = [];
                 for (var j = 0; j < i % 3; j++)
                 {
-                    var attachment = await AddAttachmentAsync(message.Id, (await CreateMediaFileAsync($"{i}-{j}.png", "image/png", ct)).Id, BaseDate.AddSeconds(j), ct);
+                    var attachment = await AddAttachmentAsync(message.Id, (await CreateMediaFileAsync(author.Id, $"{i}-{j}.png", "image/png", ct)).Id, BaseDate.AddSeconds(j), ct);
                     expectedAttachments[message.Id].Add(attachment.Id);
                 }
             }
 
-            var walked = await ReadAllPagesAsync(channel.Id, 2, ct);
+            var walked = await ReadAllPagesAsync(channel.ConversationId, 2, ct);
 
             walked.Should().HaveCount(5);
             foreach (var message in walked)
@@ -510,11 +510,11 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var messages = await CreateMessagesAsync(channel.Id, author.Id, 6, ct);
+            var messages = await CreateMessagesAsync(channel.ConversationId, author.Id, 6, ct);
             await MarkAsDeletedAsync("ChatMessage", messages[1].Id, ct);
             await MarkAsDeletedAsync("ChatMessage", messages[4].Id, ct);
 
-            var walked = await ReadAllPagesAsync(channel.Id, 2, ct);
+            var walked = await ReadAllPagesAsync(channel.ConversationId, 2, ct);
 
             walked.Select(m => m.Id).Should().Equal(messages[5].Id, messages[3].Id, messages[2].Id, messages[0].Id);
         }
@@ -524,12 +524,12 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var messages = await CreateMessagesAsync(channel.Id, author.Id, 5, ct);
+            var messages = await CreateMessagesAsync(channel.ConversationId, author.Id, 5, ct);
 
-            var firstPage = await repository.SearchMessagesByChannelIdAsync(channel.Id, pageSize: 2, ct: ct);
+            var firstPage = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, pageSize: 2, ct: ct);
             // The cursor subquery does not filter by Deleted, so the deleted message still sets the position
             await MarkAsDeletedAsync("ChatMessage", firstPage.Next!.Value, ct);
-            var secondPage = await repository.SearchMessagesByChannelIdAsync(channel.Id, firstPage.Next, 2, ct);
+            var secondPage = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, firstPage.Next, 2, ct);
 
             secondPage.Items.Select(m => m.Id).Should().Equal(messages[2].Id, messages[1].Id);
         }
@@ -539,11 +539,11 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var messages = await CreateMessagesAsync(channel.Id, author.Id, 4, ct);
+            var messages = await CreateMessagesAsync(channel.ConversationId, author.Id, 4, ct);
 
-            var firstPage = await repository.SearchMessagesByChannelIdAsync(channel.Id, pageSize: 2, ct: ct);
-            await CreateMessageAsync(channel.Id, author.Id, BaseDate.AddHours(1), ct);
-            var secondPage = await repository.SearchMessagesByChannelIdAsync(channel.Id, firstPage.Next, 2, ct);
+            var firstPage = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, pageSize: 2, ct: ct);
+            await CreateMessageAsync(channel.ConversationId, author.Id, BaseDate.AddHours(1), ct);
+            var secondPage = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, firstPage.Next, 2, ct);
 
             secondPage.Items.Select(m => m.Id).Should().Equal(messages[1].Id, messages[0].Id);
             secondPage.Next.Should().BeNull();
@@ -554,9 +554,9 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            await CreateMessagesAsync(channel.Id, author.Id, 3, ct);
+            await CreateMessagesAsync(channel.ConversationId, author.Id, 3, ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, Guid.NewGuid(), 10, ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, Guid.NewGuid(), 10, ct);
 
             // The cursor subquery returns NULL and the row comparison against NULL matches nothing
             result.Items.Should().BeEmpty();
@@ -568,9 +568,9 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var messages = await CreateMessagesAsync(channel.Id, author.Id, 3, ct);
+            var messages = await CreateMessagesAsync(channel.ConversationId, author.Id, 3, ct);
 
-            var result = await repository.SearchMessagesByChannelIdAsync(channel.Id, messages[0].Id, 10, ct);
+            var result = await repository.SearchMessagesByConversationIdAsync(channel.ConversationId, messages[0].Id, 10, ct);
 
             result.Items.Should().BeEmpty();
             result.Next.Should().BeNull();
@@ -585,19 +585,19 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
             using var cts = new CancellationTokenSource();
             await cts.CancelAsync();
 
-            var act = () => repository.SearchMessagesByChannelIdAsync(channel.Id, ct: cts.Token);
+            var act = () => repository.SearchMessagesByConversationIdAsync(channel.ConversationId, ct: cts.Token);
 
             await act.Should().ThrowAsync<OperationCanceledException>();
         }
 
-        private async Task<List<ChatMessageDto>> ReadAllPagesAsync(Guid channelId, int pageSize, CancellationToken ct)
+        private async Task<List<ChatMessageDto>> ReadAllPagesAsync(Guid conversationId, int pageSize, CancellationToken ct)
         {
             var all = new List<ChatMessageDto>();
             Guid? next = null;
             var guard = 0;
             do
             {
-                var page = await repository.SearchMessagesByChannelIdAsync(channelId, next, pageSize, ct);
+                var page = await repository.SearchMessagesByConversationIdAsync(conversationId, next, pageSize, ct);
                 all.AddRange(page.Items);
                 next = page.Next;
                 (++guard).Should().BeLessThan(100, "pagination must end");
@@ -638,12 +638,12 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
             return (channel, author);
         }
 
-        private async Task<ChatMessage> CreateMessageAsync(Guid channelId, Guid authorId, DateTime createdAt, CancellationToken ct, string? content = null)
+        private async Task<ChatMessage> CreateMessageAsync(Guid conversationId, Guid authorId, DateTime createdAt, CancellationToken ct, string? content = null)
         {
             var message = new ChatMessage
             {
                 Id = Guid.CreateVersion7(),
-                ChatChannelId = channelId,
+                ChatConversationId = conversationId,
                 AuthorId = authorId,
                 Content = content ?? $"message at {createdAt:O}",
                 CreatedAt = createdAt,
@@ -667,7 +667,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
             return messages;
         }
 
-        private async Task<MediaFile> CreateMediaFileAsync(string fileName, string contentType, CancellationToken ct)
+        private async Task<MediaFile> CreateMediaFileAsync(Guid ownerId, string fileName, string contentType, CancellationToken ct)
         {
             var mediaFile = Persistable.CreateNew<MediaFile>();
             mediaFile.FileName = fileName;
@@ -675,7 +675,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
             mediaFile.ContentType = contentType;
             mediaFile.BytesSize = 1024;
             mediaFile.Url = $"http://localhost/media/{fileName}";
-            mediaFile.OwnerId = Guid.NewGuid();
+            mediaFile.OwnerId = ownerId;
             await mediaFileSaver.SaveAsync(mediaFile, ct);
             return mediaFile;
         }

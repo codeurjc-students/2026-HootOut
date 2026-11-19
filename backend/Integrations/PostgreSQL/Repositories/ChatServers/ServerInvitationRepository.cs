@@ -3,13 +3,13 @@ using HootOut.ChatServers.Entities;
 using HootOut.ChatServers.Repositories;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.ChatServers.Dtos;
-using HootOut.Contracts.ChatServers.Enums;
 using HootOut.Contracts.Common;
+using HootOut.Contracts.Common.Enums;
 using HootOut.PostgreSQL.Helpers;
 
 namespace HootOut.PostgreSQL.Repositories.ChatServers
 {
-    public class ServerInvitationRepository : IServerInvitationRepository
+    public sealed class ServerInvitationRepository : IServerInvitationRepository
     {
         IPersistenceProvider provider;
 
@@ -132,7 +132,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
             using var multi = await conn.QueryMultipleAsync(new CommandDefinition(sql, new
             {
                 UserId = userId,
-                Pending = ServerInvitationStatus.Pending,
+                Pending = InvitationStatus.Pending,
                 request.Next,
                 Take = request.Size + 1,
             }, cancellationToken: ct));
@@ -188,8 +188,8 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
 
             return await conn.ExecuteScalarAsync<Guid?>(new CommandDefinition(sql, new
             {
-                Accepted = ServerInvitationStatus.Accepted,
-                Pending = ServerInvitationStatus.Pending,
+                Accepted = InvitationStatus.Accepted,
+                Pending = InvitationStatus.Pending,
                 NewMemberId = Guid.CreateVersion7(),
                 UserId = invitation.UserId,
                 InvitationId = invitation.Id,

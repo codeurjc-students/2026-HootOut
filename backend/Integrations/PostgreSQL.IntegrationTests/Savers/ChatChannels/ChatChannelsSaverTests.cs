@@ -9,6 +9,7 @@ using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Infraestructure.DI;
+using HootOut.Users.Entities;
 using Npgsql;
 
 namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatChannels
@@ -25,6 +26,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatChannels
         private readonly ISaver<ChatServer> serverSaver;
 
         private readonly IPersistenceProvider provider;
+        private readonly ISaver<UserInfo> userSaver;
 
         public ChatChannelsSaverTests(PostgresTestContainer postgresContainer)
         {
@@ -46,6 +48,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatChannels
 
             saver = container.Resolve<ISaver<ChatChannel>>();
             serverSaver = container.Resolve<ISaver<ChatServer>>();
+            userSaver = container.Resolve<ISaver<UserInfo>>();
         }
 
         public async ValueTask InitializeAsync()
@@ -168,21 +171,6 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatChannels
         }
 
         [Fact]
-        public async Task SaveAsync_NameLongerThan255Characters_ThrowsWrappedTruncationError()
-        {
-            var ct = TestContext.Current.CancellationToken;
-            var server = await CreateServerAsync(ct);
-            var channel = BuildChannel(server.Id, new string('a', 256));
-
-            var act = () => saver.SaveAsync(channel, ct);
-
-            var exception = await act.Should().ThrowExactlyAsync<Exception>();
-            exception.WithInnerException<PostgresException>()
-                .Which.SqlState.Should().Be(PostgresErrorCodes.StringDataRightTruncation);
-            (await CountRowsAsync(ct)).Should().Be(0);
-        }
-
-        [Fact]
         public async Task SaveAsync_CancelledToken_ThrowsOperationCanceledAndDoesNotPersist()
         {
             var server = await CreateServerAsync(TestContext.Current.CancellationToken);
@@ -269,12 +257,23 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatChannels
 
         #endregion
 
+        private async Task<UserInfo> CreateUserAsync(CancellationToken ct)
+        {
+            var user = Persistable.CreateNew<UserInfo>();
+            user.Username = $"User-{user.Id}";
+            user.Email = $"{user.Id}@hootout.com";
+            user.Password = "12345";
+            await userSaver.SaveAsync(user, ct);
+            return user;
+        }
+
         private async Task<ChatServer> CreateServerAsync(CancellationToken ct)
         {
+            var user = await CreateUserAsync(ct);
             var server = Persistable.CreateNew<ChatServer>();
             server.Name = $"server-{server.Id}";
             server.Description = "Test server";
-            server.OwnerId = Guid.NewGuid();
+            server.OwnerId = user.Id;
             await serverSaver.SaveAsync(server, ct);
             return server;
         }

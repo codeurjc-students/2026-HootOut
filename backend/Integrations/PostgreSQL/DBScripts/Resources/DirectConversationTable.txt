@@ -1,0 +1,48 @@
+DO $$
+BEGIN
+
+if NOT EXISTS  (
+SELECT  schema_name
+FROM	information_schema.schemata
+WHERE	schema_name = 'HootOut' )
+then 
+	CREATE SCHEMA "HootOut";
+end if;
+
+end $$; 
+
+-- DIRECT CONVERSATION TABLE --------------------------------------------------------
+----------------------------------------------------------------------------------
+-- "ChatConversationId" points to the ChatConversation row (Type = 10) that holds its messages.
+-- One conversation per pair of users, kept forever: if they unfriend and
+-- become friends again, they get their old messages back.
+-- "User1Id" is always the smaller id.
+
+DO $$
+BEGIN
+if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
+				WHERE TABLE_SCHEMA = 'HootOut'
+				AND   TABLE_NAME = 'DirectConversation')
+then
+	CREATE TABLE "HootOut"."DirectConversation"(
+		"Id" UUID NOT NULL PRIMARY KEY,
+		"ChatConversationId" UUID NOT NULL,
+		"User1Id" UUID NOT NULL REFERENCES "HootOut"."UserInfo"("Id"),
+		"User2Id" UUID NOT NULL REFERENCES "HootOut"."UserInfo"("Id"),
+		"CreatedAt" timestamptz NOT NULL,
+		"ModifiedAt" timestamptz NOT NULL,
+		CONSTRAINT fk_direct_conversation_conversation
+			FOREIGN KEY ("ChatConversationId") REFERENCES "HootOut"."ChatConversation" ("Id"),
+		CONSTRAINT ux_direct_conversation_conversation UNIQUE ("ChatConversationId"),
+		CONSTRAINT ck_direct_conversation_order CHECK ("User1Id" < "User2Id")
+	);
+end if;
+
+-- One conversation per pair. Also serves lookups by "User1Id".
+CREATE UNIQUE INDEX IF NOT EXISTS ux_direct_conversation_users
+ON "HootOut"."DirectConversation" ("User1Id", "User2Id");
+
+CREATE INDEX IF NOT EXISTS ix_direct_conversation_user2
+ON "HootOut"."DirectConversation" ("User2Id");
+
+end $$;

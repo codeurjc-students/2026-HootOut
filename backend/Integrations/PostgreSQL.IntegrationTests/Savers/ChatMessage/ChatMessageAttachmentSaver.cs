@@ -70,7 +70,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var message = await CreateMessageAsync(ct);
-            var mediaFile = await CreateMediaFileAsync(ct);
+            var mediaFile = await CreateMediaFileAsync(message.AuthorId, ct);
             var attachment = BuildAttachment(message.Id, mediaFile.Id);
 
             await saver.SaveManyAsync([attachment], ct);
@@ -94,7 +94,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
             var attachments = new List<ChatMessageAttachment>();
             for (var i = 0; i < 3; i++)
             {
-                attachments.Add(BuildAttachment(message.Id, (await CreateMediaFileAsync(ct)).Id));
+                attachments.Add(BuildAttachment(message.Id, (await CreateMediaFileAsync(message.AuthorId, ct)).Id));
             }
 
             await saver.SaveManyAsync(attachments, ct);
@@ -108,8 +108,8 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var message = await CreateMessageAsync(ct);
-            var first = BuildAttachment(message.Id, (await CreateMediaFileAsync(ct)).Id);
-            var second = BuildAttachment(message.Id, (await CreateMediaFileAsync(ct)).Id);
+            var first = BuildAttachment(message.Id, (await CreateMediaFileAsync(message.AuthorId, ct)).Id);
+            var second = BuildAttachment(message.Id, (await CreateMediaFileAsync(message.AuthorId, ct)).Id);
 
             await saver.SaveManyAsync([first], ct);
             await saver.SaveManyAsync([second], ct);
@@ -144,8 +144,15 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
         public async Task SaveManyAsync_NotExistingMessage_ThrowsWrappedForeignKeyViolation()
         {
             var ct = TestContext.Current.CancellationToken;
+
+            var author = Persistable.CreateNew<UserInfo>();
+            author.Username = $"user-{author.Id}";
+            author.Email = $"{author.Id}@test.com";
+            author.Password = "hash";
+            await container.Resolve<ISaver<UserInfo>>().SaveAsync(author, ct);
+
             var missingMessageId = Guid.NewGuid();
-            var attachment = BuildAttachment(missingMessageId, (await CreateMediaFileAsync(ct)).Id);
+            var attachment = BuildAttachment(missingMessageId, (await CreateMediaFileAsync(author.Id, ct)).Id);
 
             var act = () => saver.SaveManyAsync([attachment], ct);
 
@@ -177,9 +184,9 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var message = await CreateMessageAsync(ct);
-            var valid = BuildAttachment(message.Id, (await CreateMediaFileAsync(ct)).Id);
+            var valid = BuildAttachment(message.Id, (await CreateMediaFileAsync(message.AuthorId, ct)).Id);
             var invalid = BuildAttachment(message.Id, Guid.NewGuid());
-            var alsoValid = BuildAttachment(message.Id, (await CreateMediaFileAsync(ct)).Id);
+            var alsoValid = BuildAttachment(message.Id, (await CreateMediaFileAsync(message.AuthorId, ct)).Id);
 
             var act = () => saver.SaveManyAsync([valid, invalid, alsoValid], ct);
 
@@ -195,8 +202,8 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var message = await CreateMessageAsync(ct);
-            var first = BuildAttachment(message.Id, (await CreateMediaFileAsync(ct)).Id);
-            var duplicate = BuildAttachment(message.Id, (await CreateMediaFileAsync(ct)).Id);
+            var first = BuildAttachment(message.Id, (await CreateMediaFileAsync(message.AuthorId, ct)).Id);
+            var duplicate = BuildAttachment(message.Id, (await CreateMediaFileAsync(message.AuthorId, ct)).Id);
             duplicate.Id = first.Id;
 
             var act = () => saver.SaveManyAsync([first, duplicate], ct);
@@ -212,10 +219,10 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var message = await CreateMessageAsync(ct);
-            var original = BuildAttachment(message.Id, (await CreateMediaFileAsync(ct)).Id);
+            var original = BuildAttachment(message.Id, (await CreateMediaFileAsync(message.AuthorId, ct)).Id);
             await saver.SaveManyAsync([original], ct);
 
-            var duplicate = BuildAttachment(message.Id, (await CreateMediaFileAsync(ct)).Id);
+            var duplicate = BuildAttachment(message.Id, (await CreateMediaFileAsync(message.AuthorId, ct)).Id);
             duplicate.Id = original.Id;
 
             var act = () => saver.SaveManyAsync([duplicate], ct);
@@ -232,7 +239,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
         public async Task SaveManyAsync_CancelledToken_ThrowsOperationCanceledAndDoesNotPersist()
         {
             var message = await CreateMessageAsync(TestContext.Current.CancellationToken);
-            var mediaFile = await CreateMediaFileAsync(TestContext.Current.CancellationToken);
+            var mediaFile = await CreateMediaFileAsync(message.AuthorId, TestContext.Current.CancellationToken);
             var attachment = BuildAttachment(message.Id, mediaFile.Id);
             using var cts = new CancellationTokenSource();
             await cts.CancelAsync();
@@ -274,13 +281,13 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
 
             var message = Persistable.CreateNew<ChatMessage>();
             message.AuthorId = author.Id;
-            message.ChatChannelId = channel.Id;
+            message.ChatConversationId = channel.ConversationId;
             message.Content = "message with attachments";
             await messageSaver.SaveAsync(message, ct);
             return message;
         }
 
-        private async Task<MediaFile> CreateMediaFileAsync(CancellationToken ct)
+        private async Task<MediaFile> CreateMediaFileAsync(Guid ownerId, CancellationToken ct)
         {
             var mediaFile = Persistable.CreateNew<MediaFile>();
             mediaFile.FileName = $"{mediaFile.Id}.png";
@@ -288,7 +295,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
             mediaFile.ContentType = "image/png";
             mediaFile.BytesSize = 1024;
             mediaFile.Url = $"http://localhost/media/{mediaFile.FileName}";
-            mediaFile.OwnerId = Guid.NewGuid();
+            mediaFile.OwnerId = ownerId;
             await mediaFileSaver.SaveAsync(mediaFile, ct);
             return mediaFile;
         }

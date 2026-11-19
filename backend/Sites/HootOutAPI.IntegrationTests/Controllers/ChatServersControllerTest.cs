@@ -5,9 +5,9 @@ using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.Contracts.Authentication.Responses;
 using HootOut.Contracts.ChatServers.Dtos;
-using HootOut.Contracts.ChatServers.Enums;
 using HootOut.Contracts.ChatServers.Requests;
 using HootOut.Contracts.Common;
+using HootOut.Contracts.Common.Enums;
 using HootOut.HootOutAPI.IntegrationTests.Common;
 using System.Net;
 using System.Net.Http.Json;
@@ -201,10 +201,10 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             invitation.Should().NotBeNull();
             invitation.UserId.Should().Be(userId2);
             invitation.ChatServerId.Should().Be(server.Id);
-            invitation.Status.Should().Be(ServerInvitationStatus.Pending);
+            invitation.Status.Should().Be(InvitationStatus.Pending);
 
             var invitationAcceptResponse = await SendAuthorizeHttpRequest(
-                HttpMethod.Put, "/api/v1/chatServers/invitation", new UpdateServerInvitationRequest { Id = invitation.Id, Status = ServerInvitationStatus.Accepted }, auth2!.AccessToken!, ct);
+                HttpMethod.Put, "/api/v1/chatServers/invitation", new UpdateServerInvitationRequest { Id = invitation.Id, Status = InvitationStatus.Accepted }, auth2!.AccessToken!, ct);
 
             invitationAcceptResponse.StatusCode.Should().Be(HttpStatusCode.OK);
             var memberId = await invitationAcceptResponse.Content.ReadFromJsonAsync<Guid?>(ct);
@@ -262,10 +262,10 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             invitation.Should().NotBeNull();
             invitation.UserId.Should().Be(userId2);
             invitation.ChatServerId.Should().Be(server.Id);
-            invitation.Status.Should().Be(ServerInvitationStatus.Pending);
+            invitation.Status.Should().Be(InvitationStatus.Pending);
 
             var invitationAcceptResponse = await SendAuthorizeHttpRequest(
-                HttpMethod.Put, "/api/v1/chatServers/invitation", new UpdateServerInvitationRequest { Id = invitation.Id, Status = ServerInvitationStatus.Rejected }, auth2!.AccessToken!, ct);
+                HttpMethod.Put, "/api/v1/chatServers/invitation", new UpdateServerInvitationRequest { Id = invitation.Id, Status = InvitationStatus.Rejected }, auth2!.AccessToken!, ct);
 
             invitationAcceptResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 

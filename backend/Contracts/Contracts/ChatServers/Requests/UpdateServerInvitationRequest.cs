@@ -1,12 +1,12 @@
 ﻿using FluentValidation;
-using HootOut.Contracts.ChatServers.Enums;
+using HootOut.Contracts.Common.Enums;
 
 namespace HootOut.Contracts.ChatServers.Requests
 {
     public sealed record UpdateServerInvitationRequest
     {
         public Guid Id { get; set; }
-        public ServerInvitationStatus Status { get; set; }
+        public InvitationStatus Status { get; set; }
         public void Validate() => new UpdateServerInvitationRequestValidator().ValidateAndThrow(this);
     }
 

@@ -5,6 +5,6 @@ namespace HootOut.ChatMessages.Repositories
 {
     public interface IChatMessageRepository
     {
-        Task<PageResult<ChatMessageDto>> SearchMessagesByChannelIdAsync(Guid channelId, Guid? next = null, int pageSize = 10, CancellationToken ct = default);
+        Task<PageResult<ChatMessageDto>> SearchMessagesByConversationIdAsync(Guid channelId, Guid? next = null, int pageSize = 10, CancellationToken ct = default);
     }
 }

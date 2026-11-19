@@ -32,6 +32,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         private readonly ISaver<MediaFile> mediaFileSaver;
 
         private readonly ISaver<ChatMessageAttachment> attachmentSaver;
+        private readonly ISaver<UserInfo> userSaver;
 
         private readonly IPersistenceProvider provider;
 
@@ -57,6 +58,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
             messageSaver = container.Resolve<ISaver<ChatMessage>>();
             mediaFileSaver = container.Resolve<ISaver<MediaFile>>();
             attachmentSaver = container.Resolve<ISaver<ChatMessageAttachment>>();
+            userSaver = container.Resolve<ISaver<UserInfo>>();
         }
 
         public async ValueTask InitializeAsync()
@@ -276,21 +278,32 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
 
             var message = Persistable.CreateNew<ChatMessage>();
             message.AuthorId = author.Id;
-            message.ChatChannelId = channel.Id;
+            message.ChatConversationId = channel.ConversationId;
             message.Content = "message with attachments";
             await messageSaver.SaveAsync(message, ct);
             return message;
         }
 
+        private async Task<UserInfo> CreateUserAsync(CancellationToken ct)
+        {
+            var user = Persistable.CreateNew<UserInfo>();
+            user.Username = $"User-{user.Id}";
+            user.Email = $"{user.Id}@hootout.com";
+            user.Password = "12345";
+            await userSaver.SaveAsync(user, ct);
+            return user;
+        }
+
         private async Task<MediaFile> CreateMediaFileAsync(string fileName, string contentType, CancellationToken ct)
         {
+            var userId = await CreateUserAsync(ct);
             var mediaFile = Persistable.CreateNew<MediaFile>();
             mediaFile.FileName = fileName;
             mediaFile.Checksum = Guid.NewGuid().ToString("N");
             mediaFile.ContentType = contentType;
             mediaFile.BytesSize = 1024;
             mediaFile.Url = $"http://localhost/media/{fileName}";
-            mediaFile.OwnerId = Guid.NewGuid();
+            mediaFile.OwnerId = userId.Id;
             await mediaFileSaver.SaveAsync(mediaFile, ct);
             return mediaFile;
         }

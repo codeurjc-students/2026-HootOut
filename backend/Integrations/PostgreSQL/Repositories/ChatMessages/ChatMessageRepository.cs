@@ -16,7 +16,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatMessages
             this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
         }
 
-        public async Task<PageResult<ChatMessageDto>> SearchMessagesByChannelIdAsync(Guid channelId, Guid? next = null, int pageSize = 10, CancellationToken ct = default)
+        public async Task<PageResult<ChatMessageDto>> SearchMessagesByConversationIdAsync(Guid conversationId, Guid? next = null, int pageSize = 10, CancellationToken ct = default)
         {
             pageSize = Math.Clamp(pageSize, 1, maxPageSize);
             var cursorFilter = next is null
@@ -31,16 +31,16 @@ namespace HootOut.PostgreSQL.Repositories.ChatMessages
             var sql = $"""
                  WITH page AS (
                     SELECT m."Id", m."CreatedAt", m."ModifiedAt", m."Content",
-                           m."ChatChannelId", m."AuthorId"
+                           m."ChatConversationId", m."AuthorId"
                     FROM "HootOut"."ChatMessage" m
-                    WHERE m."ChatChannelId" = @ChannelId
+                    WHERE m."ChatConversationId" = @ConversationId
                       AND m."Deleted" = false
                       {cursorFilter}
                     ORDER BY m."CreatedAt" DESC, m."Id" DESC
                     LIMIT @Take
                 )
                 SELECT
-                    p."Id", p."CreatedAt", p."ModifiedAt", p."Content", p."ChatChannelId",
+                    p."Id", p."CreatedAt", p."ModifiedAt", p."Content", p."ChatConversationId",
                     u."Id", u."Username", u."Email",
                     a."Id", a."MessageId", a."MediaFileId", a."CreatedAt",
                     mf."FileName", mf."ContentType"
@@ -62,7 +62,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatMessages
             await conn.QueryAsync<ChatMessageDto, UserDto?, ChatMessageAttachmentDto?, ChatMessageDto>(
                 new CommandDefinition(sql, new
                 {
-                    ChannelId = channelId,
+                    ConversationId = conversationId,
                     Next = next,
                     Take = pageSize + 1
                 }, cancellationToken: ct),

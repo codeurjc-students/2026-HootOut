@@ -8,6 +8,7 @@ using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Infraestructure.DI;
+using HootOut.Users.Entities;
 using Npgsql;
 
 namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
@@ -20,6 +21,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         private readonly ClearAllTables clearTables;
 
         private readonly ISaver<ChatServer> saver;
+        private readonly ISaver<UserInfo> userSaver;
 
         private readonly IPersistenceProvider provider;
 
@@ -42,6 +44,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
             }
 
             saver = container.Resolve<ISaver<ChatServer>>();
+            userSaver = container.Resolve<ISaver<UserInfo>>();
         }
 
         public async ValueTask InitializeAsync()
@@ -59,7 +62,8 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         public async Task SaveAsync_ValidServer_PersistsAllColumns()
         {
             var ct = TestContext.Current.CancellationToken;
-            var server = BuildServer("server");
+            var user = await CreateUserAsync(ct);
+            var server = BuildServer("server", user.Id);
 
             await saver.SaveAsync(server, ct);
 
@@ -79,7 +83,8 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         public async Task SaveAsync_EmptyDescription_PersistsEmptyString()
         {
             var ct = TestContext.Current.CancellationToken;
-            var server = BuildServer("server");
+            var user = await CreateUserAsync(ct);
+            var server = BuildServer("server", user.Id);
             server.Description = string.Empty;
 
             await saver.SaveAsync(server, ct);
@@ -93,8 +98,9 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
 
-            await saver.SaveAsync(BuildServer("server"), ct);
-            await saver.SaveAsync(BuildServer("server"), ct);
+            var user = await CreateUserAsync(ct);
+            await saver.SaveAsync(BuildServer("server", user.Id), ct);
+            await saver.SaveAsync(BuildServer("server", user.Id), ct);
 
             (await CountRowsAsync(ct)).Should().Be(2);
         }
@@ -103,10 +109,11 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         public async Task SaveAsync_DuplicateId_ThrowsWrappedUniqueViolation()
         {
             var ct = TestContext.Current.CancellationToken;
-            var server = BuildServer("server");
+            var user = await CreateUserAsync(ct);
+            var server = BuildServer("server", user.Id);
             await saver.SaveAsync(server, ct);
 
-            var duplicate = BuildServer("duplicate");
+            var duplicate = BuildServer("duplicate", user.Id);
             duplicate.Id = server.Id;
 
             var act = () => saver.SaveAsync(duplicate, ct);
@@ -123,7 +130,9 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         [Fact]
         public async Task SaveAsync_CancelledToken_ThrowsOperationCanceledAndDoesNotPersist()
         {
-            var server = BuildServer("server");
+            var ct = TestContext.Current.CancellationToken;
+            var user = await CreateUserAsync(ct);
+            var server = BuildServer("server", user.Id);
             using var cts = new CancellationTokenSource();
             await cts.CancelAsync();
 
@@ -133,13 +142,22 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
             await act.Should().ThrowAsync<OperationCanceledException>();
             (await CountRowsAsync(TestContext.Current.CancellationToken)).Should().Be(0);
         }
+        private async Task<UserInfo> CreateUserAsync(CancellationToken ct)
+        {
+            var user = Persistable.CreateNew<UserInfo>();
+            user.Username = $"User-{user.Id}";
+            user.Email = $"{user.Id}@hootout.com";
+            user.Password = "12345";
+            await userSaver.SaveAsync(user, ct);
+            return user;
+        }
 
-        private static ChatServer BuildServer(string name)
+        private static ChatServer BuildServer(string name, Guid userId)
         {
             var server = Persistable.CreateNew<ChatServer>();
             server.Name = name;
             server.Description = $"Description of {name}";
-            server.OwnerId = Guid.NewGuid();
+            server.OwnerId = userId;
             return server;
         }
 

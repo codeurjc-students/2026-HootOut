@@ -29,7 +29,7 @@ namespace HootOut.WebSockets.Actions
             // Check userId can send to this channel.
             CreateChatMessageRequest request = JsonConvert.DeserializeObject<CreateChatMessageRequest>(message.Payload!)!;
 
-            request.ChatChannelId = Guid.Parse(message.Channel!);
+            request.ChatConversationId = Guid.Parse(message.Channel!);
             request.AuthorId = user.UserId;
 
             ChatMessageDto savedMessage = await chatMessageService.CreateChatMessageAsync(request, ct);

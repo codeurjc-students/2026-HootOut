@@ -67,7 +67,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
             var user = await CreateUserAsync("user1", ct);
-            var server = await CreateServerAsync(ct);
+            var server = await CreateServerAsync(user.Id, ct);
             var member = BuildMember(server.Id, user.Id);
 
             await saver.SaveAsync(member, ct);
@@ -89,8 +89,8 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
             var user = await CreateUserAsync("user1", ct);
-            var server = await CreateServerAsync(ct);
-            var otherServer = await CreateServerAsync(ct);
+            var server = await CreateServerAsync(user.Id, ct);
+            var otherServer = await CreateServerAsync(user.Id, ct);
 
             await saver.SaveAsync(BuildMember(server.Id, user.Id), ct);
             await saver.SaveAsync(BuildMember(otherServer.Id, user.Id), ct);
@@ -103,7 +103,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
             var user = await CreateUserAsync("user1", ct);
-            var server = await CreateServerAsync(ct);
+            var server = await CreateServerAsync(user.Id, ct);
             await saver.SaveAsync(BuildMember(server.Id, user.Id), ct);
 
             var duplicate = BuildMember(server.Id, user.Id);
@@ -122,7 +122,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
             var user = await CreateUserAsync("user1", ct);
-            var server = await CreateServerAsync(ct);
+            var server = await CreateServerAsync(user.Id, ct);
             var first = BuildMember(server.Id, user.Id);
             await saver.SaveAsync(first, ct);
             await MarkAsDeletedAsync(first.Id, ct);
@@ -155,7 +155,8 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         public async Task SaveAsync_NotExistingUser_ThrowsWrappedForeignKeyViolation()
         {
             var ct = TestContext.Current.CancellationToken;
-            var server = await CreateServerAsync(ct);
+            var user = await CreateUserAsync("user1", ct);
+            var server = await CreateServerAsync(user.Id, ct);
             var member = BuildMember(server.Id, Guid.NewGuid());
 
             var act = () => saver.SaveAsync(member, ct);
@@ -171,7 +172,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
             var user = await CreateUserAsync("user1", ct);
-            var server = await CreateServerAsync(ct);
+            var server = await CreateServerAsync(user.Id, ct);
             var member = BuildMember(server.Id, user.Id);
             member.InvitationId = Guid.NewGuid();
 
@@ -188,7 +189,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
             var user = await CreateUserAsync("user1", ct);
-            var server = await CreateServerAsync(ct);
+            var server = await CreateServerAsync(user.Id, ct);
             var member = BuildMember(server.Id, user.Id);
             using var cts = new CancellationTokenSource();
             await cts.CancelAsync();
@@ -210,12 +211,12 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
             return user;
         }
 
-        private async Task<ChatServer> CreateServerAsync(CancellationToken ct)
+        private async Task<ChatServer> CreateServerAsync(Guid userId, CancellationToken ct)
         {
             var server = Persistable.CreateNew<ChatServer>();
             server.Name = $"server-{server.Id}";
             server.Description = "Test server";
-            server.OwnerId = Guid.NewGuid();
+            server.OwnerId = userId;
             await serverSaver.SaveAsync(server, ct);
             return server;
         }

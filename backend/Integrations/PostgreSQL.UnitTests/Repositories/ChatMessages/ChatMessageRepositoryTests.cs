@@ -37,7 +37,7 @@ namespace HootOut.PostgreSQL.UnitTests.Repositories.ChatMessages
 
             var repository = new ChatMessageRepository(provider.Object);
 
-            var act = () => repository.SearchMessagesByChannelIdAsync(Guid.NewGuid(), Guid.NewGuid(), 10, cts.Token);
+            var act = () => repository.SearchMessagesByConversationIdAsync(Guid.NewGuid(), Guid.NewGuid(), 10, cts.Token);
 
             await act.Should().ThrowAsync<InvalidOperationException>()
                 .WithMessage("connection failed");

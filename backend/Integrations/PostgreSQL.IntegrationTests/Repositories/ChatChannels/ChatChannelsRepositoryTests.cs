@@ -9,6 +9,7 @@ using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Infraestructure.DI;
+using HootOut.Users.Entities;
 
 namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatChannels
 {
@@ -16,14 +17,11 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatChannels
     public class ChatChannelRepositoryTests : IClassFixture<PostgresTestContainer>, IClassFixture<TestS3Container>, IAsyncLifetime
     {
         private readonly IContainer container;
-
         private readonly ClearAllTables clearTables;
-
         private readonly IChatChannelRepository repository;
-
         private readonly ISaver<ChatChannel> channelSaver;
-
         private readonly ISaver<ChatServer> serverSaver;
+        private readonly ISaver<UserInfo> userSaver;
 
         public ChatChannelRepositoryTests(PostgresTestContainer postgresContainer)
         {
@@ -46,6 +44,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatChannels
             repository = container.Resolve<IChatChannelRepository>();
             channelSaver = container.Resolve<ISaver<ChatChannel>>();
             serverSaver = container.Resolve<ISaver<ChatServer>>();
+            userSaver = container.Resolve<ISaver<UserInfo>>();
         }
 
         public async ValueTask InitializeAsync()
@@ -224,12 +223,23 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatChannels
 
         #endregion
 
+        private async Task<UserInfo> CreateUserAsync(CancellationToken ct)
+        {
+            var user = Persistable.CreateNew<UserInfo>();
+            user.Username = $"User-{user.Id}";
+            user.Email = $"{user.Id}@hootout.com";
+            user.Password = "12345";
+            await userSaver.SaveAsync(user, ct);
+            return user;
+        }
+
         private async Task<ChatServer> CreateServerAsync(CancellationToken ct)
         {
+            var user = await CreateUserAsync(ct);
             var server = Persistable.CreateNew<ChatServer>();
             server.Name = $"server-{server.Id}";
             server.Description = "Test server";
-            server.OwnerId = Guid.NewGuid();
+            server.OwnerId = user.Id;
             await serverSaver.SaveAsync(server, ct);
             return server;
         }

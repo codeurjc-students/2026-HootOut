@@ -5,7 +5,7 @@ namespace HootOut.ChatMessages.Entities
     public class ChatMessage : Persistable
     {
         public Guid AuthorId { get; set; }
-        public Guid ChatChannelId { get; set; }
+        public Guid ChatConversationId { get; set; }
         public string Content { get; set; } = string.Empty;
     }
 }

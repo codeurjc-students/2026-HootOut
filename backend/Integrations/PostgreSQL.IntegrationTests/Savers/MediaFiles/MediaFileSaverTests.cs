@@ -8,6 +8,7 @@ using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Infraestructure.DI;
 using HootOut.MediaFiles.Entities;
+using HootOut.Users.Entities;
 using Npgsql;
 
 namespace HootOut.PostgreSQL.IntegrationTests.Savers.MediaFiles
@@ -20,7 +21,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.MediaFiles
         private readonly ClearAllTables clearTables;
 
         private readonly ISaver<MediaFile> saver;
-
+        private readonly ISaver<UserInfo> userSaver;
         private readonly IPersistenceProvider provider;
 
         public MediaFileSaverTests(PostgresTestContainer postgresContainer)
@@ -42,6 +43,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.MediaFiles
             }
 
             saver = container.Resolve<ISaver<MediaFile>>();
+            userSaver = container.Resolve<ISaver<UserInfo>>();
         }
 
         public async ValueTask InitializeAsync()
@@ -59,7 +61,9 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.MediaFiles
         public async Task SaveAsync_ValidMediaFile_PersistsAllColumns()
         {
             var ct = TestContext.Current.CancellationToken;
-            var mediaFile = BuildMediaFile("photo.png");
+            var user = await CreateUserAsync(ct);
+
+            var mediaFile = BuildMediaFile("photo.png", user.Id);
 
             await saver.SaveAsync(mediaFile, ct);
 
@@ -82,10 +86,10 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.MediaFiles
         public async Task SaveAsync_Many_PersistsEveryRow()
         {
             var ct = TestContext.Current.CancellationToken;
-
-            await saver.SaveAsync(BuildMediaFile("1.png"), ct);
-            await saver.SaveAsync(BuildMediaFile("2.png"), ct);
-            await saver.SaveAsync(BuildMediaFile("3.png"), ct);
+            var user = await CreateUserAsync(ct);
+            await saver.SaveAsync(BuildMediaFile("1.png", user.Id), ct);
+            await saver.SaveAsync(BuildMediaFile("2.png", user.Id), ct);
+            await saver.SaveAsync(BuildMediaFile("3.png", user.Id), ct);
 
             var count = await CountRowsAsync(ct);
             count.Should().Be(3);
@@ -95,10 +99,11 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.MediaFiles
         public async Task SaveAsync_DuplicateId_ThrowsWrappedUniqueViolation()
         {
             var ct = TestContext.Current.CancellationToken;
-            var mediaFile = BuildMediaFile("photo.png");
+            var user = await CreateUserAsync(ct);
+            var mediaFile = BuildMediaFile("photo.png", user.Id);
             await saver.SaveAsync(mediaFile, ct);
 
-            var duplicate = BuildMediaFile("duplicate.png");
+            var duplicate = BuildMediaFile("duplicate.png", user.Id);
             duplicate.Id = mediaFile.Id;
 
             var act = () => saver.SaveAsync(duplicate, ct);
@@ -117,7 +122,8 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.MediaFiles
         public async Task SaveAsync_NullOwnerId_ThrowsWrappedNotNullViolation()
         {
             var ct = TestContext.Current.CancellationToken;
-            var mediaFile = BuildMediaFile("photo.png");
+            var user = await CreateUserAsync(ct);
+            var mediaFile = BuildMediaFile("photo.png", user.Id);
             mediaFile.OwnerId = null;
 
             var act = () => saver.SaveAsync(mediaFile, ct);
@@ -132,7 +138,9 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.MediaFiles
         [Fact]
         public async Task SaveAsync_CancelledToken_ThrowsOperationCanceledAndDoesNotPersist()
         {
-            var mediaFile = BuildMediaFile("photo.png");
+            var ct = TestContext.Current.CancellationToken;
+            var user = await CreateUserAsync(ct);
+            var mediaFile = BuildMediaFile("photo.png", user.Id);
             using var cts = new CancellationTokenSource();
             await cts.CancelAsync();
 
@@ -142,8 +150,17 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.MediaFiles
             await act.Should().ThrowAsync<OperationCanceledException>();
             (await CountRowsAsync(TestContext.Current.CancellationToken)).Should().Be(0);
         }
+        private async Task<UserInfo> CreateUserAsync(CancellationToken ct)
+        {
+            var user = Persistable.CreateNew<UserInfo>();
+            user.Username = $"User-{user.Id}";
+            user.Email = $"{user.Id}@hootout.com";
+            user.Password = "12345";
+            await userSaver.SaveAsync(user, ct);
+            return user;
+        }
 
-        private static MediaFile BuildMediaFile(string fileName)
+        private static MediaFile BuildMediaFile(string fileName, Guid ownerId)
         {
             var now = DateTime.UtcNow;
             return new MediaFile
@@ -154,7 +171,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.MediaFiles
                 ContentType = "image/png",
                 BytesSize = 1024,
                 Url = $"http://localhost/media/{fileName}",
-                OwnerId = Guid.NewGuid(),
+                OwnerId = ownerId,
                 CreatedAt = now,
                 ModifiedAt = now
             };

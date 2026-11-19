@@ -13,6 +13,7 @@ end $$;
 
 -- CHAT CHANNEL TABLE ---------------------------------------------------------------
 ----------------------------------------------------------------------------------
+-- "ChatConversationId" points to the ChatConversation row (Type = 0) that holds its messages.
 
 DO $$
 BEGIN
@@ -23,13 +24,49 @@ then
 	CREATE TABLE "HootOut"."ChatChannel"(
 		"Id" UUID NOT NULL PRIMARY KEY ,
 		"ChatServerId" UUID NOT NULL REFERENCES "HootOut"."ChatServer"("Id"), 
-		"Name" VARCHAR(255) NOT NULL, 
+		"ChatConversationId" UUID NOT NULL,
+		"Name" TEXT NOT NULL, 
 		"Deleted" boolean NOT NULL DEFAULT false,
 		"CreatedAt" timestamptz  NOT NULL,
-		"ModifiedAt" timestamptz NOT NULL 
+		"ModifiedAt" timestamptz NOT NULL,
+		CONSTRAINT fk_chat_channel_conversation
+			FOREIGN KEY ("ChatConversationId") REFERENCES "HootOut"."ChatConversation" ("Id"),
+		CONSTRAINT ux_chat_channel_conversation UNIQUE ("ChatConversationId")
 	);
 
 end if;
- 
+
+-- Databases created before ChatConversation existed:
+-- give every existing channel a new conversation, then add the constraints
+if NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_SCHEMA = 'HootOut'
+				AND   TABLE_NAME = 'ChatChannel'
+				AND   COLUMN_NAME = 'ChatConversationId')
+then
+	ALTER TABLE "HootOut"."ChatChannel"
+		ADD COLUMN "ChatConversationId" UUID;
+
+	UPDATE "HootOut"."ChatChannel"
+	SET "ChatConversationId" = gen_random_uuid();
+
+	INSERT INTO "HootOut"."ChatConversation" ("Id", "ConversationType", "CreatedAt", "ModifiedAt")
+	SELECT c."ChatConversationId", 0, c."CreatedAt", c."ModifiedAt"
+	FROM "HootOut"."ChatChannel" c;
+
+	ALTER TABLE "HootOut"."ChatChannel"
+		ALTER COLUMN "ChatConversationId" SET NOT NULL;
+
+	ALTER TABLE "HootOut"."ChatChannel"
+		ADD CONSTRAINT fk_chat_channel_conversation
+		FOREIGN KEY ("ChatConversationId") REFERENCES "HootOut"."ChatConversation" ("Id");
+
+	ALTER TABLE "HootOut"."ChatChannel"
+		ADD CONSTRAINT ux_chat_channel_conversation UNIQUE ("ChatConversationId");
+end if;
+
+-- Keep your existing name for this index if it is different
+CREATE INDEX IF NOT EXISTS ix_chat_channel_server
+ON "HootOut"."ChatChannel" ("ChatServerId")
+WHERE "Deleted" = false;
 
 end $$;

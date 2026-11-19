@@ -9,7 +9,7 @@ namespace HootOut.Contracts.ChatMessage.Dtos
         public DateTime ModifiedAt { get; set; }
         public UserDto? Author { get; set; }
         public string? Content { get; set; }
-        public Guid ChatChannelId { get; set; }
+        public Guid ChatConversationId { get; set; }
         public List<ChatMessageAttachmentDto> Attachments { get; set; } = new();
     }
 }

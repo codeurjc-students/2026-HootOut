@@ -5,8 +5,10 @@ using HootOut.CommonDomain.FileStorage;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.CommonIntegrationTests.S3;
+using HootOut.Contracts.Common.Saver;
 using HootOut.FileStorage.Configuration;
 using HootOut.MediaFiles.Repositories;
+using HootOut.Users.Entities;
 using Microsoft.Extensions.Options;
 using Moq;
 using System.Net.Mime;
@@ -64,6 +66,18 @@ namespace HootOut.FileStorage.IntegrationTests.Services
             GC.SuppressFinalize(this);
         }
 
+        private async Task<UserInfo> CreateUserAsync(CancellationToken ct)
+        {
+            var userSaver = container.Resolve<ISaver<UserInfo>>();
+
+            var user = Persistable.CreateNew<UserInfo>();
+            user.Username = $"User-{user.Id}";
+            user.Email = $"{user.Id}@hootout.com";
+            user.Password = "12345";
+            await userSaver.SaveAsync(user, ct);
+            return user;
+        }
+
         [Fact]
         public async Task FileStorageService_UploadFileAsync_Ok()
         {
@@ -72,8 +86,10 @@ namespace HootOut.FileStorage.IntegrationTests.Services
             var fileName = "test_file";
             var contentType = new ContentType().ToString();
 
+            var user = await CreateUserAsync(ct);
+
             var fileStream = new MemoryStream(Encoding.UTF8.GetBytes(text));
-            var result = await fileStorageService.UploadFileAsync(fileName, fileStream, contentType, Guid.NewGuid(), ct);
+            var result = await fileStorageService.UploadFileAsync(fileName, fileStream, contentType, user.Id, ct);
 
             result.Should().NotBeNull();
             result.FileName.Should().Be(fileName);

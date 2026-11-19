@@ -7,5 +7,6 @@ namespace HootOut.ChatServers.Repositories
     {
         Task<PageResult<ChatServerDto>> GetServerDtosByUserIdAsync(PageRequest request, Guid userId, CancellationToken ct = default);
         Task<ChatServerDto?> GetServerDtoByIdAsync(Guid serverId, CancellationToken ct);
+        Task<Guid?> GetServerIdByConversationAndUserIdAsync(Guid conversationId, Guid userId, CancellationToken ct);
     }
 }

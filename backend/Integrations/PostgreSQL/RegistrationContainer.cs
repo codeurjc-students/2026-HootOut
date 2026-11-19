@@ -1,17 +1,21 @@
 ﻿using Autofac;
 using HootOut.ChatChannels.Repositories;
+using HootOut.ChatConversations.Repositories;
 using HootOut.ChatMessages.Repositories;
 using HootOut.ChatServers.Repositories;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common.Saver;
+using HootOut.Friends.Repositories;
 using HootOut.Infraestructure.DI;
 using HootOut.MediaFiles.Repositories;
 using HootOut.PostgreSQL.Dapper;
 using HootOut.PostgreSQL.DBScripts;
 using HootOut.PostgreSQL.Repositories.ChatChannels;
+using HootOut.PostgreSQL.Repositories.ChatConversation;
 using HootOut.PostgreSQL.Repositories.ChatMessages;
 using HootOut.PostgreSQL.Repositories.ChatServers;
+using HootOut.PostgreSQL.Repositories.Friends;
 using HootOut.PostgreSQL.Repositories.MediaFiles;
 using HootOut.PostgreSQL.Repositories.Users;
 using HootOut.PostgreSQL.Services;
@@ -47,6 +51,9 @@ namespace HootOut.PostgreSQL
             builder.RegisterType<ChatMessageAttachmentRepository>().As<IChatMessageAttachmentRepository>().SingleInstance();
             builder.RegisterType<ServerMemberRepository>().As<IServerMemberRepository>().SingleInstance();
             builder.RegisterType<ServerInvitationRepository>().As<IServerInvitationRepository>().SingleInstance();
+            builder.RegisterType<FriendRequestRepository>().As<IFriendRequestRepository>().SingleInstance();
+            builder.RegisterType<FriendRelationRepository>().As<IFriendRelationRepository>().SingleInstance();
+            builder.RegisterType<ChatConversationRepository>().As<IChatConversationsRepository>().SingleInstance();
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using Dapper;
 using HootOut.ChatChannels.Entities;
+using HootOut.ChatConversations.Entities;
 using HootOut.CommonDomain.Persistence;
+using HootOut.Contracts.ChatConversations.Enums;
 using HootOut.Contracts.Common.Saver;
 
 namespace HootOut.PostgreSQL.Savers.ChatChannels
@@ -15,8 +17,14 @@ namespace HootOut.PostgreSQL.Savers.ChatChannels
         }
 
         private const string addOrUpdateChatChannel = """
-            INSERT INTO "HootOut"."ChatChannel" ("Id", "ChatServerId", "Name", "CreatedAt", "ModifiedAt") 
-            VALUES (@Id, @ChatServerId, @Name, @CreatedAt, @ModifiedAt)
+            WITH conversation AS (
+               INSERT INTO "HootOut"."ChatConversation" ("Id", "ConversationType", "CreatedAt", "ModifiedAt")
+               VALUES (@ChatConversationId, @ConversationType, @Now, @Now)
+               ON CONFLICT ("Id") DO NOTHING
+           )
+
+            INSERT INTO "HootOut"."ChatChannel" ("Id", "ChatServerId", "ChatConversationId", "Name", "CreatedAt", "ModifiedAt") 
+            VALUES (@Id, @ChatServerId, @ChatConversationId, @Name, @CreatedAt, @ModifiedAt)
             ON CONFLICT ("Id") DO UPDATE
                 SET "Name" = @Name,
                     "ModifiedAt" = @ModifiedAt
@@ -27,6 +35,9 @@ namespace HootOut.PostgreSQL.Savers.ChatChannels
             await using var conn = await provider.OpenConnectionAsync(ct);
             await using var tx = await conn.BeginTransactionAsync(ct);
 
+            var conversation = Persistable.CreateNew<ChatConversation>();
+            conversation.ConversationType = ChatConversationType.Channel;
+            item.ConversationId = conversation.Id;
             try
             {
                 await conn.ExecuteAsync(new CommandDefinition(
@@ -36,7 +47,10 @@ namespace HootOut.PostgreSQL.Savers.ChatChannels
                         item.ChatServerId,
                         item.Name,
                         item.CreatedAt,
-                        item.ModifiedAt
+                        item.ModifiedAt,
+                        ChatConversationId = conversation.Id,
+                        ConversationType = conversation.ConversationType,
+                        Now = DateTime.UtcNow
                     }, tx, cancellationToken: ct));
                 await tx.CommitAsync(ct);
             }

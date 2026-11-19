@@ -6,9 +6,9 @@ using HootOut.Contracts.ChatChannels.Services;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
 using HootOut.Contracts.ChatServers.Dtos;
-using HootOut.Contracts.ChatServers.Enums;
 using HootOut.Contracts.ChatServers.Requests;
 using HootOut.Contracts.ChatServers.Services;
+using HootOut.Contracts.Common.Enums;
 using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.Users.Services;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -129,7 +129,7 @@ namespace HootOut.HootOutAPI.Init
                         await serverService.UpdateServerInvitationAsync(new UpdateServerInvitationRequest
                         {
                             Id = invitation.Id,
-                            Status = ServerInvitationStatus.Accepted
+                            Status = InvitationStatus.Accepted
                         }, user.Id, ct);
                     }
                 }
@@ -148,7 +148,7 @@ namespace HootOut.HootOutAPI.Init
                             await messageService.CreateChatMessageAsync(new CreateChatMessageRequest
                             {
                                 AuthorId = user.Id,
-                                ChatChannelId = channel.Id,
+                                ChatConversationId = channel.ConversationId,
                                 Content = Guid.NewGuid().ToString()
                             }, ct);
                         }

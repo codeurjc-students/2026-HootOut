@@ -520,7 +520,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             var server = Persistable.CreateNew<ChatServer>();
             server.Name = name;
             server.Description = $"Description of {name}";
-            server.OwnerId = memberIds.Length > 0 ? memberIds[0] : Guid.NewGuid();
+            server.OwnerId = memberIds.Length > 0 ? memberIds[0] : (await CreateUserAsync(Guid.NewGuid().ToString(), ct)).Id;
             server.CreatedAt = createdAt;
             server.ModifiedAt = createdAt;
             await serverSaver.SaveAsync(server, ct);

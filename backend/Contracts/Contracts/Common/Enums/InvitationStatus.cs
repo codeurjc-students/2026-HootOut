@@ -1,6 +1,6 @@
-﻿namespace HootOut.Contracts.ChatServers.Enums
+﻿namespace HootOut.Contracts.Common.Enums
 {
-    public enum ServerInvitationStatus : short
+    public enum InvitationStatus : short
     {
         Pending = 0,
         Accepted = 10,

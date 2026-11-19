@@ -8,8 +8,8 @@ using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.ChatServers.Dtos;
-using HootOut.Contracts.ChatServers.Enums;
 using HootOut.Contracts.Common;
+using HootOut.Contracts.Common.Enums;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Infraestructure.DI;
 using HootOut.Users.Entities;
@@ -20,21 +20,13 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
     public class ServerInvitationRepositoryTests : IClassFixture<PostgresTestContainer>, IClassFixture<TestS3Container>, IAsyncLifetime
     {
         private static readonly DateTime BaseDate = new(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
-
         private readonly IContainer container;
-
         private readonly ClearAllTables clearTables;
-
         private readonly IServerInvitationRepository repository;
-
         private readonly ISaver<ServerInvitation> invitationSaver;
-
         private readonly ISaver<ServerMember> memberSaver;
-
         private readonly ISaver<ChatServer> serverSaver;
-
         private readonly ISaver<UserInfo> userSaver;
-
         private readonly IPersistenceProvider provider;
 
         public ServerInvitationRepositoryTests(PostgresTestContainer postgresContainer)
@@ -96,7 +88,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             var owner = await CreateUserAsync("owner", ct);
             var invitee = await CreateUserAsync("invitee", ct);
             var server = await CreateServerAsync("server", owner.Id, ct);
-            var invitation = await CreateInvitationAsync(server.Id, owner.Id, invitee.Id, ServerInvitationStatus.Pending, BaseDate, ct);
+            var invitation = await CreateInvitationAsync(server.Id, owner.Id, invitee.Id, InvitationStatus.Pending, BaseDate, ct);
 
             var result = await repository.GetServerInvitationDtosAsync(server.Id, new PageRequest(), ct);
 
@@ -108,7 +100,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             dto.UserId.Should().Be(invitee.Id);
             // In the server listing, Username is the invited user
             dto.Username.Should().Be("invitee");
-            dto.Status.Should().Be(ServerInvitationStatus.Pending);
+            dto.Status.Should().Be(InvitationStatus.Pending);
             dto.CreatedAt.Should().BeCloseTo(invitation.CreatedAt, TimeSpan.FromMilliseconds(1));
             dto.ModifiedAt.Should().BeCloseTo(invitation.ModifiedAt, TimeSpan.FromMilliseconds(1));
         }
@@ -121,13 +113,13 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             var server = await CreateServerAsync("server", owner.Id, ct);
             var otherServer = await CreateServerAsync("other", owner.Id, ct);
             var expected = new List<Guid>();
-            var statuses = Enum.GetValues<ServerInvitationStatus>();
+            var statuses = Enum.GetValues<InvitationStatus>();
             for (var i = 0; i < statuses.Length; i++)
             {
                 var invitee = await CreateUserAsync($"invitee{i}", ct);
                 var invitation = await CreateInvitationAsync(server.Id, owner.Id, invitee.Id, statuses[i], BaseDate.AddMinutes(i), ct);
                 expected.Add(invitation.Id);
-                await CreateInvitationAsync(otherServer.Id, owner.Id, invitee.Id, ServerInvitationStatus.Pending, BaseDate, ct);
+                await CreateInvitationAsync(otherServer.Id, owner.Id, invitee.Id, InvitationStatus.Pending, BaseDate, ct);
             }
 
             var result = await repository.GetServerInvitationDtosAsync(server.Id, new PageRequest(), ct);
@@ -170,7 +162,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             var ct = TestContext.Current.CancellationToken;
             var owner = await CreateUserAsync("owner", ct);
             var server = await CreateServerAsync("server", owner.Id, ct);
-            ServerInvitationStatus[] statuses = [ServerInvitationStatus.Rejected, ServerInvitationStatus.Pending, ServerInvitationStatus.Revoked, ServerInvitationStatus.Accepted];
+            InvitationStatus[] statuses = [InvitationStatus.Rejected, InvitationStatus.Pending, InvitationStatus.Revoked, InvitationStatus.Accepted];
             for (var i = 0; i < statuses.Length; i++)
             {
                 var invitee = await CreateUserAsync($"invitee{i}", ct);
@@ -180,7 +172,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             var request = new PageRequest { SortBy = "status", Descending = descending };
             var result = await repository.GetServerInvitationDtosAsync(server.Id, request, ct);
 
-            var expected = new[] { ServerInvitationStatus.Pending, ServerInvitationStatus.Accepted, ServerInvitationStatus.Rejected, ServerInvitationStatus.Revoked };
+            var expected = new[] { InvitationStatus.Pending, InvitationStatus.Accepted, InvitationStatus.Rejected, InvitationStatus.Revoked };
             result.Items.Select(i => i.Status).Should().Equal(descending ? Enumerable.Reverse(expected) : expected);
         }
 
@@ -227,7 +219,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             var ct = TestContext.Current.CancellationToken;
             var owner = await CreateUserAsync("owner", ct);
             var server = await CreateServerAsync("server", owner.Id, ct);
-            var statuses = Enum.GetValues<ServerInvitationStatus>();
+            var statuses = Enum.GetValues<InvitationStatus>();
             for (var i = 0; i < 7; i++)
             {
                 var invitee = await CreateUserAsync($"invitee{7 - i:D2}", ct);
@@ -254,7 +246,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             var otherServer = await CreateServerAsync("other", outsider.Id, ct);
             var invitee = await CreateUserAsync("invitee", ct);
             // Created between "b" (minute 1) and "c" (minute 2)
-            var foreign = await CreateInvitationAsync(otherServer.Id, outsider.Id, invitee.Id, ServerInvitationStatus.Pending, BaseDate.AddMinutes(1).AddSeconds(30), ct);
+            var foreign = await CreateInvitationAsync(otherServer.Id, outsider.Id, invitee.Id, InvitationStatus.Pending, BaseDate.AddMinutes(1).AddSeconds(30), ct);
 
             var request = new PageRequest { Next = foreign.Id };
             var result = await repository.GetServerInvitationDtosAsync(server.Id, request, ct);
@@ -289,7 +281,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             var inviter = await CreateUserAsync("inviter", ct);
             var user = await CreateUserAsync("user", ct);
             var server = await CreateServerAsync("server", inviter.Id, ct);
-            var invitation = await CreateInvitationAsync(server.Id, inviter.Id, user.Id, ServerInvitationStatus.Pending, BaseDate, ct);
+            var invitation = await CreateInvitationAsync(server.Id, inviter.Id, user.Id, InvitationStatus.Pending, BaseDate, ct);
 
             var result = await repository.GetUserServerInvitationDtosAsync(user.Id, new PageRequest(), ct);
 
@@ -301,7 +293,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             dto.UserId.Should().Be(user.Id);
             // In the user listing, Username is the user who sent the invitation
             dto.Username.Should().Be("inviter");
-            dto.Status.Should().Be(ServerInvitationStatus.Pending);
+            dto.Status.Should().Be(InvitationStatus.Pending);
             dto.CreatedAt.Should().BeCloseTo(invitation.CreatedAt, TimeSpan.FromMilliseconds(1));
             dto.ModifiedAt.Should().BeCloseTo(invitation.ModifiedAt, TimeSpan.FromMilliseconds(1));
         }
@@ -314,13 +306,13 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             var user = await CreateUserAsync("user", ct);
             var otherUser = await CreateUserAsync("other", ct);
             var pendingServer = await CreateServerAsync("pending", inviter.Id, ct);
-            var pending = await CreateInvitationAsync(pendingServer.Id, inviter.Id, user.Id, ServerInvitationStatus.Pending, BaseDate, ct);
-            foreach (var status in new[] { ServerInvitationStatus.Accepted, ServerInvitationStatus.Rejected, ServerInvitationStatus.Revoked })
+            var pending = await CreateInvitationAsync(pendingServer.Id, inviter.Id, user.Id, InvitationStatus.Pending, BaseDate, ct);
+            foreach (var status in new[] { InvitationStatus.Accepted, InvitationStatus.Rejected, InvitationStatus.Revoked })
             {
                 var server = await CreateServerAsync(status.ToString(), inviter.Id, ct);
                 await CreateInvitationAsync(server.Id, inviter.Id, user.Id, status, BaseDate, ct);
             }
-            await CreateInvitationAsync(pendingServer.Id, inviter.Id, otherUser.Id, ServerInvitationStatus.Pending, BaseDate, ct);
+            await CreateInvitationAsync(pendingServer.Id, inviter.Id, otherUser.Id, InvitationStatus.Pending, BaseDate, ct);
 
             var result = await repository.GetUserServerInvitationDtosAsync(user.Id, new PageRequest(), ct);
 
@@ -400,11 +392,11 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
         #region GetServerInvitationByIdAsync
 
         [Theory]
-        [InlineData(ServerInvitationStatus.Pending)]
-        [InlineData(ServerInvitationStatus.Accepted)]
-        [InlineData(ServerInvitationStatus.Rejected)]
-        [InlineData(ServerInvitationStatus.Revoked)]
-        public async Task GetServerInvitationById_Existing_ReturnsMappedEntityInAnyStatus(ServerInvitationStatus status)
+        [InlineData(InvitationStatus.Pending)]
+        [InlineData(InvitationStatus.Accepted)]
+        [InlineData(InvitationStatus.Rejected)]
+        [InlineData(InvitationStatus.Revoked)]
+        public async Task GetServerInvitationById_Existing_ReturnsMappedEntityInAnyStatus(InvitationStatus status)
         {
             var ct = TestContext.Current.CancellationToken;
             var inviter = await CreateUserAsync("inviter", ct);
@@ -453,7 +445,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             members[0].CreatedAt.Should().BeOnOrAfter(before.AddMilliseconds(-1));
 
             var stored = await repository.GetServerInvitationByIdAsync(invitation.Id, ct);
-            stored!.Status.Should().Be(ServerInvitationStatus.Accepted);
+            stored!.Status.Should().Be(InvitationStatus.Accepted);
             stored.ModifiedAt.Should().BeOnOrAfter(before.AddMilliseconds(-1));
             stored.ModifiedAt.Should().BeCloseTo(members[0].CreatedAt, TimeSpan.FromMilliseconds(1));
         }
@@ -471,10 +463,10 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
         }
 
         [Theory]
-        [InlineData(ServerInvitationStatus.Accepted)]
-        [InlineData(ServerInvitationStatus.Rejected)]
-        [InlineData(ServerInvitationStatus.Revoked)]
-        public async Task AcceptServerInvitation_NotPending_ReturnsNullAndChangesNothing(ServerInvitationStatus status)
+        [InlineData(InvitationStatus.Accepted)]
+        [InlineData(InvitationStatus.Rejected)]
+        [InlineData(InvitationStatus.Revoked)]
+        public async Task AcceptServerInvitation_NotPending_ReturnsNullAndChangesNothing(InvitationStatus status)
         {
             var ct = TestContext.Current.CancellationToken;
             var inviter = await CreateUserAsync("inviter", ct);
@@ -511,7 +503,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             memberId.Should().BeNull();
             (await GetMembersAsync(server.Id, intruder.Id, ct)).Should().BeEmpty();
             (await GetMembersAsync(server.Id, invitation.UserId, ct)).Should().BeEmpty();
-            (await repository.GetServerInvitationByIdAsync(invitation.Id, ct))!.Status.Should().Be(ServerInvitationStatus.Pending);
+            (await repository.GetServerInvitationByIdAsync(invitation.Id, ct))!.Status.Should().Be(InvitationStatus.Pending);
         }
 
         [Fact]
@@ -572,7 +564,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
 
             memberId.Should().BeNull();
             (await GetMembersAsync(server.Id, invitation.UserId, ct)).Select(m => m.Id).Should().Equal(existing.Id);
-            (await repository.GetServerInvitationByIdAsync(invitation.Id, ct))!.Status.Should().Be(ServerInvitationStatus.Pending);
+            (await repository.GetServerInvitationByIdAsync(invitation.Id, ct))!.Status.Should().Be(InvitationStatus.Pending);
         }
 
         [Fact]
@@ -590,7 +582,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             members.Should().HaveCount(2);
             members.Single(m => m.Id == previous.Id).Deleted.Should().BeTrue();
             members.Single(m => m.Id == memberId).Deleted.Should().BeFalse();
-            (await repository.GetServerInvitationByIdAsync(invitation.Id, ct))!.Status.Should().Be(ServerInvitationStatus.Accepted);
+            (await repository.GetServerInvitationByIdAsync(invitation.Id, ct))!.Status.Should().Be(InvitationStatus.Accepted);
         }
 
         #endregion
@@ -644,7 +636,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             return server;
         }
 
-        private async Task<ServerInvitation> CreateInvitationAsync(Guid serverId, Guid invitedBy, Guid userId, ServerInvitationStatus status, DateTime createdAt, CancellationToken ct)
+        private async Task<ServerInvitation> CreateInvitationAsync(Guid serverId, Guid invitedBy, Guid userId, InvitationStatus status, DateTime createdAt, CancellationToken ct)
         {
             var invitation = Persistable.CreateNew<ServerInvitation>();
             invitation.ChatServerId = serverId;
@@ -662,7 +654,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             var inviter = await CreateUserAsync("inviter", ct);
             var user = await CreateUserAsync("user", ct);
             var server = await CreateServerAsync("server", inviter.Id, ct);
-            var invitation = await CreateInvitationAsync(server.Id, inviter.Id, user.Id, ServerInvitationStatus.Pending, BaseDate, ct);
+            var invitation = await CreateInvitationAsync(server.Id, inviter.Id, user.Id, InvitationStatus.Pending, BaseDate, ct);
             return (server, invitation);
         }
 
@@ -678,7 +670,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             for (var i = 0; i < invitees.Length; i++)
             {
                 var invitee = await CreateUserAsync(invitees[i], ct);
-                invitations.Add(await CreateInvitationAsync(server.Id, owner.Id, invitee.Id, ServerInvitationStatus.Pending, BaseDate.AddMinutes(i), ct));
+                invitations.Add(await CreateInvitationAsync(server.Id, owner.Id, invitee.Id, InvitationStatus.Pending, BaseDate.AddMinutes(i), ct));
             }
 
             return (server, invitations);
@@ -702,7 +694,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
                 }
 
                 var server = await CreateServerAsync(serverNames[i], inviter.Id, ct);
-                invitations.Add(await CreateInvitationAsync(server.Id, inviter.Id, user.Id, ServerInvitationStatus.Pending, BaseDate.AddMinutes(i), ct));
+                invitations.Add(await CreateInvitationAsync(server.Id, inviter.Id, user.Id, InvitationStatus.Pending, BaseDate.AddMinutes(i), ct));
             }
 
             return (user, invitations);

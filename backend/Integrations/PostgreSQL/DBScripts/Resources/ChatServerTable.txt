@@ -22,15 +22,20 @@ if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
 then
 	CREATE TABLE "HootOut"."ChatServer"(
 		"Id" UUID NOT NULL PRIMARY KEY , 
-		"OwnerId" UUID NOT NULL, 
+		"OwnerId" UUID NOT NULL,
 		"Name" TEXT NOT NULL,
 		"Description" TEXT,
 		"Deleted" boolean NOT NULL DEFAULT false,
 		"CreatedAt" timestamptz  NOT NULL,
-		"ModifiedAt" timestamptz NOT NULL
+		"ModifiedAt" timestamptz NOT NULL,
+		CONSTRAINT fk_chat_server_owner FOREIGN KEY ("OwnerId") REFERENCES "HootOut"."UserInfo" ("Id")
 	);
 
 end if;  
+
+CREATE INDEX IF NOT EXISTS ix_chat_server_owner
+ON "HootOut"."ChatServer" ("OwnerId")
+WHERE "Deleted" = false;
 
 if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
 				WHERE TABLE_SCHEMA = 'HootOut'
@@ -54,7 +59,6 @@ WHERE "Status" = 0;
 CREATE INDEX IF NOT EXISTS ix_server_invitation_invitee
 ON "HootOut"."ServerInvitation" ("UserId")
 WHERE "Status" = 0;
-
  
 
 if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
