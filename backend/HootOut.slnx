@@ -23,6 +23,7 @@
     <Project Path="Domains/Conversations/Conversations/ChatConversations.csproj" Id="4cd16078-fa56-48e7-b9e1-3a80dd540174" />
   </Folder>
   <Folder Name="/Domains/Friends/">
+    <Project Path="Domains/Friends.IntegrationTests/Friends.IntegrationTests.csproj" Id="c4cedf75-cff0-4df8-8c04-3a90a1a39608" />
     <Project Path="Domains/Friends/Friends/Friends.csproj" Id="4c9bf72b-4282-4218-84c8-b20287f7582e" />
   </Folder>
   <Folder Name="/Domains/MediaFile/">

@@ -36,7 +36,7 @@ namespace HootOut.PostgreSQL.Repositories.Friends
             { "username", """ lower(u."Username") COLLATE "es-x-icu" """ }
         };
 
-        public async Task<FriendRequest?> GetFriendInvitationByIdAsync(Guid invitationId, CancellationToken ct)
+        public async Task<FriendRequest?> GetFriendRequestByIdAsync(Guid friendRequestId, CancellationToken ct)
         {
             await using var conn = await provider.OpenConnectionAsync(ct);
             return (await conn.QueryAsync<FriendRequest?>(new CommandDefinition($"""
@@ -45,7 +45,7 @@ namespace HootOut.PostgreSQL.Repositories.Friends
                 FROM "HootOut"."FriendRequest" m
                 WHERE m."Id" = @Id 
                 """,
-               new { Id = invitationId },
+               new { Id = friendRequestId },
             cancellationToken: ct)))
             .FirstOrDefault();
         }
@@ -173,7 +173,7 @@ namespace HootOut.PostgreSQL.Repositories.Friends
                         UPDATE "HootOut"."FriendRequest"
                         SET "Status" = @Accepted,
                             "ModifiedAt" = @Now
-                        WHERE "Id" IN (SELECT "InvitationId" FROM inserted)
+                        WHERE "Id" IN (SELECT "FriendRequestId" FROM inserted)
                     )
                     SELECT "Id" FROM inserted m;
                 """;

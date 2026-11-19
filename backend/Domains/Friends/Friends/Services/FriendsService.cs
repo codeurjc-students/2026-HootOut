@@ -83,7 +83,7 @@ namespace HootOut.Friends.Services
             return await friendRequestRepository.GetReceivedFriendRequestsAsync(request, userId, ct);
         }
 
-        public async Task<PageResult<FriendRequestDto>> GetSentFriendRequests(PageRequest request, Guid userId, CancellationToken ct)
+        public async Task<PageResult<FriendRequestDto>> GetSentFriendRequestsAsync(PageRequest request, Guid userId, CancellationToken ct)
         {
             ArgumentNullException.ThrowIfNull(request);
 
@@ -149,7 +149,7 @@ namespace HootOut.Friends.Services
 
         private async Task<FriendRequest> ValidateFriendInvitation(Guid invitationId, CancellationToken ct)
         {
-            FriendRequest? invitation = await friendRequestRepository.GetFriendInvitationByIdAsync(invitationId, ct);
+            FriendRequest? invitation = await friendRequestRepository.GetFriendRequestByIdAsync(invitationId, ct);
 
             if (invitation == null || invitation.Status != InvitationStatus.Pending)
             {

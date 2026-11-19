@@ -19,7 +19,7 @@ namespace HootOut.PostgreSQL.Repositories.Friends
         }
 
         private const string friendRelationColumns =
-            """ m."Id", m."InvitedBy", m."UserId", m."Status", m."CreatedAt", m."ModifiedAt" """;
+            """ m."Id", m."User1Id", m."User2Id", m."FriendRequestId", m."CreatedAt", m."ModifiedAt" """;
 
         private Dictionary<string, string> receivedFriendRequestsSortColumns = new()
         {
@@ -40,15 +40,18 @@ namespace HootOut.PostgreSQL.Repositories.Friends
                 FROM "HootOut"."FriendRelation" m 
                 INNER JOIN "HootOut"."UserInfo" u
                     ON m."User1Id" = u."Id" OR m."User2Id" = u."Id"
+                INNER JOIN "HootOut"."DirectConversation" dc
+                    ON m."User1Id" = dc."User1Id" AND m."User2Id" = dc."User2Id"
                 """;
 
-            var invitationsWhere = """ WHERE m."User1Id" = @UserId OR m."User2Id" = @UserId """;
+            var invitationsWhere = """ WHERE (m."User1Id" = @UserId OR m."User2Id" = @UserId) AND u."Id" != @UserId """;
 
             var sql = $"""
                 SELECT 
                     {friendRelationColumns},
                     u."Id",
-                    u."Username"
+                    u."Username",
+                    dc."ChatConversationId"
                     {invitationsFrom}
                     {invitationsWhere}
                     {PaginatedQueryHelper.CursorFilter(invitationsFrom, sort, request)}
@@ -68,11 +71,12 @@ namespace HootOut.PostgreSQL.Repositories.Friends
                 Take = request.Size + 1,
             }, cancellationToken: ct));
 
-            var invitations = multi.Read<FriendRelationDto, UserDto, FriendRelationDto>((friendRelation, user) =>
+            var invitations = multi.Read<FriendRelationDto, UserDto, Guid, FriendRelationDto>((friendRelation, user, conversationId) =>
             {
                 friendRelation.Friend = user;
+                friendRelation.ChatConversationId = conversationId;
                 return friendRelation;
-            }, splitOn: "Id").ToList();
+            }, splitOn: "Id,ChatConversationId").ToList();
 
             var total = await multi.ReadSingleAsync<int>();
 
@@ -85,7 +89,7 @@ namespace HootOut.PostgreSQL.Repositories.Friends
 
             return await conn.QueryFirstOrDefaultAsync<Guid?>(new CommandDefinition("""
                 WITH dc AS (
-                    SELECT dc."Id"
+                    SELECT dc."Id", dc."User1Id", dc."User2Id"
                     FROM "HootOut"."ChatConversation" conversation
                     INNER JOIN "HootOut"."DirectConversation" dc
                         ON conversation."Id" = dc."ChatConversationId"
@@ -96,7 +100,6 @@ namespace HootOut.PostgreSQL.Repositories.Friends
                 FROM "HootOut"."FriendRelation" fr
                 INNER JOIN dc
                     ON fr."User1Id" = dc."User1Id" AND fr."User2Id" = dc."User2Id"
-                INNER JOIN 
                 """
                 , new
                 {

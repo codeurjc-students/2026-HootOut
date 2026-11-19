@@ -6,6 +6,7 @@ namespace HootOut.Contracts.Friends.Dtos
     {
         public Guid Id { get; set; }
         public required UserDto Friend { get; set; }
+        public Guid ChatConversationId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime ModifiedAt { get; set; }
     }
