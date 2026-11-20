@@ -5,7 +5,7 @@
   import ChatMessages from './chatConversation/ChatMessages.vue'
   import { storeToRefs } from 'pinia'
 
-  const { currentChatChannel } = storeToRefs(serverInfoStore())
+  const { currentChatChannel, currentServer } = storeToRefs(serverInfoStore())
 </script>
 
 <template>
@@ -14,9 +14,15 @@
     id="chat"
     class="chat-conversation grid grid-rows-[auto_1fr_auto] border-1 background-primary"
   >
-    <ChatInfo />
+    <ChatInfo
+      :chat-name="currentChatChannel?.name"
+      :back-link="{
+        name: 'server',
+        params: { serverId: currentServer?.id, channelId: '' },
+      }"
+    />
     <ChatMessages />
-    <ChatMessageBar />
+    <ChatMessageBar :chat-name="currentChatChannel?.name" />
   </div>
   <div v-else class="chat-conversation border-1 background-primary p-4">Start a new chat</div>
 </template>

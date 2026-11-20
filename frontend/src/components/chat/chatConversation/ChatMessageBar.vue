@@ -2,13 +2,15 @@
   import FilePreviewList from '@/components/shared/filePreview/FilePreviewList.vue'
   import wsMessageService from '@/services/common/websocketsMesage/WebSocketsMessageService'
   import MediaFileService from '@/services/mediaFile/MediaFileService'
-  import { serverInfoStore } from '@/stores/serverInfo'
+  import { conversationStore } from '@/stores/conversation'
   import type { ChatMessage, MessageAttachment } from '@/types'
-  import { storeToRefs } from 'pinia'
   import { ref } from 'vue'
 
-  const serverInfo = serverInfoStore()
-  const { currentChatChannel } = storeToRefs(serverInfo)
+  const { chatName } = defineProps<{
+    chatName: String
+  }>()
+
+  const conversation = conversationStore()
 
   const message = ref('')
   const fileInput = ref<HTMLInputElement>()
@@ -23,16 +25,17 @@
       ),
     } as ChatMessage
     message.value = ''
+    if (!conversation.currentConversationId) return
 
     const ackPromise = await wsMessageService.sendMessage(
-      serverInfo.currentChatChannel!.chatConversationId,
+      conversation.currentConversationId,
       chatMessage
     )
     chatMessage.createdAt = new Date().toISOString()
-    serverInfo.addPendingMessage(ackPromise.id, chatMessage)
+    conversation.addPendingMessage(ackPromise.id, chatMessage)
 
     const wsMessage = await ackPromise.promise
-    serverInfo.confirmMessage(wsMessage)
+    conversation.confirmMessage(wsMessage)
 
     attachments.value.length = 0
   }
@@ -85,7 +88,7 @@
           aria-label="Write a message"
           class="h-full grow! pl-4!"
           @keyup.enter="sendMessage"
-          :placeholder="`Write a message to ${currentChatChannel?.name}`"
+          :placeholder="`Write a message to ${chatName}`"
           autocomplete="off"
         />
         <div

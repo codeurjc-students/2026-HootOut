@@ -1,18 +1,22 @@
 <script setup lang="ts">
   import FilePreviewList from '@/components/shared/filePreview/FilePreviewList.vue'
   import { dateTimeMapper } from '@/services/common/utils'
-  import { serverInfoStore } from '@/stores/serverInfo'
+  import { conversationStore } from '@/stores/conversation'
   import { userInfoStore } from '@/stores/userInfo'
   import { storeToRefs } from 'pinia'
   import { computed } from 'vue'
 
-  const serverInfo = serverInfoStore()
+  const conversation = conversationStore()
 
-  const { channelMessages, currentChatChannel, pendingMessages, lastPage } = storeToRefs(serverInfo)
+  const { currentMessages, pendingMessages, lastPage, currentConversationId } =
+    storeToRefs(conversation)
   const { user } = storeToRefs(userInfoStore())
 
   const pendingMessagesList = computed(() => {
-    return pendingMessages?.value[currentChatChannel.value!.id]
+    if (currentConversationId?.value) {
+      return pendingMessages?.value[currentConversationId.value]
+    }
+    return {}
   })
 </script>
 
@@ -26,7 +30,7 @@
     </div>
 
     <div
-      v-for="(message, index) in channelMessages"
+      v-for="(message, index) in currentMessages"
       :key="message.id"
       class="px-4 py-2 border-bottom-1-dark"
       :class="{ 'background-soft': message.author.username == user.username }"
@@ -46,7 +50,7 @@
       </div>
     </div>
     <div
-      @click="serverInfo.getNextMessages"
+      @click="conversation.getNextMessages"
       v-if="lastPage?.next"
       class="get-more-messages-btn pointer mx-4 my-2 rounded-sm border-1 background-soft px-4 py-2"
     >

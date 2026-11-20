@@ -8,9 +8,11 @@
   import type { ChatChannel } from '@/types/chatChannel.ts'
   import type { WebSocketMessage } from '@/types/websocketMessage.ts'
   import { useRouter } from 'vue-router'
+  import { conversationStore } from '@/stores/conversation.ts'
 
   const createChannelFormModal = useTemplateRef('create-channel-form-modal')
   const serverInfo = serverInfoStore()
+  const conversation = conversationStore()
   const { currentServer } = storeToRefs(serverInfo)
   const router = useRouter()
 
@@ -27,7 +29,7 @@
     }
 
     wsMessageService.addPendingSubscription(newChannel.id, (message: WebSocketMessage) => {
-      serverInfo.newMessage(message)
+      conversation.newMessage(message)
     })
 
     serverInfo.setCurrentChatChannel(newChannel)

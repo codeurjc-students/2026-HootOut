@@ -1,26 +1,23 @@
 <script setup lang="ts">
   import GoBackLink from '@/components/shared/GoBackLink.vue'
-  import { serverInfoStore } from '@/stores/serverInfo'
-  import { storeToRefs } from 'pinia'
+  import type { RouteLocationRaw } from 'vue-router'
 
-  const { currentChatChannel, currentServer } = storeToRefs(serverInfoStore())
+  const { backLink, chatName } = defineProps<{
+    backLink: RouteLocationRaw
+    chatName: String
+  }>()
 </script>
 
 <template>
   <div class="chat-info flex background-light px-4 py-2">
-    <GoBackLink
-      :to="{
-        name: 'server',
-        params: { serverId: currentServer?.id, channelId: '' },
-      }"
-    >
+    <GoBackLink :to="backLink">
       <div>
-        {{ currentChatChannel!.name }}
+        {{ chatName }}
       </div>
     </GoBackLink>
 
     <div class="hidden font-semibold md:block">
-      {{ currentChatChannel!.name }}
+      {{ chatName }}
     </div>
   </div>
 </template>

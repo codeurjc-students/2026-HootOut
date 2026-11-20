@@ -143,7 +143,7 @@ export class WebSocketMessageService {
     this.webSocketService.send(JSON.stringify(message))
   }
 
-  unsubscribe(channel: string, callback: (payload: WebSocketMessage) => void) {
+  unsubscribe(channel: string) {
     delete this.subscriptions[channel]
     const message: WebSocketMessage = { channel, type: WSMessageType.Unsubscribe }
     this.webSocketService.send(JSON.stringify(message))
