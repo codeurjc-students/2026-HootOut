@@ -281,7 +281,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
 
             var message = Persistable.CreateNew<ChatMessage>();
             message.AuthorId = author.Id;
-            message.ChatConversationId = channel.ConversationId;
+            message.ChatConversationId = channel.ChatConversationid;
             message.Content = "message with attachments";
             await messageSaver.SaveAsync(message, ct);
             return message;

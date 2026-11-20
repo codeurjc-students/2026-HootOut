@@ -96,8 +96,12 @@ namespace HootOut.HootOutAPI.Init
             var servers = await CreateServers(mainUser!, ct);
 
             //Invite all the users all the servers
-            logger.LogInformation("Invite users to servers");
-            Dictionary<Guid, List<ServerInvitationDto>> userInvitations = new();
+            logger.LogInformation("Invite users to servers"); 
+
+            Random random = new();
+
+            var serverMembers = new Dictionary<Guid, List<Guid>>();
+
             foreach (var server in servers.Values)
             {
                 foreach (var user in users.Values)
@@ -108,22 +112,8 @@ namespace HootOut.HootOutAPI.Init
                         Username = user.Username!
                     }, mainUser!.Id, ct);
 
-                    if (!userInvitations.TryGetValue(user.Id, out var invitations))
-                        invitations = new();
-                    invitations.Add(invitation);
-                    userInvitations[user.Id] = invitations;
+                    // The users join random servers
 
-                }
-            }
-
-            Random random = new();
-
-            // The users join random servers
-            logger.LogInformation("Users joing random servers");
-            foreach (var user in users.Values)
-            {
-                foreach (var invitation in userInvitations[user.Id])
-                {
                     if (random.Next(0, 100) < 50) // Random 50%
                     {
                         await serverService.UpdateServerInvitationAsync(new UpdateServerInvitationRequest
@@ -131,24 +121,32 @@ namespace HootOut.HootOutAPI.Init
                             Id = invitation.Id,
                             Status = InvitationStatus.Accepted
                         }, user.Id, ct);
-                    }
+
+                        if (!serverMembers.TryGetValue(server.Id, out var members))
+                        {
+                            members = new();
+                            serverMembers[server.Id] = members;
+                        }
+                        members.Add(user.Id);
+                    } 
                 }
             }
+ 
 
             // Send some messages on the servers (randomly)
             logger.LogInformation("Users send messages in random servers");
-            foreach (var user in users.Values)
+            foreach (var server in servers.Values)
             {
-                foreach (var server in servers.Values)
+                foreach (var memberId in serverMembers[server.Id] ?? [])
                 {
                     foreach (var channel in server.Channels)
                     {
-                        if (random.Next(0, 100) < 10) // Random 10%
+                        if (random.Next(0, 100) < 50) // Random 50%
                         {
                             await messageService.CreateChatMessageAsync(new CreateChatMessageRequest
                             {
-                                AuthorId = user.Id,
-                                ChatConversationId = channel.ConversationId,
+                                AuthorId = memberId,
+                                ChatConversationId = channel.ChatConversationId,
                                 Content = Guid.NewGuid().ToString()
                             }, ct);
                         }

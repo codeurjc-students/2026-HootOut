@@ -128,9 +128,9 @@ export class WebSocketMessageService {
     }
   }
 
-  sendMessage(chatChannel: ChatChannel, payload: any, timeoutMs = 5000): AckPromise {
+  sendMessage(channel: string, payload: any, timeoutMs = 5000): AckPromise {
     const message: WebSocketMessage = {
-      channel: chatChannel.id,
+      channel: channel,
       payload: JSON.stringify(payload),
       type: WSMessageType.ChatMessage,
     }

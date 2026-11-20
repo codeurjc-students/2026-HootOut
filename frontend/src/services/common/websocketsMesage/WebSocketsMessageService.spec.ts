@@ -25,6 +25,7 @@ vi.mock('@/config', () => ({ getConfig: () => ({ WSS_URL: 'wss://test' }) }))
 const RECONNECT_INTERVAL = 3000
 const channel: ChatChannel = {
   id: 'general',
+  chatConversationId: '12345',
   createdAt: '',
   modifiedAt: '',
   serverId: 'test',
@@ -255,26 +256,26 @@ describe('WebSocketMessageService', () => {
     })
 
     it('sends a ChatMessage to the channel with the payload as JSON and an id', () => {
-      const { id } = service.sendMessage(channel, { text: 'hello' })
+      const { id } = service.sendMessage(channel.chatConversationId, { text: 'hello' })
 
       expect(lastSentMessage()).toEqual({
         id,
-        channel: 'general',
+        channel: '12345',
         type: WSMessageType.ChatMessage,
         payload: JSON.stringify({ text: 'hello' }),
       })
     })
 
     it('gives each message a different id', () => {
-      const first = service.sendMessage(channel, 'a')
-      const second = service.sendMessage(channel, 'b')
+      const first = service.sendMessage(channel.chatConversationId, 'a')
+      const second = service.sendMessage(channel.chatConversationId, 'b')
 
       expect(first.id).toBeTruthy()
       expect(first.id).not.toBe(second.id)
     })
 
     it('resolves with the ack that replies to the message', async () => {
-      const { id, promise } = service.sendMessage(channel, 'hello')
+      const { id, promise } = service.sendMessage(channel.chatConversationId, 'hello')
       const ack: WebSocketMessage = { replyTo: id, channel: 'general', type: WSMessageType.Ack }
 
       receive(ack)
@@ -285,7 +286,7 @@ describe('WebSocketMessageService', () => {
     it('does not deliver the ack to the subscribers of the channel', async () => {
       const callback = vi.fn()
       service.subscribe('general', callback)
-      const { id, promise } = service.sendMessage(channel, 'hello')
+      const { id, promise } = service.sendMessage(channel.chatConversationId, 'hello')
 
       receive({ replyTo: id, channel: 'general', type: WSMessageType.Ack })
       await promise
@@ -294,8 +295,8 @@ describe('WebSocketMessageService', () => {
     })
 
     it('only resolves the message the ack replies to', async () => {
-      const first = service.sendMessage(channel, 'a')
-      const second = service.sendMessage(channel, 'b')
+      const first = service.sendMessage(channel.chatConversationId, 'a')
+      const second = service.sendMessage(channel.chatConversationId, 'b')
       const onSecond = vi.fn()
       second.promise.then(onSecond)
 
@@ -307,7 +308,7 @@ describe('WebSocketMessageService', () => {
     })
 
     it('rejects when the server answers with an error', async () => {
-      const { id, promise } = service.sendMessage(channel, 'hello')
+      const { id, promise } = service.sendMessage(channel.chatConversationId, 'hello')
 
       receive({ replyTo: id, channel: 'general', type: WSMessageType.Error })
 
@@ -317,7 +318,7 @@ describe('WebSocketMessageService', () => {
     it('does not deliver an error ack to the subscribers of the channel', async () => {
       const callback = vi.fn()
       service.subscribe('general', callback)
-      const { id, promise } = service.sendMessage(channel, 'hello')
+      const { id, promise } = service.sendMessage(channel.chatConversationId, 'hello')
 
       receive({ replyTo: id, channel: 'general', type: WSMessageType.Error })
       await expect(promise).rejects.toThrow()
@@ -335,7 +336,7 @@ describe('WebSocketMessageService', () => {
     })
 
     it('rejects when no ack arrives within the default 5s', async () => {
-      const { promise } = service.sendMessage(channel, 'hello')
+      const { promise } = service.sendMessage(channel.chatConversationId, 'hello')
       const assertion = expect(promise).rejects.toThrow(
         `No ack for ${WSMessageType.ChatMessage} within 5000ms`
       )
@@ -351,7 +352,7 @@ describe('WebSocketMessageService', () => {
     })
 
     it('uses a custom timeout', async () => {
-      const { promise } = service.sendMessage(channel, 'hello', 1000)
+      const { promise } = service.sendMessage(channel.chatConversationId, 'hello', 1000)
       const assertion = expect(promise).rejects.toThrow('within 1000ms')
 
       await vi.advanceTimersByTimeAsync(1000)
@@ -360,7 +361,7 @@ describe('WebSocketMessageService', () => {
     })
 
     it('cancels the timeout when the ack arrives', async () => {
-      const { id, promise } = service.sendMessage(channel, 'hello')
+      const { id, promise } = service.sendMessage(channel.chatConversationId, 'hello')
 
       receive({ replyTo: id, type: WSMessageType.Ack, channel: channel.id })
       await promise
@@ -369,8 +370,8 @@ describe('WebSocketMessageService', () => {
     })
 
     it('rejects the pending messages when the connection closes', async () => {
-      const first = service.sendMessage(channel, 'a')
-      const second = service.sendMessage(channel, 'b')
+      const first = service.sendMessage(channel.chatConversationId, 'a')
+      const second = service.sendMessage(channel.chatConversationId, 'b')
 
       handlers().onClose(new Event('close'))
 
@@ -384,7 +385,7 @@ describe('WebSocketMessageService', () => {
         throw new Error('WebSocket is not connected')
       })
 
-      const { promise } = service.sendMessage(channel, 'hello')
+      const { promise } = service.sendMessage(channel.chatConversationId, 'hello')
 
       await expect(promise).rejects.toThrow('WebSocket is not connected')
       expect(vi.getTimerCount()).toBe(0)
@@ -396,7 +397,7 @@ describe('WebSocketMessageService', () => {
       socket.send.mockImplementationOnce(() => {
         throw new Error('WebSocket is not connected')
       })
-      const { id, promise } = service.sendMessage(channel, 'hello')
+      const { id, promise } = service.sendMessage(channel.chatConversationId, 'hello')
       await expect(promise).rejects.toThrow()
 
       // a message with that id is not an ack anymore: it goes to the subscribers
@@ -492,7 +493,7 @@ describe('WebSocketMessageService', () => {
     })
 
     it('rejects the pending messages', async () => {
-      const { promise } = service.sendMessage(channel, 'hello')
+      const { promise } = service.sendMessage(channel.chatConversationId, 'hello')
 
       service.disconnect()
 

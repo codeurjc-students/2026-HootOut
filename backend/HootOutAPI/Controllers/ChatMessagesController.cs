@@ -23,11 +23,11 @@ namespace HootOut.HootOutAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<PageResult<ChatMessageDto>>> GetMessagesByConverstionIdAsync([FromQuery] Guid conversationId, [FromQuery] Guid? next, [FromQuery] int? pageSize, CancellationToken ct)
+        public async Task<ActionResult<PageResult<ChatMessageDto>>> GetMessagesByConverstionIdAsync([FromQuery] Guid chatConversationId, [FromQuery] Guid? next, [FromQuery] int? pageSize, CancellationToken ct)
         {
             return await CommandLaunchHelper.LaunchAsync(
                 logger,
-                async () => await chatMessageService.GetMessagesByConversationIdAsync(conversationId, next, pageSize ?? 10, ct),
+                async () => await chatMessageService.GetMessagesByConversationIdAsync(chatConversationId, next, pageSize ?? 10, ct),
                 BadRequest,
                 (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
                 );

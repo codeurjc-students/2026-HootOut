@@ -113,17 +113,17 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
 
             await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest
             {
-                ChatConversationId = channel.ConversationId,
+                ChatConversationId = channel.ChatConversationid,
                 AuthorId = userId,
                 Content = content
             }, ct);
 
-            PageResult<ChatMessageDto> result = await chatMessageService.GetMessagesByConversationIdAsync(channel.ConversationId, ct: ct);
+            PageResult<ChatMessageDto> result = await chatMessageService.GetMessagesByConversationIdAsync(channel.ChatConversationid, ct: ct);
             result.Items.Should().HaveCount(1);
             ChatMessageDto chatMessage = result.Items.Single();
 
             chatMessage.Id.Should().NotBeEmpty();
-            chatMessage.ChatConversationId.Should().Be(channel.ConversationId);
+            chatMessage.ChatConversationId.Should().Be(channel.ChatConversationid);
             chatMessage.Author?.Id.Should().Be(userId);
             chatMessage.Author?.Username.Should().Be("test123");
             chatMessage.Content.Should().Be(content);
@@ -199,16 +199,16 @@ namespace HootOut.ChatMessages.IntegrationTests.Services
             };
             await channelSaver.SaveAsync(channel2, ct);
 
-            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel1.ConversationId, AuthorId = userId, Content = "test" }, ct);
-            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel1.ConversationId, AuthorId = userId, Content = "test" }, ct);
-            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel1.ConversationId, AuthorId = userId2, Content = "test" }, ct);
-            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel1.ConversationId, AuthorId = userId2, Content = "test" }, ct);
+            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel1.ChatConversationid, AuthorId = userId, Content = "test" }, ct);
+            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel1.ChatConversationid, AuthorId = userId, Content = "test" }, ct);
+            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel1.ChatConversationid, AuthorId = userId2, Content = "test" }, ct);
+            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel1.ChatConversationid, AuthorId = userId2, Content = "test" }, ct);
 
-            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel2.ConversationId, AuthorId = userId2, Content = "test" }, ct);
-            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel2.ConversationId, AuthorId = userId2, Content = "test" }, ct);
-            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel2.ConversationId, AuthorId = userId2, Content = "test" }, ct);
+            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel2.ChatConversationid, AuthorId = userId2, Content = "test" }, ct);
+            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel2.ChatConversationid, AuthorId = userId2, Content = "test" }, ct);
+            await chatMessageService.CreateChatMessageAsync(new CreateChatMessageRequest { ChatConversationId = channel2.ChatConversationid, AuthorId = userId2, Content = "test" }, ct);
 
-            (await chatMessageService.GetMessagesByConversationIdAsync(channel1.ConversationId, ct: ct)).Items.Should().HaveCount(4);
+            (await chatMessageService.GetMessagesByConversationIdAsync(channel1.ChatConversationid, ct: ct)).Items.Should().HaveCount(4);
         }
     }
 }

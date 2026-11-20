@@ -25,7 +25,7 @@
     message.value = ''
 
     const ackPromise = await wsMessageService.sendMessage(
-      serverInfo.currentChatChannel!,
+      serverInfo.currentChatChannel!.chatConversationId,
       chatMessage
     )
     chatMessage.createdAt = new Date().toISOString()

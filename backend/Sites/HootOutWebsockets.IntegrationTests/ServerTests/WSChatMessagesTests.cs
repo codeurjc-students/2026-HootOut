@@ -129,7 +129,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
                 Name = "test123"
             }, ct);
 
-            var conversationId = channel.ConversationId;
+            var conversationId = channel.ChatConversationId;
 
             WSConnectionManager? connectionManager = null;
             if (IconnectionManager is WSConnectionManager)
@@ -216,7 +216,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
             message1.Should().NotBeNull();
             message1.Author.Should().NotBeNull();
             message1.Author.Id.Should().Be(userId1);
-            message1.ChatConversationId.Should().Be(channel.ConversationId);
+            message1.ChatConversationId.Should().Be(channel.ChatConversationId);
             message1.Content.Should().Be(messageContent);
 
             var receivedMessage = await socket2.ReceiveAsync(ct);

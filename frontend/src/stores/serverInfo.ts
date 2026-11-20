@@ -102,17 +102,19 @@ export const serverInfoStore = defineStore('serverInfo', () => {
 
     const currentSelection = ++selection
 
+    const conversationId = channel.chatConversationId
+
     try {
-      wsMessageService.subscribe(channelId, (message: WebSocketMessage) => {
+      wsMessageService.subscribe(conversationId, (message: WebSocketMessage) => {
         newMessage(message)
       })
     } catch (error) {
-      wsMessageService.addPendingSubscription(channelId, (message: WebSocketMessage) => {
+      wsMessageService.addPendingSubscription(conversationId, (message: WebSocketMessage) => {
         newMessage(message)
       })
     }
 
-    const pageResult = await ChatMessageService.getMessagesByChannelId(channelId)
+    const pageResult = await ChatMessageService.getMessagesByConversationId(conversationId)
     // Another channel (or server) was selected while loading: keep that one
     if (currentSelection !== selection) return
 
@@ -127,8 +129,8 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     if (!channel || !lastPage.value?.next) return
 
     const currentSelection = selection
-    const pageResult = await ChatMessageService.getMessagesByChannelId(
-      channel.id,
+    const pageResult = await ChatMessageService.getMessagesByConversationId(
+      channel.chatConversationId,
       lastPage.value.next,
       lastPage.value.pageSize
     )

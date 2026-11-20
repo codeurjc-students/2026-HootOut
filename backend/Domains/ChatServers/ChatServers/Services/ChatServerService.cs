@@ -146,7 +146,7 @@ namespace HootOut.ChatServers.Services
             var serverId = await serverRepository.GetServerIdByConversationAndUserIdAsync(conversationId, userId, ct);
             if (serverId == null)
             {
-                throw new ValidationException(new[] { new ValidationFailure("message", "The conversation could not be found") });
+                throw new ValidationException(new[] { new ValidationFailure("message", $"The conversation could not be found {conversationId} {userId}", new { conversationId, userId }) });
             }
         }
 

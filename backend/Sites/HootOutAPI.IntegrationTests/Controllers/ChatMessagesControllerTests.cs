@@ -61,10 +61,10 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var loginResponse = await LoginAsync(DefaultEmail, DefaultPassword, ct);
             var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);
 
-            Guid conversationId = Guid.NewGuid();
+            Guid chatConversationId = Guid.NewGuid();
             var response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get,
-                $"/api/v1/chatMessages?conversationId={conversationId.ToString()}",
+                $"/api/v1/chatMessages?chatConversationId={chatConversationId.ToString()}",
                 auth?.AccessToken!,
                 ct
             );
@@ -107,7 +107,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             await chatMessageService.CreateChatMessageAsync(
                 new CreateChatMessageRequest
                 {
-                    ChatConversationId = channel.ConversationId,
+                    ChatchatConversationId = channel.ChatConversationId,
                     AuthorId = authorId,
                     Content = content
                 }, ct);
@@ -127,14 +127,14 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             await chatMessageService.CreateChatMessageAsync(
                 new CreateChatMessageRequest
                 {
-                    ChatConversationId = channel2.ConversationId,
+                    ChatConversationId = channel2.ChatConversationId,
                     AuthorId = authorId,
                     Content = content
                 }, ct);
 
             var response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get,
-                $"/api/v1/chatMessages?conversationId={channel.ConversationId.ToString()}",
+                $"/api/v1/chatMessages?chatConversationId={channel.ChatConversationId.ToString()}",
                 auth?.AccessToken!,
                 ct
             );
@@ -152,12 +152,12 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             message.Id.Should().NotBeEmpty();
             message.Author.Should().NotBeNull();
             message.Author.Id.Should().Be(authorId);
-            message.ChatConversationId.Should().Be(channel.ConversationId);
+            message.ChatConversationId.Should().Be(channel.ChatConversationId);
             message.Content.Should().Be(content);
 
             response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get,
-                $"/api/v1/chatMessages?conversationId={Guid.NewGuid().ToString()}",
+                $"/api/v1/chatMessages?chatConversationId={Guid.NewGuid().ToString()}",
                 auth?.AccessToken!,
                 ct
             );

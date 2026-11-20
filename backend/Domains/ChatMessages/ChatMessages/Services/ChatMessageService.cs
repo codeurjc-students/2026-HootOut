@@ -86,7 +86,7 @@ namespace HootOut.ChatMessages.Services
             var conversation = await chatConversationsService.GetChatConversationByIdAsync(request.ChatConversationId, ct);
             if (conversation == null)
             {
-                throw new ValidationException(new[] { new ValidationFailure("conversation", "Conversation cannot be found") });
+                throw new ValidationException(new[] { new ValidationFailure("conversation", "Conversation cannot be found", request.ChatConversationId) });
             }
 
             switch (conversation.ConversationType)

@@ -72,7 +72,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var message = BuildMessage(channel.ConversationId, author.Id, "hello world");
+            var message = BuildMessage(channel.ChatConversationid, author.Id, "hello world");
 
             await saver.SaveAsync(message, ct);
 
@@ -80,7 +80,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
             row.Should().NotBeNull();
             row.Id.Should().Be(message.Id);
             row.AuthorId.Should().Be(author.Id);
-            row.ChatConversationId.Should().Be(channel.ConversationId);
+            row.ChatConversationId.Should().Be(channel.ChatConversationid);
             row.Content.Should().Be("hello world");
             row.Deleted.Should().BeFalse();
             // timestamptz stores microseconds while DateTime has 100 ns ticks
@@ -94,7 +94,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
             // A message with only attachments has no text
-            var message = BuildMessage(channel.ConversationId, author.Id, string.Empty);
+            var message = BuildMessage(channel.ChatConversationid, author.Id, string.Empty);
 
             await saver.SaveAsync(message, ct);
 
@@ -108,9 +108,9 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
 
-            await saver.SaveAsync(BuildMessage(channel.ConversationId, author.Id, "1"), ct);
-            await saver.SaveAsync(BuildMessage(channel.ConversationId, author.Id, "2"), ct);
-            await saver.SaveAsync(BuildMessage(channel.ConversationId, author.Id, "3"), ct);
+            await saver.SaveAsync(BuildMessage(channel.ChatConversationid, author.Id, "1"), ct);
+            await saver.SaveAsync(BuildMessage(channel.ChatConversationid, author.Id, "2"), ct);
+            await saver.SaveAsync(BuildMessage(channel.ChatConversationid, author.Id, "3"), ct);
 
             (await CountRowsAsync(ct)).Should().Be(3);
         }
@@ -120,10 +120,10 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var message = BuildMessage(channel.ConversationId, author.Id, "original");
+            var message = BuildMessage(channel.ChatConversationid, author.Id, "original");
             await saver.SaveAsync(message, ct);
 
-            var duplicate = BuildMessage(channel.ConversationId, author.Id, "duplicate");
+            var duplicate = BuildMessage(channel.ChatConversationid, author.Id, "duplicate");
             duplicate.Id = message.Id;
 
             var act = () => saver.SaveAsync(duplicate, ct);
@@ -143,7 +143,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, _) = await CreateChannelAsync(ct);
-            var message = BuildMessage(channel.ConversationId, Guid.NewGuid(), "orphan");
+            var message = BuildMessage(channel.ChatConversationid, Guid.NewGuid(), "orphan");
 
             var act = () => saver.SaveAsync(message, ct);
 
@@ -175,7 +175,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
         {
             var ct = TestContext.Current.CancellationToken;
             var (channel, author) = await CreateChannelAsync(ct);
-            var message = BuildMessage(channel.ConversationId, author.Id, null!);
+            var message = BuildMessage(channel.ChatConversationid, author.Id, null!);
 
             var act = () => saver.SaveAsync(message, ct);
 
@@ -189,7 +189,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatMessages
         public async Task SaveAsync_CancelledToken_ThrowsOperationCanceledAndDoesNotPersist()
         {
             var (channel, author) = await CreateChannelAsync(TestContext.Current.CancellationToken);
-            var message = BuildMessage(channel.ConversationId, author.Id, "cancelled");
+            var message = BuildMessage(channel.ChatConversationid, author.Id, "cancelled");
             using var cts = new CancellationTokenSource();
             await cts.CancelAsync();
 

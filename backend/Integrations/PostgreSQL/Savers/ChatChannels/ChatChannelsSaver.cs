@@ -37,7 +37,7 @@ namespace HootOut.PostgreSQL.Savers.ChatChannels
 
             var conversation = Persistable.CreateNew<ChatConversation>();
             conversation.ConversationType = ChatConversationType.Channel;
-            item.ConversationId = conversation.Id;
+            item.ChatConversationid = conversation.Id;
             try
             {
                 await conn.ExecuteAsync(new CommandDefinition(

@@ -12,7 +12,7 @@ namespace HootOut.ChatChannels.Mappers
                 Id = chatChannel.Id,
                 Name = chatChannel.Name,
                 ChatServerId = chatChannel.ChatServerId,
-                ConversationId = chatChannel.ConversationId,
+                ChatConversationId = chatChannel.ChatConversationid,
                 CreatedAt = chatChannel.CreatedAt,
                 ModifiedAt = chatChannel.ModifiedAt,
             };

@@ -13,10 +13,18 @@ namespace HootOut.HootOutAPI.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class FriendsController: ControllerBase
+    public class FriendsController : ControllerBase
     {
         private readonly ILogger<FriendsController> logger;
         private readonly IFriendsService friendsService;
+
+        public FriendsController(
+            ILogger<FriendsController> logger,
+            IFriendsService friendsService)
+        {
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.friendsService = friendsService ?? throw new ArgumentNullException(nameof(friendsService));
+        }
 
 
         // Get Sent Friend Requests
@@ -32,9 +40,9 @@ namespace HootOut.HootOutAPI.Controllers
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );
-        } 
-            // Get Received Friend Requests
-         [HttpGet("requests/received")] 
+        }
+        // Get Received Friend Requests
+        [HttpGet("requests/received")]
         public async Task<ActionResult<PageResult<FriendRequestDto>>> GetReceivedFriendRequestsAsync(PageRequest request, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
@@ -79,6 +87,7 @@ namespace HootOut.HootOutAPI.Controllers
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );
         }
+
 
         // Get User Friends
         [HttpGet]

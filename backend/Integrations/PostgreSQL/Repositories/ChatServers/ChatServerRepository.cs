@@ -78,7 +78,8 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                     {serverColumns},
                     channel."Id", 
                     channel."ChatServerId",
-                    channel."Name"
+                    channel."Name",
+                    channel."ChatConversationId"
                 FROM "HootOut"."ChatServer" m
                 LEFT JOIN "HootOut"."ChatChannel" channel
                     ON m."Id" = channel."ChatServerId" AND channel."Deleted" = FALSE

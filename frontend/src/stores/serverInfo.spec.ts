@@ -15,7 +15,7 @@ import {
 const mocks = vi.hoisted(() => ({
   serverService: { getServers: vi.fn(), getServerById: vi.fn() },
   channelService: { getChannelsByServerId: vi.fn() },
-  messageService: { getMessagesByChannelId: vi.fn() },
+  messageService: { getMessagesByConversationId: vi.fn() },
   ws: { subscribe: vi.fn(), unsubscribe: vi.fn(), addPendingSubscription: vi.fn() },
 }))
 
@@ -36,6 +36,7 @@ const general: ChatChannel = {
   createdAt: '',
   modifiedAt: '',
   serverId: '1',
+  chatConversationId: '123',
 }
 const random: ChatChannel = {
   id: 'random',
@@ -43,6 +44,7 @@ const random: ChatChannel = {
   createdAt: '',
   modifiedAt: '',
   serverId: '1',
+  chatConversationId: '321',
 }
 
 function chatMessage(id: string, content = `message ${id}`): ChatMessage {
@@ -86,9 +88,9 @@ async function storeWithOpenChannel(
 ) {
   const store = serverInfoStore()
   store.setServerChannels([general, random])
-  messageService.getMessagesByChannelId.mockResolvedValueOnce(page(messages, next))
+  messageService.getMessagesByConversationId.mockResolvedValueOnce(page(messages, next))
   await store.selectChannel(channel.id)
-  messageService.getMessagesByChannelId.mockReset()
+  messageService.getMessagesByConversationId.mockReset()
   ws.subscribe.mockClear()
   return store
 }
@@ -166,7 +168,9 @@ describe('serverInfoStore', () => {
 
   describe('selectChannel', () => {
     beforeEach(() => {
-      messageService.getMessagesByChannelId.mockResolvedValue(page([chatMessage('m1')], 'cursor-2'))
+      messageService.getMessagesByConversationId.mockResolvedValue(
+        page([chatMessage('m1')], 'cursor-2')
+      )
     })
 
     it('does nothing for a channel that is not in the list', async () => {
@@ -176,7 +180,7 @@ describe('serverInfoStore', () => {
       await store.selectChannel('unknown')
 
       expect(ws.subscribe).not.toHaveBeenCalled()
-      expect(messageService.getMessagesByChannelId).not.toHaveBeenCalled()
+      expect(messageService.getMessagesByConversationId).not.toHaveBeenCalled()
       expect(store.currentChatChannel).toBeUndefined()
     })
 
@@ -186,7 +190,7 @@ describe('serverInfoStore', () => {
 
       await store.selectChannel('general')
 
-      expect(ws.subscribe).toHaveBeenCalledWith('general', expect.any(Function))
+      expect(ws.subscribe).toHaveBeenCalledWith(general.chatConversationId, expect.any(Function))
     })
 
     it('adds the messages received through the subscription', async () => {
@@ -208,7 +212,10 @@ describe('serverInfoStore', () => {
 
       await store.selectChannel('general')
 
-      expect(ws.addPendingSubscription).toHaveBeenCalledWith('general', expect.any(Function))
+      expect(ws.addPendingSubscription).toHaveBeenCalledWith(
+        general.chatConversationId,
+        expect.any(Function)
+      )
       const callback = ws.addPendingSubscription.mock.lastCall![1]
       callback(wsChatMessage(chatMessage('new')))
       expect(store.channelMessages[0]).toEqual(chatMessage('new'))
@@ -216,13 +223,15 @@ describe('serverInfoStore', () => {
 
     it('loads the messages of the channel and opens it', async () => {
       const firstPage = page([chatMessage('m2'), chatMessage('m1')], 'cursor-2')
-      messageService.getMessagesByChannelId.mockResolvedValueOnce(firstPage)
+      messageService.getMessagesByConversationId.mockResolvedValueOnce(firstPage)
       const store = serverInfoStore()
       store.setServerChannels([general])
 
       await store.selectChannel('general')
 
-      expect(messageService.getMessagesByChannelId).toHaveBeenCalledWith('general')
+      expect(messageService.getMessagesByConversationId).toHaveBeenCalledWith(
+        general.chatConversationId
+      )
       expect(store.channelMessages).toEqual(firstPage.items)
       expect(store.lastPage).toEqual(firstPage)
       expect(store.currentChatChannel).toEqual(general)
@@ -230,7 +239,7 @@ describe('serverInfoStore', () => {
 
     it('opens the channel only after its messages are loaded', async () => {
       const request = deferred<PageResult<ChatMessage>>()
-      messageService.getMessagesByChannelId.mockReturnValueOnce(request.promise)
+      messageService.getMessagesByConversationId.mockReturnValueOnce(request.promise)
       const store = serverInfoStore()
       store.setServerChannels([general])
 
@@ -244,7 +253,7 @@ describe('serverInfoStore', () => {
 
     it('replaces the messages of the previous channel', async () => {
       const store = await storeWithOpenChannel(general, [chatMessage('g1')])
-      messageService.getMessagesByChannelId.mockResolvedValueOnce(page([chatMessage('r1')]))
+      messageService.getMessagesByConversationId.mockResolvedValueOnce(page([chatMessage('r1')]))
 
       await store.selectChannel('random')
 
@@ -255,7 +264,7 @@ describe('serverInfoStore', () => {
     it('keeps the last selected channel when an earlier one finishes loading later', async () => {
       const generalRequest = deferred<PageResult<ChatMessage>>()
       const randomRequest = deferred<PageResult<ChatMessage>>()
-      messageService.getMessagesByChannelId
+      messageService.getMessagesByConversationId
         .mockReturnValueOnce(generalRequest.promise)
         .mockReturnValueOnce(randomRequest.promise)
       const store = serverInfoStore()
@@ -274,7 +283,7 @@ describe('serverInfoStore', () => {
 
     it('does not open a channel of the previous server that finishes loading after changing server', async () => {
       const request = deferred<PageResult<ChatMessage>>()
-      messageService.getMessagesByChannelId.mockReturnValueOnce(request.promise)
+      messageService.getMessagesByConversationId.mockReturnValueOnce(request.promise)
       const store = serverInfoStore()
       store.setServerChannels([general])
 
@@ -370,7 +379,7 @@ describe('serverInfoStore', () => {
     it('ignores an ack that arrives after changing channel', async () => {
       const store = await storeWithOpenChannel(general)
       store.addPendingMessage('ack-1', chatMessage('p1'))
-      messageService.getMessagesByChannelId.mockResolvedValueOnce(page([chatMessage('r1')]))
+      messageService.getMessagesByConversationId.mockResolvedValueOnce(page([chatMessage('r1')]))
       await store.selectChannel('random')
 
       expect(() =>
@@ -397,11 +406,15 @@ describe('serverInfoStore', () => {
         'cursor-2'
       )
       const nextPage = page([chatMessage('m1')], null)
-      messageService.getMessagesByChannelId.mockResolvedValueOnce(nextPage)
+      messageService.getMessagesByConversationId.mockResolvedValueOnce(nextPage)
 
       await store.getNextMessages()
 
-      expect(messageService.getMessagesByChannelId).toHaveBeenCalledWith('general', 'cursor-2', 20)
+      expect(messageService.getMessagesByConversationId).toHaveBeenCalledWith(
+        general.chatConversationId,
+        'cursor-2',
+        20
+      )
       expect(store.channelMessages).toEqual([
         chatMessage('m3'),
         chatMessage('m2'),
@@ -412,14 +425,14 @@ describe('serverInfoStore', () => {
 
     it('uses the cursor of the last loaded page', async () => {
       const store = await storeWithOpenChannel(general, [chatMessage('m3')], 'cursor-2')
-      messageService.getMessagesByChannelId
+      messageService.getMessagesByConversationId
         .mockResolvedValueOnce(page([chatMessage('m2')], 'cursor-3'))
         .mockResolvedValueOnce(page([chatMessage('m1')], null))
 
       await store.getNextMessages()
       await store.getNextMessages()
 
-      expect(messageService.getMessagesByChannelId.mock.calls.map((call) => call[1])).toEqual([
+      expect(messageService.getMessagesByConversationId.mock.calls.map((call) => call[1])).toEqual([
         'cursor-2',
         'cursor-3',
       ])
@@ -428,7 +441,7 @@ describe('serverInfoStore', () => {
 
     it('keeps the messages when the next page is empty', async () => {
       const store = await storeWithOpenChannel(general, [chatMessage('m1')], 'cursor-2')
-      messageService.getMessagesByChannelId.mockResolvedValueOnce(page([], null))
+      messageService.getMessagesByConversationId.mockResolvedValueOnce(page([], null))
 
       await store.getNextMessages()
 
@@ -441,7 +454,7 @@ describe('serverInfoStore', () => {
 
       await store.getNextMessages()
 
-      expect(messageService.getMessagesByChannelId).not.toHaveBeenCalled()
+      expect(messageService.getMessagesByConversationId).not.toHaveBeenCalled()
       expect(store.channelMessages).toEqual([chatMessage('m1')])
     })
 
@@ -450,13 +463,13 @@ describe('serverInfoStore', () => {
 
       await store.getNextMessages()
 
-      expect(messageService.getMessagesByChannelId).not.toHaveBeenCalled()
+      expect(messageService.getMessagesByConversationId).not.toHaveBeenCalled()
     })
 
     it('ignores the page when the channel changed while loading it', async () => {
       const store = await storeWithOpenChannel(general, [chatMessage('g2')], 'cursor-2')
       const nextPage = deferred<PageResult<ChatMessage>>()
-      messageService.getMessagesByChannelId
+      messageService.getMessagesByConversationId
         .mockReturnValueOnce(nextPage.promise)
         .mockResolvedValueOnce(page([chatMessage('r1')]))
 
