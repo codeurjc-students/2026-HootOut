@@ -62,7 +62,7 @@ namespace HootOut.PostgreSQL.Repositories.Friends
             var invitationsFrom = """
                 FROM "HootOut"."FriendRequest" m 
                 INNER JOIN "HootOut"."UserInfo" u
-                    ON m."UserId" = u."Id"
+                    ON m."InvitedBy" = u."Id"
                 """;
 
             var invitationsWhere = """ WHERE m."UserId" = @UserId AND m."Status" = @Pending """;
@@ -109,7 +109,7 @@ namespace HootOut.PostgreSQL.Repositories.Friends
             var invitationsFrom = """
                 FROM "HootOut"."FriendRequest" m 
                 INNER JOIN "HootOut"."UserInfo" u
-                    ON m."InvitedBy" = u."Id"
+                    ON m."UserId" = u."Id"
                 """;
 
             var invitationsWhere = """ WHERE m."InvitedBy" = @UserId AND m."Status" = @Pending """;
@@ -117,7 +117,7 @@ namespace HootOut.PostgreSQL.Repositories.Friends
             var sql = $"""
                 SELECT 
                     {friendRequestColumns},
-                    u."Username" as InvitedByUsername,
+                    u."Username",
                     u."Id" as UserId
                     {invitationsFrom}
                     {invitationsWhere}

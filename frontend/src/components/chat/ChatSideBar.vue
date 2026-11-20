@@ -30,12 +30,30 @@
 
 <template>
   <aside class="side-bar grid h-full grid-rows-[auto_1fr_auto]">
-    <div id=""></div>
-    <div id="server-list" class="flex w-full grow flex-col overflow-x-hidden overflow-y-auto">
+    <div class="flex scrollbar-gutter-stable flex-col">
+      <RouterLink
+        id="directConversationLink"
+        :to="{ name: 'directConversation' }"
+        class="round-btn pointer mb-2 flex h-full justify-center self-center"
+        v-tooltip:right="'Direct Messages'"
+        aria-label="Direct Messages"
+      >
+        DM
+      </RouterLink>
+    </div>
+    <div class="separator relative my-2 flex items-center pl-2"></div>
+
+    <div
+      id="server-list"
+      class="flex w-full grow scrollbar-gutter-stable flex-col overflow-x-hidden overflow-y-auto"
+    >
       <ServerList />
     </div>
 
-    <div id="new-server" class="relative flex items-center justify-center py-4">
+    <div
+      id="new-server"
+      class="separator relative flex scrollbar-gutter-stable items-center justify-center py-4"
+    >
       <div id="new-server-btn" class="round-btn pointer" @click="openModal"></div>
       <Modal title="Create New Server" ref="create-server-form-modal">
         <template v-slot:body>
@@ -51,7 +69,7 @@
     max-height: calc(100vh - var(--navbar-height));
   }
 
-  #new-server::before {
+  .separator::before {
     content: '';
     width: 80%;
     height: 1px;

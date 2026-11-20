@@ -90,7 +90,7 @@ namespace HootOut.Friends.Services
             return await friendRequestRepository.GetSentFriendRequestsAsync(request, userId, ct);
         }
 
-        public async Task<PageResult<FriendRelationDto>> GetUserFriends(PageRequest request, Guid userId, CancellationToken ct)
+        public async Task<PageResult<FriendRelationDto>> GetUserFriendsAsync(PageRequest request, Guid userId, CancellationToken ct)
         {
             ArgumentNullException.ThrowIfNull(request);
 

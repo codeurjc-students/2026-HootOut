@@ -9,7 +9,7 @@
 
 <template>
   <div class="p-4">
-    <GoBackLink :to="{ name: 'serverSettings' }"> Server Settings: </GoBackLink>
+    <GoBackLink :to="{ name: 'serverSettings' }"> Server Profile: </GoBackLink>
     <h1 class="mt-2 ml-2 hidden text-2xl font-semibold md:block">Server Settings:</h1>
     <div class="flex flex-col p-2 text-lg md:p-4" v-if="currentServer">
       <div class="py-2 border-bottom-1">

@@ -71,7 +71,7 @@ namespace HootOut.PostgreSQL.Repositories.Friends
                 Take = request.Size + 1,
             }, cancellationToken: ct));
 
-            var invitations = multi.Read<FriendRelationDto, UserDto, Guid, FriendRelationDto>((friendRelation, user, conversationId) =>
+            var friendRelations = multi.Read<FriendRelationDto, UserDto, Guid, FriendRelationDto>((friendRelation, user, conversationId) =>
             {
                 friendRelation.Friend = user;
                 friendRelation.ChatConversationId = conversationId;
@@ -80,7 +80,7 @@ namespace HootOut.PostgreSQL.Repositories.Friends
 
             var total = await multi.ReadSingleAsync<int>();
 
-            return PaginatedQueryHelper.ToPage(invitations, request, x => x.Id, total);
+            return PaginatedQueryHelper.ToPage(friendRelations, request, x => x.Id, total);
         }
 
         public async Task<Guid?> GetDirectConverationByConversationAndUserId(Guid chatConversationId, Guid userId, CancellationToken ct)

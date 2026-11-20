@@ -34,7 +34,7 @@
       class="settings-left-bar grid grid-rows-[auto_auto_1fr] rounded-l-[30px] background-soft max-sm:rounded-[30px]"
       :class="mobileClass"
     />
-    <div class="settings border-1 p-2 md:p-4" v-if="user" :class="mobileClass">
+    <div class="settings" v-if="user" :class="mobileClass">
       <router-view />
     </div>
   </section>

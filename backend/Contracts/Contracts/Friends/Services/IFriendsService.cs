@@ -10,7 +10,7 @@ namespace HootOut.Contracts.Friends.Services
         Task<Guid?> UpdateFriendRequestAsync(UpdateFriendRequest request, Guid userId, CancellationToken ct);
         Task<PageResult<FriendRequestDto>> GetReceivedFriendRequestsAsync(PageRequest request, Guid userId, CancellationToken ct);
         Task<PageResult<FriendRequestDto>> GetSentFriendRequestsAsync(PageRequest request, Guid userId, CancellationToken ct);
-        Task<PageResult<FriendRelationDto>> GetUserFriends(PageRequest request, Guid userId, CancellationToken ct);
+        Task<PageResult<FriendRelationDto>> GetUserFriendsAsync(PageRequest request, Guid userId, CancellationToken ct);
         Task ValidateUserCanSendMessageAsync(Guid chatConversationId, Guid userId, CancellationToken ct);
     }
 }

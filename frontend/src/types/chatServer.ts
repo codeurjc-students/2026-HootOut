@@ -14,22 +14,22 @@ export interface CreateChatServerRequest {
   description: string
 }
 
-export enum ServerInvitationStatus {
+export enum InvitationStatus {
   Pending = 0,
   Accepted = 10,
   Rejected = 20,
   Revoked = 30,
 }
 
-const serverInvitationStatusDict: Record<ServerInvitationStatus, string> = {
+const InvitationStatusDict: Record<InvitationStatus, string> = {
   0: 'Pending',
   10: 'Accepted',
   20: 'Rejected',
   30: 'Revoked',
 }
 
-export const serverInvitationStatusMapper = (status: ServerInvitationStatus): string =>
-  serverInvitationStatusDict[status]
+export const InvitationStatusMapper = (status: InvitationStatus): string =>
+  InvitationStatusDict[status]
 
 export interface InviteServerMemberRequest {
   chatServerId: string
@@ -38,7 +38,7 @@ export interface InviteServerMemberRequest {
 
 export interface UpdateServerInvitationRequest {
   id: string
-  status: ServerInvitationStatus
+  status: InvitationStatus
 }
 
 export interface ServerInvitation {
@@ -47,7 +47,7 @@ export interface ServerInvitation {
   chatServerName: string
   userId: string
   username: string
-  status: ServerInvitationStatus
+  status: InvitationStatus
   createdAt: string
   modifiedAt: string
 }

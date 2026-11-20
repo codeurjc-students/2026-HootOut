@@ -6,7 +6,7 @@ import type { ChatMessage, PageResult, WebSocketMessage } from '@/types'
 import { ref } from 'vue'
 
 export const conversationStore = defineStore('conversation', () => {
-  const currentConversationId = ref<string>()
+  const currentConversationId = ref<string>('')
   const currentMessages = ref<ChatMessage[]>([])
   const pendingMessages = ref<Record<string, Record<string, ChatMessage>>>({})
   const lastPage = ref<PageResult<ChatMessage>>()
@@ -49,6 +49,7 @@ export const conversationStore = defineStore('conversation', () => {
   }
 
   async function selectConversation(conversationId: string) {
+    clearConversation()
     const currentSelection = ++selection
     const oldConversation = currentConversationId.value
     currentConversationId.value = conversationId
@@ -104,8 +105,9 @@ export const conversationStore = defineStore('conversation', () => {
   }
 
   function clearConversation() {
+    currentMessages.value = []
+    lastPage.value = { items: [], next: null, pageSize: 10, total: -1 }
     if (currentConversationId?.value) {
-      currentMessages.value = []
       delete pendingMessages.value[currentConversationId.value]
     }
   }

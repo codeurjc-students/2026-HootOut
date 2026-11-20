@@ -58,7 +58,7 @@ namespace HootOut.HootOutAPI.Controllers
 
         // Send Friend Request
         [HttpPost("requests")]
-        public async Task<ActionResult> SendFriendRequestAsync(SendFriendRequest request, CancellationToken ct)
+        public async Task<ActionResult<FriendRequestDto>> SendFriendRequestAsync(SendFriendRequest request, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
             if (userId is null)
@@ -74,7 +74,7 @@ namespace HootOut.HootOutAPI.Controllers
 
         // UpdateFriendRequest
         [HttpPut("requests")]
-        public async Task<ActionResult> UpdateFriendRequestAsync(UpdateFriendRequest request, CancellationToken ct)
+        public async Task<ActionResult<FriendRequestDto>> UpdateFriendRequestAsync(UpdateFriendRequest request, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
             if (userId is null)
@@ -91,14 +91,14 @@ namespace HootOut.HootOutAPI.Controllers
 
         // Get User Friends
         [HttpGet]
-        public async Task<ActionResult<PageResult<FriendRequestDto>>> GetUserFriends(PageRequest request, CancellationToken ct)
+        public async Task<ActionResult<PageResult<FriendRelationDto>>> GetUserFriendsAsync(PageRequest request, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
             if (userId is null)
                 return Unauthorized();
             return await CommandLaunchHelper.LaunchAsync(
                logger,
-               async () => await friendsService.GetUserFriends(request, Guid.Parse(userId), ct),
+               async () => await friendsService.GetUserFriendsAsync(request, Guid.Parse(userId), ct),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );

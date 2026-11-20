@@ -6,8 +6,10 @@
   import ChatLeftBar from './ChatLeftBar.vue'
   import ChatConversationView from './ChatConversationView.vue'
   import wsMessageService from '@/services/common/websocketsMesage/WebSocketsMessageService.ts'
+  import { storeToRefs } from 'pinia'
 
   const serverInfo = serverInfoStore()
+  const { currentChatChannel, currentServer } = storeToRefs(serverInfo)
 
   const route = useRoute()
 
@@ -55,7 +57,14 @@
       class="chat-left-bar grid grid-rows-[auto_auto_1fr] rounded-l-[30px] background-soft max-sm:rounded-[30px]"
       :class="mobileClass"
     />
-    <ChatConversationView :class="mobileClass" />
+    <ChatConversationView
+      :class="mobileClass"
+      :chat-name="currentChatChannel?.name"
+      :back-link="{
+        name: 'server',
+        params: { serverId: currentServer?.id, channelId: '' },
+      }"
+    />
   </section>
 </template>
 

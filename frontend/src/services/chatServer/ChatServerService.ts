@@ -8,7 +8,7 @@ import type {
   ServerMember,
   UpdateServerInvitationRequest,
 } from '@/types'
-import { get, post, put, type Query } from '../common/api/ApiService'
+import { get, post, put } from '../common/api/ApiService'
 
 const ChatServerService = {
   createNewServer: async function (request: CreateChatServerRequest): Promise<ChatServer> {

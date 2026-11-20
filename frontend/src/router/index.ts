@@ -10,6 +10,9 @@ import ServerInvitations from '@/components/server/settings/Members/ServerInvita
 import UserSettings from '@/views/UserSettings.vue'
 import UserSettingsProfile from '@/components/user/settings/UserSettingsProfile.vue'
 import UserServerInvitations from '@/components/user/settings/UserServerInvitations.vue'
+import SentFriendRequests from '@/components/user/settings/friendRequests/SentFriendRequests.vue'
+import ReceivedFriendRequests from '@/components/user/settings/friendRequests/ReceivedFriendRequests.vue'
+import FriendRequestsSettings from '@/components/user/settings/FriendRequestsSettings.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -42,6 +45,12 @@ const router = createRouter({
       path: '/chat',
       name: 'chat',
       component: () => import('@/views/ChatView.vue'),
+      meta: { layout: 'MainLayout' },
+    },
+    {
+      path: '/chat/direct/:chatConversationId?',
+      name: 'directConversation',
+      component: () => import('@/views/DirectConversationView.vue'),
       meta: { layout: 'MainLayout' },
     },
     {
@@ -113,6 +122,23 @@ const router = createRouter({
           path: 'invitations',
           name: 'userServerInvitations',
           component: UserServerInvitations,
+        },
+        {
+          path: 'friendRequests',
+          name: 'friendRequests',
+          component: FriendRequestsSettings,
+          children: [
+            {
+              path: 'received',
+              name: 'receivedFriendRequests',
+              component: ReceivedFriendRequests,
+            },
+            {
+              path: 'sent',
+              name: 'sentFriendRequests',
+              component: SentFriendRequests,
+            },
+          ],
         },
       ],
     },

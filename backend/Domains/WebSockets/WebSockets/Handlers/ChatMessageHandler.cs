@@ -26,7 +26,6 @@ namespace HootOut.WebSockets.Actions
 
         public async Task HandleMessageAsync(Guid connectionId, WSUserInfo user, WebSocketMessage message, CancellationToken ct = default)
         {
-            // Check userId can send to this channel.
             CreateChatMessageRequest request = JsonConvert.DeserializeObject<CreateChatMessageRequest>(message.Payload!)!;
 
             request.ChatConversationId = Guid.Parse(message.Channel!);

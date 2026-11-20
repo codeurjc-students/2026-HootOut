@@ -109,7 +109,7 @@ namespace HootOut.Friends.IntegrationTests.Services
             relationId.Should().NotBeNull().And.NotBeEmpty();
 
             // Friends of user 1
-            var friends1 = await friendsService.GetUserFriends(new Contracts.Common.PageRequest { }, userId, ct);
+            var friends1 = await friendsService.GetUserFriendsAsync(new Contracts.Common.PageRequest { }, userId, ct);
             friends1.Should().NotBeNull();
             friends1.Items.Should().NotBeNullOrEmpty();
             friends1.Items.Should().HaveCount(1);
@@ -122,7 +122,7 @@ namespace HootOut.Friends.IntegrationTests.Services
             await friendsService.ValidateUserCanSendMessageAsync(first.ChatConversationId, userId, ct);
 
             // Friends of user 2
-            var friends2 = await friendsService.GetUserFriends(new Contracts.Common.PageRequest { }, userId2, ct);
+            var friends2 = await friendsService.GetUserFriendsAsync(new Contracts.Common.PageRequest { }, userId2, ct);
             friends2.Should().NotBeNull();
             friends2.Items.Should().NotBeNullOrEmpty();
             friends2.Items.Should().HaveCount(1);
