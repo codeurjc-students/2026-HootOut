@@ -15,8 +15,7 @@ namespace HootOut.PostgreSQL.UnitTests.Repositories.Friends
             nameof(FriendRequestRepository.GetFriendRequestByIdAsync),
             nameof(FriendRequestRepository.GetReceivedFriendRequestsAsync),
             nameof(FriendRequestRepository.GetSentFriendRequestsAsync),
-            nameof(FriendRequestRepository.AcceptFriendRequestAsync),
-            nameof(FriendRequestRepository.GetPendingFriendRequestAsync)
+            nameof(FriendRequestRepository.AcceptFriendRequestAsync)
         ];
 
         [Fact]
@@ -64,7 +63,6 @@ namespace HootOut.PostgreSQL.UnitTests.Repositories.Friends
             nameof(FriendRequestRepository.GetReceivedFriendRequestsAsync) => repository.GetReceivedFriendRequestsAsync(new PageRequest(), Guid.NewGuid(), ct),
             nameof(FriendRequestRepository.GetSentFriendRequestsAsync) => repository.GetSentFriendRequestsAsync(new PageRequest(), Guid.NewGuid(), ct),
             nameof(FriendRequestRepository.AcceptFriendRequestAsync) => repository.AcceptFriendRequestAsync(Persistable.CreateNew<FriendRequest>(), ct),
-            nameof(FriendRequestRepository.GetPendingFriendRequestAsync) => repository.GetPendingFriendRequestAsync(Guid.NewGuid(), Guid.NewGuid(), ct),
             _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
         };
     }

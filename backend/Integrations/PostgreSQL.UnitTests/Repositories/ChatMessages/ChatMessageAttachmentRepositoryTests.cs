@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using HootOut.CommonDomain.Persistence;
 using HootOut.PostgreSQL.Repositories.ChatMessages;
 using Moq;

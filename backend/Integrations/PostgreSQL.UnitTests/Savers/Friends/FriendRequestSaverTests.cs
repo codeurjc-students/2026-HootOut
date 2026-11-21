@@ -1,8 +1,8 @@
 using FluentAssertions;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common.Saver;
-using HootOut.Friends.Entities;
 using HootOut.PostgreSQL.Savers.Friends;
+using HootOut.Friends.Entities;
 using Moq;
 
 namespace HootOut.PostgreSQL.UnitTests.Savers.Friends

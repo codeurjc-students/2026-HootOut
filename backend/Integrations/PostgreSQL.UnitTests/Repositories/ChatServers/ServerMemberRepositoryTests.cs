@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common;
 using HootOut.PostgreSQL.Repositories.ChatServers;

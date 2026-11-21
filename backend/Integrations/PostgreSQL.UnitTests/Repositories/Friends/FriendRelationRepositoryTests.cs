@@ -11,8 +11,7 @@ namespace HootOut.PostgreSQL.UnitTests.Repositories.Friends
         public static TheoryData<string> RepositoryMethods =>
         [
             nameof(FriendRelationRepository.GetUserFriendsAsync),
-            nameof(FriendRelationRepository.GetDirectConverationByConversationAndUserId),
-            nameof(FriendRelationRepository.AreFriendsAsync)
+            nameof(FriendRelationRepository.GetDirectConverationByConversationAndUserId)
         ];
 
         [Fact]
@@ -57,7 +56,6 @@ namespace HootOut.PostgreSQL.UnitTests.Repositories.Friends
         {
             nameof(FriendRelationRepository.GetUserFriendsAsync) => repository.GetUserFriendsAsync(new PageRequest(), Guid.NewGuid(), ct),
             nameof(FriendRelationRepository.GetDirectConverationByConversationAndUserId) => repository.GetDirectConverationByConversationAndUserId(Guid.NewGuid(), Guid.NewGuid(), ct),
-            nameof(FriendRelationRepository.AreFriendsAsync) => repository.AreFriendsAsync(Guid.NewGuid(), Guid.NewGuid(), ct),
             _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
         };
     }

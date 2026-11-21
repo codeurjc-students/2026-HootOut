@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using HootOut.ChatServers.Entities;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common;
