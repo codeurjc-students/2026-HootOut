@@ -3,7 +3,7 @@ using HootOut.Friends.Entities;
 
 namespace HootOut.Friends.Mappers
 {
-    public static class FriendInvitationToDto
+    public static class FriendRequestToDto
     {
         public static FriendRequestDto ToDto(this FriendRequest invitation)
         {

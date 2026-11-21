@@ -4,8 +4,8 @@ namespace HootOut.Friends.Entities
 {
     public sealed class FriendRelation : Persistable
     {
-        Guid User1Id { get; set; }
-        Guid User2Id { get; set; }
-        Guid FriendInvitation { get; set; }
+        public Guid User1Id { get; set; }
+        public Guid User2Id { get; set; }
+        public Guid FriendRequestId { get; set; }
     }
 }

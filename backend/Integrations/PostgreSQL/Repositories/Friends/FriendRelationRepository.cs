@@ -39,12 +39,12 @@ namespace HootOut.PostgreSQL.Repositories.Friends
             var invitationsFrom = """
                 FROM "HootOut"."FriendRelation" m 
                 INNER JOIN "HootOut"."UserInfo" u
-                    ON m."User1Id" = u."Id" OR m."User2Id" = u."Id"
+                    ON u."Id" = CASE WHEN m."User1Id" = @UserId THEN m."User2Id" ELSE m."User1Id" END
                 INNER JOIN "HootOut"."DirectConversation" dc
                     ON m."User1Id" = dc."User1Id" AND m."User2Id" = dc."User2Id"
                 """;
 
-            var invitationsWhere = """ WHERE (m."User1Id" = @UserId OR m."User2Id" = @UserId) AND u."Id" != @UserId """;
+            var invitationsWhere = """ WHERE (m."User1Id" = @UserId OR m."User2Id" = @UserId) AND m."Deleted" = FALSE """;
 
             var sql = $"""
                 SELECT 
@@ -99,13 +99,31 @@ namespace HootOut.PostgreSQL.Repositories.Friends
                     dc."Id"
                 FROM "HootOut"."FriendRelation" fr
                 INNER JOIN dc
-                    ON fr."User1Id" = dc."User1Id" AND fr."User2Id" = dc."User2Id"
+                    ON fr."User1Id" = dc."User1Id" AND fr."User2Id" = dc."User2Id" 
+                WHERE fr."Deleted" = FALSE
                 """
                 , new
                 {
                     ConversationId = chatConversationId,
                     UserId = userId,
                 }, cancellationToken: ct));
+        }
+
+        public async Task<bool> AreFriendsAsync(Guid userA, Guid userB, CancellationToken ct)
+        {
+            await using var conn = await provider.OpenConnectionAsync(ct);
+
+            // The pair is always stored with the smaller id first, so the order is computed in SQL
+            return await conn.ExecuteScalarAsync<bool>(new CommandDefinition("""
+        SELECT EXISTS (
+            SELECT 1
+            FROM "HootOut"."FriendRelation"
+            WHERE "User1Id" = LEAST(@UserA, @UserB)
+              AND "User2Id" = GREATEST(@UserA, @UserB)
+              AND "Deleted" = FALSE)
+        """,
+                new { UserA = userA, UserB = userB },
+                cancellationToken: ct));
         }
     }
 }

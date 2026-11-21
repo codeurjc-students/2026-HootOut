@@ -96,7 +96,7 @@ namespace HootOut.HootOutAPI.Init
             var servers = await CreateServers(mainUser!, ct);
 
             //Invite all the users all the servers
-            logger.LogInformation("Invite users to servers"); 
+            logger.LogInformation("Invite users to servers");
 
             Random random = new();
 
@@ -128,10 +128,10 @@ namespace HootOut.HootOutAPI.Init
                             serverMembers[server.Id] = members;
                         }
                         members.Add(user.Id);
-                    } 
+                    }
                 }
             }
- 
+
 
             // Send some messages on the servers (randomly)
             logger.LogInformation("Users send messages in random servers");

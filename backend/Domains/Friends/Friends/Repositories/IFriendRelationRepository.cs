@@ -7,5 +7,7 @@ namespace HootOut.Friends.Repositories
     {
         Task<PageResult<FriendRelationDto>> GetUserFriendsAsync(PageRequest request, Guid userId, CancellationToken ct);
         Task<Guid?> GetDirectConverationByConversationAndUserId(Guid chatConversationId, Guid userId, CancellationToken ct);
+
+        Task<bool> AreFriendsAsync(Guid userA, Guid userB, CancellationToken ct);
     }
 }

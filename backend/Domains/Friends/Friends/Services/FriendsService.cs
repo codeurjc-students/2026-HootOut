@@ -16,19 +16,19 @@ namespace HootOut.Friends.Services
 {
     public sealed class FriendsService : IFriendsService
     {
-        private readonly ISaver<FriendRequest> friendRequestSaver; 
+        private readonly ISaver<FriendRequest> friendRequestSaver;
         private readonly IUserService userService;
         private readonly IFriendRequestRepository friendRequestRepository;
         private readonly IFriendRelationRepository friendRelationRepository;
 
         public FriendsService(
-            ISaver<FriendRequest> friendRequestSaver, 
+            ISaver<FriendRequest> friendRequestSaver,
             IUserService userService,
             IFriendRequestRepository friendRequestRepository,
             IFriendRelationRepository friendRelationRepository
             )
         {
-            this.friendRequestSaver = friendRequestSaver ?? throw new ArgumentNullException(nameof(friendRequestSaver)); 
+            this.friendRequestSaver = friendRequestSaver ?? throw new ArgumentNullException(nameof(friendRequestSaver));
             this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
             this.friendRequestRepository = friendRequestRepository ?? throw new ArgumentNullException(nameof(friendRequestRepository));
             this.friendRelationRepository = friendRelationRepository ?? throw new ArgumentNullException(nameof(friendRelationRepository));
@@ -44,6 +44,35 @@ namespace HootOut.Friends.Services
             if (invitedUser == null)
             {
                 throw new ValidationException(new[] { new ValidationFailure("username", "Cannot find a user with this username") });
+            }
+
+            if (invitedUser.Id == userId)
+            {
+                throw new ValidationException(new[] { new ValidationFailure("username", "You cannot send a friend request to yourself") });
+            }
+
+            if (await friendRelationRepository.AreFriendsAsync(userId, invitedUser.Id, ct))
+            {
+                throw new ValidationException(new[] { new ValidationFailure("username", "You are already friends with this user") });
+            }
+
+            var pending = await friendRequestRepository.GetPendingFriendRequestAsync(userId, invitedUser.Id, ct);
+            if (pending != null)
+            {
+                if (pending.InvitedBy == userId)
+                {
+                    throw new ValidationException(new[] { new ValidationFailure("username", "You already sent a friend request to this user") });
+                }
+
+                // The other user had already invited this one: accept that request instead of opening a new one
+                var relationId = await friendRequestRepository.AcceptFriendRequestAsync(pending, ct);
+                if (relationId == null)
+                {
+                    throw new ValidationException(new[] { new ValidationFailure("invitation", "Invalid invitation") });
+                }
+
+                pending.Status = InvitationStatus.Accepted;
+                return pending.ToDto();
             }
 
             var friendInvitation = Persistable.CreateNew<FriendRequest>();

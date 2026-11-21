@@ -161,29 +161,31 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
         {
             await using var conn = await provider.OpenConnectionAsync(ct);
 
+            // FOR UPDATE locks the invitation so two concurrent accepts cannot both succeed.
+            // The invitation is only marked as accepted when the member row is actually inserted.
             const string sql = """
-                WITH pending AS (
-                    SELECT "Id", "ChatServerId", "UserId"
-                    FROM "HootOut"."ServerInvitation"
-                    WHERE "Id" = @InvitationId
-                      AND "UserId" = @UserId
-                      AND "Status" = @Pending
-                    FOR UPDATE
-                ),
-                inserted AS (
-                    INSERT INTO "HootOut"."ServerMember" ("Id", "ChatServerId", "UserId", "InvitationId", "CreatedAt", "ModifiedAt")
-                    SELECT @NewMemberId, "ChatServerId", "UserId", "Id", @Now, @Now
-                    FROM pending
-                    ON CONFLICT ("ChatServerId", "UserId") WHERE "Deleted" = FALSE DO NOTHING
-                    RETURNING "Id", "InvitationId"
-                ),
-                accepted AS (
-                    UPDATE "HootOut"."ServerInvitation"
-                    SET "Status" = @Accepted,
-                        "ModifiedAt" = @Now
-                    WHERE "Id" IN (SELECT "InvitationId" FROM inserted)
-                )
-                SELECT "Id" FROM inserted;
+        WITH pending AS (
+            SELECT "Id", "ChatServerId", "UserId"
+            FROM "HootOut"."ServerInvitation"
+            WHERE "Id" = @InvitationId
+              AND "UserId" = @UserId
+              AND "Status" = @Pending
+            FOR UPDATE
+        ),
+        inserted AS (
+            INSERT INTO "HootOut"."ServerMember" ("Id", "ChatServerId", "UserId", "InvitationId", "CreatedAt", "ModifiedAt")
+            SELECT @NewMemberId, "ChatServerId", "UserId", "Id", @Now, @Now
+            FROM pending
+            ON CONFLICT ("ChatServerId", "UserId") WHERE "Deleted" = FALSE DO NOTHING
+            RETURNING "Id", "InvitationId"
+        ),
+        accepted AS (
+            UPDATE "HootOut"."ServerInvitation"
+            SET "Status" = @Accepted,
+                "ModifiedAt" = @Now
+            WHERE "Id" IN (SELECT "InvitationId" FROM inserted)
+        )
+        SELECT "Id" FROM inserted;
         """;
 
             return await conn.ExecuteScalarAsync<Guid?>(new CommandDefinition(sql, new

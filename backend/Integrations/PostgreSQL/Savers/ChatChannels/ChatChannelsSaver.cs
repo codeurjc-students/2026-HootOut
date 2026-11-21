@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using HootOut.ChatChannels.Entities;
-using HootOut.ChatConversations.Entities;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.ChatConversations.Enums;
 using HootOut.Contracts.Common.Saver;
@@ -16,18 +15,21 @@ namespace HootOut.PostgreSQL.Savers.ChatChannels
             this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
         }
 
+        // The conversation is only inserted when the channel does not exist yet. On an update the
+        // channel keeps its conversation (and its messages), and RETURNING gives back the one it has.
         private const string addOrUpdateChatChannel = """
             WITH conversation AS (
                INSERT INTO "HootOut"."ChatConversation" ("Id", "ConversationType", "CreatedAt", "ModifiedAt")
-               VALUES (@ChatConversationId, @ConversationType, @Now, @Now)
+               SELECT @ChatConversationId, @ConversationType, @CreatedAt, @CreatedAt
+               WHERE NOT EXISTS (SELECT 1 FROM "HootOut"."ChatChannel" WHERE "Id" = @Id)
                ON CONFLICT ("Id") DO NOTHING
-           )
-
-            INSERT INTO "HootOut"."ChatChannel" ("Id", "ChatServerId", "ChatConversationId", "Name", "CreatedAt", "ModifiedAt") 
+            )
+            INSERT INTO "HootOut"."ChatChannel" ("Id", "ChatServerId", "ChatConversationId", "Name", "CreatedAt", "ModifiedAt")
             VALUES (@Id, @ChatServerId, @ChatConversationId, @Name, @CreatedAt, @ModifiedAt)
             ON CONFLICT ("Id") DO UPDATE
                 SET "Name" = @Name,
                     "ModifiedAt" = @ModifiedAt
+            RETURNING "ChatConversationId"
         """;
 
         public async Task SaveAsync(ChatChannel item, CancellationToken ct = default)
@@ -35,22 +37,22 @@ namespace HootOut.PostgreSQL.Savers.ChatChannels
             await using var conn = await provider.OpenConnectionAsync(ct);
             await using var tx = await conn.BeginTransactionAsync(ct);
 
-            var conversation = Persistable.CreateNew<ChatConversation>();
-            conversation.ConversationType = ChatConversationType.Channel;
-            item.ChatConversationid = conversation.Id;
+            // Only used if the channel is new
+            if (item.ChatConversationId == Guid.Empty)
+                item.ChatConversationId = Guid.CreateVersion7();
+
             try
             {
-                await conn.ExecuteAsync(new CommandDefinition(
+                item.ChatConversationId = await conn.ExecuteScalarAsync<Guid>(new CommandDefinition(
                     addOrUpdateChatChannel, new
                     {
                         item.Id,
                         item.ChatServerId,
+                        item.ChatConversationId,
                         item.Name,
                         item.CreatedAt,
                         item.ModifiedAt,
-                        ChatConversationId = conversation.Id,
-                        ConversationType = conversation.ConversationType,
-                        Now = DateTime.UtcNow
+                        ConversationType = ChatConversationType.Channel
                     }, tx, cancellationToken: ct));
                 await tx.CommitAsync(ct);
             }

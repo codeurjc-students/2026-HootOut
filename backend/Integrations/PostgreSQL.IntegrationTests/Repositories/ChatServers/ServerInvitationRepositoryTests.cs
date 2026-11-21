@@ -1,4 +1,4 @@
-﻿using Autofac;
+using Autofac;
 using Dapper;
 using FluentAssertions;
 using HootOut.ChatServers.Entities;
@@ -8,8 +8,8 @@ using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.ChatServers.Dtos;
-using HootOut.Contracts.Common;
 using HootOut.Contracts.Common.Enums;
+using HootOut.Contracts.Common;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Infraestructure.DI;
 using HootOut.Users.Entities;
@@ -20,13 +20,21 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
     public class ServerInvitationRepositoryTests : IClassFixture<PostgresTestContainer>, IClassFixture<TestS3Container>, IAsyncLifetime
     {
         private static readonly DateTime BaseDate = new(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+
         private readonly IContainer container;
+
         private readonly ClearAllTables clearTables;
+
         private readonly IServerInvitationRepository repository;
+
         private readonly ISaver<ServerInvitation> invitationSaver;
+
         private readonly ISaver<ServerMember> memberSaver;
+
         private readonly ISaver<ChatServer> serverSaver;
+
         private readonly ISaver<UserInfo> userSaver;
+
         private readonly IPersistenceProvider provider;
 
         public ServerInvitationRepositoryTests(PostgresTestContainer postgresContainer)

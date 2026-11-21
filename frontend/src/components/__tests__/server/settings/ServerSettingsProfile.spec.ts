@@ -55,7 +55,7 @@ describe('ServerSettingsProfile.vue', () => {
 
       const link = wrapper.findComponent(RouterLinkStub)
       expect(link.props('to')).toEqual({ name: 'serverSettings' })
-      expect(link.text()).toContain('Server Settings:')
+      expect(link.text()).toContain('Server Profile:')
     })
 
     it('shows the page title', () => {

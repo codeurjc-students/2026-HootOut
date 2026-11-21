@@ -3,8 +3,9 @@ import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { createPinia, setActivePinia, type Pinia } from 'pinia'
 import { createMemoryHistory, createRouter, type Router } from 'vue-router'
-import ChannelsList from '@/components/channel/ChannelsList.vue'
+import ChannelsLists from '@/components/channel/ChannelsList.vue'
 import { serverInfoStore } from '@/stores/serverInfo'
+import { conversationStore } from '@/stores/conversation'
 import type { ChatChannel, ChatMessage, ChatServer, PageResult } from '@/types'
 
 // ---------- mocks ----------
@@ -50,18 +51,19 @@ const server: ChatServer = {
   id: 's1',
   name: 'My Server',
   channels: [],
-  createdAt: '123',
-  modifiedAt: '123',
+  createdAt: '',
+  modifiedAt: '',
 }
 
+// Each channel has its own conversation, with the id "conversation-<channel id>"
 function channel(id: string, name = id): ChatChannel {
   return {
     id,
     name,
-    chatConversationId: '321',
+    chatConversationId: `conversation-${id}`,
     serverId: '123',
-    modifiedAt: '123',
-    createdAt: '123',
+    createdAt: '',
+    modifiedAt: '',
   }
 }
 
@@ -106,7 +108,7 @@ async function setUpStore(channels: ChatChannel[], openChannelId?: string) {
 async function mountChannelLists(path = '/chat/server/s1') {
   await router.push(path)
   await router.isReady()
-  const wrapper = mount(ChannelsList, {
+  const wrapper = mount(ChannelsLists, {
     global: {
       plugins: [pinia, router],
       stubs: { Modal: ModalStub, UpdateChannelForm: UpdateChannelFormStub },
@@ -276,8 +278,8 @@ describe('ChannelLists.vue', () => {
 
       expect(router.currentRoute.value.params.channelId).toBe('c1')
       expect(serverInfoStore().currentChatChannel?.id).toBe('c1')
-      expect(messageService.getMessagesByConversationId).toHaveBeenCalledWith('321')
-      expect(serverInfoStore().channelMessages).toEqual([{ id: 'm1' }])
+      expect(messageService.getMessagesByConversationId).toHaveBeenCalledWith('conversation-c1')
+      expect(conversationStore().currentMessages).toEqual([{ id: 'm1' }])
     })
 
     it('only reloads the list when no channel is open', async () => {

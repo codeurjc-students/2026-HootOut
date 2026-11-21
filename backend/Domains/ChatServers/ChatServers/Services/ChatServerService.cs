@@ -170,7 +170,7 @@ namespace HootOut.ChatServers.Services
         {
             ServerInvitation? invitation = await invitationRepository.GetServerInvitationByIdAsync(request.Id, ct);
 
-            if (invitation == null)
+            if (invitation == null || invitation.Status != InvitationStatus.Pending)
             {
                 throw new ValidationException(new[] { new ValidationFailure("invitation", "Invalid invitation") });
             }

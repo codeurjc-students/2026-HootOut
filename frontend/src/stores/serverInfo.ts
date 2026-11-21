@@ -20,13 +20,13 @@ export const serverInfoStore = defineStore('serverInfo', () => {
   function addNewChannel(channel: ChatChannel) {
     if (channels.value.includes(channel)) return false
     channels.value.push(channel)
-    if (conversation?.pendingMessages?.value) conversation.pendingMessages[channel.id] = {}
     return true
   }
 
   function clearChannels() {
     channels.value.length = 0
-    conversation.clearConversation()
+    // The open conversation belongs to a channel of this list: leave it
+    conversation.closeConversation()
   }
 
   function setServerChannels(newChannels: ChatChannel[]) {
@@ -37,8 +37,9 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     const channel = channels.value.filter((x) => x.id == channelId).at(0)
     if (!channel) return
 
-    conversation.selectConversation(channel.chatConversationId)
     setCurrentChatChannel(channel)
+    // Waits for the messages, so errors reach the caller
+    await conversation.selectConversation(channel.chatConversationId)
   }
 
   async function getChatServers(next: string | null): Promise<PageResult<ChatServer>> {
@@ -66,8 +67,8 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     chatServer: ChatServer,
     makeRequest: boolean = false
   ): Promise<void> {
-    // A channel of the previous server that is still loading must not be opened
-    conversation.selection++
+    // A conversation of the previous server that is still loading must not be opened
+    conversation.cancelLoading()
     if (makeRequest)
       currentServer.value!.channels = await ChatChannelService.getChannelsByServerId(chatServer.id)
     const channels = currentServer.value?.channels ?? []

@@ -20,12 +20,13 @@ namespace HootOut.PostgreSQL.Repositories.ChatMessages
         {
             pageSize = Math.Clamp(pageSize, 1, maxPageSize);
             var cursorFilter = next is null
-                ? ""
-                : """
+                 ? ""
+                 : """
                   AND (m."CreatedAt", m."Id") < (
                       SELECT c."CreatedAt", c."Id"
                       FROM "HootOut"."ChatMessage" c
-                      WHERE c."Id" = @Next)
+                      WHERE c."Id" = @Next
+                        AND c."ChatConversationId" = @ConversationId)
                   """;
 
             var sql = $"""

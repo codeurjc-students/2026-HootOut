@@ -11,8 +11,10 @@ export const conversationStore = defineStore('conversation', () => {
   const pendingMessages = ref<Record<string, Record<string, ChatMessage>>>({})
   const lastPage = ref<PageResult<ChatMessage>>()
 
-  // Incremented every time the open channel changes (or is about to change). A request
+  // Incremented every time the open conversation changes (or is about to change). A request
   // that started with an older value finished too late and its result is ignored.
+  // It is not returned by the store: Pinia would expose a copy of the number, so other
+  // stores must call cancelLoading() instead of changing it.
   let selection = 0
 
   // Returns null when the payload is missing or is not valid JSON
@@ -25,27 +27,39 @@ export const conversationStore = defineStore('conversation', () => {
     }
   }
 
-  function newMessage(message: WebSocketMessage) {
+  function addMessage(message: WebSocketMessage) {
     const chatMessage = parseChatMessage(message.payload)
     if (!chatMessage) return
     currentMessages.value.unshift(chatMessage)
   }
 
+  function newMessage(message: WebSocketMessage) {
+    // Messages of another conversation (e.g. if unsubscribing from the previous one failed)
+    if (message.channel && message.channel !== currentConversationId.value) return
+    addMessage(message)
+  }
+
   function confirmMessage(message: WebSocketMessage) {
     const conversationId = currentConversationId?.value
     const pending = conversationId ? pendingMessages.value[conversationId] : undefined
-    // Not pending in the open channel (e.g. the ack arrived after changing channel):
-    // nothing to do, the message is loaded with the history when that channel is opened
+    // Not pending in the open conversation (e.g. the ack arrived after changing conversation):
+    // nothing to do, the message is loaded with the history when that conversation is opened
     if (!pending || !message.replyTo || !pending[message.replyTo]) return
 
     delete pending[message.replyTo]
-    newMessage(message)
+    // Already checked that it belongs to the open conversation
+    addMessage(message)
   }
 
   async function unsubscribeFromConversation(conversationId: string | undefined) {
     if (conversationId) {
       await wsMessageService.unsubscribe(conversationId)
     }
+  }
+
+  // Makes any request that is still loading for the open conversation be ignored
+  function cancelLoading() {
+    selection++
   }
 
   async function selectConversation(conversationId: string) {
@@ -66,7 +80,7 @@ export const conversationStore = defineStore('conversation', () => {
     }
 
     const pageResult = await ChatMessageService.getMessagesByConversationId(conversationId)
-    // Another channel (or server) was selected while loading: keep that one
+    // Another conversation (or server) was selected while loading: keep that one
     if (currentSelection !== selection) return
 
     lastPage.value = pageResult
@@ -89,7 +103,7 @@ export const conversationStore = defineStore('conversation', () => {
       lastPage.value.next,
       lastPage.value.pageSize
     )
-    // The channel changed while loading: these messages belong to the previous one
+    // The conversation changed while loading: these messages belong to the previous one
     if (currentSelection !== selection) return
 
     lastPage.value = pageResult
@@ -112,11 +126,25 @@ export const conversationStore = defineStore('conversation', () => {
     }
   }
 
+  // Leaves the open conversation (e.g. when changing server): stops loading it,
+  // clears its messages and unsubscribes from it
+  function closeConversation() {
+    const conversationId = currentConversationId.value
+    cancelLoading()
+    clearConversation()
+    currentConversationId.value = ''
+    if (!conversationId) return
+    try {
+      wsMessageService.unsubscribe(conversationId)
+    } catch {
+      // The socket is not connected: there is no subscription to remove
+    }
+  }
+
   return {
     lastPage,
     currentMessages,
     pendingMessages,
-    selection,
     currentConversationId,
     addPendingMessage,
     confirmMessage,
@@ -124,6 +152,8 @@ export const conversationStore = defineStore('conversation', () => {
     setCurrentMessages,
     getNextMessages,
     clearConversation,
+    closeConversation,
+    cancelLoading,
     selectConversation,
   }
 })

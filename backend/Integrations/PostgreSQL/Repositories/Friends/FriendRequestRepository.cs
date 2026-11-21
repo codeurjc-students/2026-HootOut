@@ -26,7 +26,7 @@ namespace HootOut.PostgreSQL.Repositories.Friends
         {
             { "createdat", """m."CreatedAt" """ },
             { "status", """ m."Status" """ },
-            { "invitedBy", """ lower(u."Username") COLLATE "es-x-icu" """ },
+            { "invitedby", """ lower(u."Username") COLLATE "es-x-icu" """ },
         };
 
         private Dictionary<string, string> sentFriendRequestsSortColumns = new()
@@ -48,6 +48,22 @@ namespace HootOut.PostgreSQL.Repositories.Friends
                new { Id = friendRequestId },
             cancellationToken: ct)))
             .FirstOrDefault();
+        }
+
+        public async Task<FriendRequest?> GetPendingFriendRequestAsync(Guid userA, Guid userB, CancellationToken ct)
+        {
+            await using var conn = await provider.OpenConnectionAsync(ct);
+
+            return await conn.QuerySingleOrDefaultAsync<FriendRequest?>(new CommandDefinition($"""
+        SELECT
+            {friendRequestColumns}
+        FROM "HootOut"."FriendRequest" m
+        WHERE LEAST(m."InvitedBy", m."UserId") = LEAST(@UserA, @UserB)
+          AND GREATEST(m."InvitedBy", m."UserId") = GREATEST(@UserA, @UserB)
+          AND m."Status" = @Pending
+        """,
+                new { UserA = userA, UserB = userB, Pending = InvitationStatus.Pending },
+                cancellationToken: ct));
         }
 
         public async Task<PageResult<FriendRequestDto>> GetReceivedFriendRequestsAsync(PageRequest request, Guid userId, CancellationToken ct)

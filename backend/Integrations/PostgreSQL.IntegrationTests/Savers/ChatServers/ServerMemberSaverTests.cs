@@ -1,4 +1,4 @@
-﻿using Autofac;
+using Autofac;
 using Dapper;
 using FluentAssertions;
 using HootOut.ChatServers.Entities;
@@ -19,6 +19,8 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         private readonly IContainer container;
 
         private readonly ClearAllTables clearTables;
+
+        private UserInfo owner = null!;
 
         private readonly ISaver<ServerMember> saver;
 
@@ -54,6 +56,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         public async ValueTask InitializeAsync()
         {
             await clearTables.ClearTablesAsync();
+            owner = await CreateOwnerAsync();
         }
 
         public async ValueTask DisposeAsync()
@@ -67,7 +70,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
             var user = await CreateUserAsync("user1", ct);
-            var server = await CreateServerAsync(user.Id, ct);
+            var server = await CreateServerAsync(ct);
             var member = BuildMember(server.Id, user.Id);
 
             await saver.SaveAsync(member, ct);
@@ -89,8 +92,8 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
             var user = await CreateUserAsync("user1", ct);
-            var server = await CreateServerAsync(user.Id, ct);
-            var otherServer = await CreateServerAsync(user.Id, ct);
+            var server = await CreateServerAsync(ct);
+            var otherServer = await CreateServerAsync(ct);
 
             await saver.SaveAsync(BuildMember(server.Id, user.Id), ct);
             await saver.SaveAsync(BuildMember(otherServer.Id, user.Id), ct);
@@ -103,7 +106,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
             var user = await CreateUserAsync("user1", ct);
-            var server = await CreateServerAsync(user.Id, ct);
+            var server = await CreateServerAsync(ct);
             await saver.SaveAsync(BuildMember(server.Id, user.Id), ct);
 
             var duplicate = BuildMember(server.Id, user.Id);
@@ -122,7 +125,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
             var user = await CreateUserAsync("user1", ct);
-            var server = await CreateServerAsync(user.Id, ct);
+            var server = await CreateServerAsync(ct);
             var first = BuildMember(server.Id, user.Id);
             await saver.SaveAsync(first, ct);
             await MarkAsDeletedAsync(first.Id, ct);
@@ -155,8 +158,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         public async Task SaveAsync_NotExistingUser_ThrowsWrappedForeignKeyViolation()
         {
             var ct = TestContext.Current.CancellationToken;
-            var user = await CreateUserAsync("user1", ct);
-            var server = await CreateServerAsync(user.Id, ct);
+            var server = await CreateServerAsync(ct);
             var member = BuildMember(server.Id, Guid.NewGuid());
 
             var act = () => saver.SaveAsync(member, ct);
@@ -172,7 +174,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
             var user = await CreateUserAsync("user1", ct);
-            var server = await CreateServerAsync(user.Id, ct);
+            var server = await CreateServerAsync(ct);
             var member = BuildMember(server.Id, user.Id);
             member.InvitationId = Guid.NewGuid();
 
@@ -189,7 +191,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
             var user = await CreateUserAsync("user1", ct);
-            var server = await CreateServerAsync(user.Id, ct);
+            var server = await CreateServerAsync(ct);
             var member = BuildMember(server.Id, user.Id);
             using var cts = new CancellationTokenSource();
             await cts.CancelAsync();
@@ -211,12 +213,12 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
             return user;
         }
 
-        private async Task<ChatServer> CreateServerAsync(Guid userId, CancellationToken ct)
+        private async Task<ChatServer> CreateServerAsync(CancellationToken ct)
         {
             var server = Persistable.CreateNew<ChatServer>();
             server.Name = $"server-{server.Id}";
             server.Description = "Test server";
-            server.OwnerId = userId;
+            server.OwnerId = owner.Id;
             await serverSaver.SaveAsync(server, ct);
             return server;
         }
@@ -271,6 +273,19 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
             public bool Deleted { get; set; }
             public DateTime CreatedAt { get; set; }
             public DateTime ModifiedAt { get; set; }
+        }
+
+        /// <summary>
+        /// ChatServer.OwnerId and MediaFile.OwnerId have a foreign key to UserInfo, so every test gets an existing owner.
+        /// </summary>
+        private async Task<UserInfo> CreateOwnerAsync()
+        {
+            var user = Persistable.CreateNew<UserInfo>();
+            user.Username = $"owner-{user.Id}";
+            user.Email = $"owner-{user.Id}@test.com";
+            user.Password = "hash-owner";
+            await userSaver.SaveAsync(user, TestContext.Current.CancellationToken);
+            return user;
         }
     }
 }

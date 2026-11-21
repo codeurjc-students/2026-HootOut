@@ -107,7 +107,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             await chatMessageService.CreateChatMessageAsync(
                 new CreateChatMessageRequest
                 {
-                    ChatchatConversationId = channel.ChatConversationId,
+                    ChatConversationId = channel.ChatConversationId,
                     AuthorId = authorId,
                     Content = content
                 }, ct);

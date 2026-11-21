@@ -1,7 +1,4 @@
-﻿using HootOut.ChatServers.Services;
-using HootOut.Contracts.ChatServers.Dtos;
-using HootOut.Contracts.ChatServers.Requests;
-using HootOut.Contracts.Common;
+﻿using HootOut.Contracts.Common;
 using HootOut.Contracts.Friends.Dtos;
 using HootOut.Contracts.Friends.Requests;
 using HootOut.Contracts.Friends.Services;

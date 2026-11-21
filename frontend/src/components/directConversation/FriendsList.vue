@@ -1,25 +1,19 @@
 <script setup lang="ts">
   import FriendsService from '@/services/friendsService/FriendsService'
-  import { conversationStore } from '@/stores/conversation'
-  import type { UserInfo } from '@/types'
-  import { storeToRefs } from 'pinia'
-  import { onMounted, ref } from 'vue'
+  import type { FriendRelation } from '@/types'
+  import { ref } from 'vue'
   import InfiniteScrollList from '../shared/infiniteScroll/InfiniteScrollList.vue'
 
-  const friends = ref<UserInfo[]>([])
+  const friends = ref<FriendRelation[]>([])
 
-  const conversation = conversationStore()
-  const { currentConversationId } = storeToRefs(conversation)
-
-  onMounted(async () => {
-    friends.value = []
-  })
-
-  async function getFriendsList(next: string | null) {
+  // Each page is added after the ones already loaded
+  async function getFriendsList(next: string | null): Promise<string | null> {
     const page = await FriendsService.getUserFriends({ next })
-    friends.value = page.items
-    return page?.next
+    friends.value.push(...page.items)
+    return page.next ?? null
   }
+
+  const asFriendRelation = (item: unknown) => item as FriendRelation
 </script>
 
 <template>
@@ -28,17 +22,12 @@
       <RouterLink
         :to="{
           name: 'directConversation',
-          params: { chatConversationId: (item as any).chatConversationId },
+          params: { chatConversationId: asFriendRelation(item).chatConversationId },
         }"
         class="pointer flex items-center justify-between px-4 py-2 border-bottom-1 hover:background-light"
-        :class="{
-          'background-light': currentConversationId == (item as any).chatConversationId,
-        }"
-        :key="(item as any).id"
-        :aria-label="(item as any).friend.username"
         active-class="background-light"
       >
-        {{ (item as any).friend.username }}
+        {{ asFriendRelation(item).friend.username }}
       </RouterLink>
     </template>
   </InfiniteScrollList>

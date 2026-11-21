@@ -27,18 +27,36 @@ then
 		"Deleted" boolean NOT NULL DEFAULT false,
 		"CreatedAt" timestamptz  NOT NULL,
 		"ModifiedAt" timestamptz NOT NULL,
-		CONSTRAINT fk_chat_message_attachment_message FOREIGN KEY ("MessageId") REFERENCES "HootOut"."ChatMessage" ("Id"),
-		CONSTRAINT fk_chat_message_attachment_media_file FOREIGN KEY ("MediaFileId") REFERENCES "HootOut"."MediaFile" ("Id")
+		CONSTRAINT fk_chat_message_attachment_message
+			FOREIGN KEY ("MessageId") REFERENCES "HootOut"."ChatMessage" ("Id"),
+		CONSTRAINT fk_chat_message_attachment_media_file
+			FOREIGN KEY ("MediaFileId") REFERENCES "HootOut"."MediaFile" ("Id")
 	);
 
-end if; 
+end if;
+
+-- Databases created before the foreign keys existed
+if NOT EXISTS (SELECT 1 FROM pg_constraint
+				WHERE conname = 'fk_chat_message_attachment_message')
+then
+	ALTER TABLE "HootOut"."ChatMessageAttachment"
+		ADD CONSTRAINT fk_chat_message_attachment_message
+		FOREIGN KEY ("MessageId") REFERENCES "HootOut"."ChatMessage" ("Id");
+end if;
+
+if NOT EXISTS (SELECT 1 FROM pg_constraint
+				WHERE conname = 'fk_chat_message_attachment_media_file')
+then
+	ALTER TABLE "HootOut"."ChatMessageAttachment"
+		ADD CONSTRAINT fk_chat_message_attachment_media_file
+		FOREIGN KEY ("MediaFileId") REFERENCES "HootOut"."MediaFile" ("Id");
+end if;
 
 CREATE INDEX IF NOT EXISTS ix_chat_message_attachment_message
 ON "HootOut"."ChatMessageAttachment" ("MessageId")
 WHERE "Deleted" = false;
 
 CREATE INDEX IF NOT EXISTS ix_chat_message_attachment_media_file
-ON "HootOut"."ChatMessageAttachment" ("MediaFileId")
-WHERE "Deleted" = false;
+ON "HootOut"."ChatMessageAttachment" ("MediaFileId");
 
 end $$;

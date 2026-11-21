@@ -10,5 +10,6 @@ namespace HootOut.Friends.Repositories
         Task<PageResult<FriendRequestDto>> GetSentFriendRequestsAsync(PageRequest request, Guid userId, CancellationToken ct);
         Task<FriendRequest?> GetFriendRequestByIdAsync(Guid invitationId, CancellationToken ct);
         Task<Guid?> AcceptFriendRequestAsync(FriendRequest friendRequest, CancellationToken ct = default);
+        Task<FriendRequest?> GetPendingFriendRequestAsync(Guid userA, Guid userB, CancellationToken ct);
     }
 }

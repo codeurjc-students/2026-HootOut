@@ -922,7 +922,158 @@ namespace HootOut.ChatServers.IntegrationTests.Services
 
         }
 
-        /* Pending revoked edge test cases*/
+        [Fact]
+        public async Task InviteUserToAServer_MemberRevokesAcceptedInvitation_Invalid()
+        {
+            var ct = TestContext.Current.CancellationToken;
+
+            var username1 = "Username 1";
+            Guid userId = await CreateUserAsync(ct, username1);
+
+            var username2 = "Username 2";
+            Guid userId2 = await CreateUserAsync(ct, username2);
+            var server = await chatServerService.CreateChatServerAsync(new CreateChatServerRequest { Name = "test1" }, userId, ct);
+
+            // Invite member
+            var invitation = await chatServerService.InviteMemberAsync(
+                new InviteServerMemberRequest
+                {
+                    ChatServerId = server.Id,
+                    Username = username2,
+                }, userId, ct);
+
+            // Accepts Invitation
+            await chatServerService.UpdateServerInvitationAsync(
+                new UpdateServerInvitationRequest
+                {
+                    Id = invitation.Id,
+                    Status = InvitationStatus.Accepted
+                }, userId2, ct);
+
+            // Revokes accepted invitation
+            await Assert.ThrowsAsync<ValidationException>(async () => await chatServerService.UpdateServerInvitationAsync(
+                new UpdateServerInvitationRequest
+                {
+                    Id = invitation.Id,
+                    Status = InvitationStatus.Revoked
+                }, userId, ct));
+
+            // Validates Invitation is still accepted and user 2 is still a member
+            await ValidateServerInvitationAcceptedAsync(memberRepository, invitationRepository, invitation, userId, userId2, server.Id, ct);
+        }
+
+        [Fact]
+        public async Task InviteUserToAServer_MemberRevokesRejectedInvitation_Invalid()
+        {
+            var ct = TestContext.Current.CancellationToken;
+
+            var username1 = "Username 1";
+            Guid userId = await CreateUserAsync(ct, username1);
+
+            var username2 = "Username 2";
+            Guid userId2 = await CreateUserAsync(ct, username2);
+            var server = await chatServerService.CreateChatServerAsync(new CreateChatServerRequest { Name = "test1" }, userId, ct);
+
+            // Invite member
+            var invitation = await chatServerService.InviteMemberAsync(
+                new InviteServerMemberRequest
+                {
+                    ChatServerId = server.Id,
+                    Username = username2,
+                }, userId, ct);
+
+            // Rejects Invitation
+            await chatServerService.UpdateServerInvitationAsync(
+                new UpdateServerInvitationRequest
+                {
+                    Id = invitation.Id,
+                    Status = InvitationStatus.Rejected
+                }, userId2, ct);
+
+            // Revokes rejected invitation
+            await Assert.ThrowsAsync<ValidationException>(async () => await chatServerService.UpdateServerInvitationAsync(
+                new UpdateServerInvitationRequest
+                {
+                    Id = invitation.Id,
+                    Status = InvitationStatus.Revoked
+                }, userId, ct));
+
+            await ValidateServerInvitationRejectedAsync(memberRepository, invitationRepository, invitation, userId, userId2, server.Id, ct);
+        }
+
+        [Fact]
+        public async Task InviteUserToAServer_MemberRevokesTwice_Invalid()
+        {
+            var ct = TestContext.Current.CancellationToken;
+
+            var username1 = "Username 1";
+            Guid userId = await CreateUserAsync(ct, username1);
+
+            var username2 = "Username 2";
+            Guid userId2 = await CreateUserAsync(ct, username2);
+            var server = await chatServerService.CreateChatServerAsync(new CreateChatServerRequest { Name = "test1" }, userId, ct);
+
+            var invitation = await chatServerService.InviteMemberAsync(
+                new InviteServerMemberRequest
+                {
+                    ChatServerId = server.Id,
+                    Username = username2,
+                }, userId, ct);
+
+            await chatServerService.UpdateServerInvitationAsync(
+                new UpdateServerInvitationRequest
+                {
+                    Id = invitation.Id,
+                    Status = InvitationStatus.Revoked
+                }, userId, ct);
+
+            await Assert.ThrowsAsync<ValidationException>(async () => await chatServerService.UpdateServerInvitationAsync(
+                new UpdateServerInvitationRequest
+                {
+                    Id = invitation.Id,
+                    Status = InvitationStatus.Revoked
+                }, userId, ct));
+
+            await ValidateServerInvitationRevokedAsync(memberRepository, invitationRepository, invitation, userId, userId2, server.Id, ct);
+        }
+
+        [Fact]
+        public async Task InviteUserToAServer_UserAcceptsRevokedInvitation_Invalid()
+        {
+            var ct = TestContext.Current.CancellationToken;
+
+            var username1 = "Username 1";
+            Guid userId = await CreateUserAsync(ct, username1);
+
+            var username2 = "Username 2";
+            Guid userId2 = await CreateUserAsync(ct, username2);
+            var server = await chatServerService.CreateChatServerAsync(new CreateChatServerRequest { Name = "test1" }, userId, ct);
+
+            var invitation = await chatServerService.InviteMemberAsync(
+                new InviteServerMemberRequest
+                {
+                    ChatServerId = server.Id,
+                    Username = username2,
+                }, userId, ct);
+
+            await chatServerService.UpdateServerInvitationAsync(
+                new UpdateServerInvitationRequest
+                {
+                    Id = invitation.Id,
+                    Status = InvitationStatus.Revoked
+                }, userId, ct);
+
+            await Assert.ThrowsAsync<ValidationException>(async () => await chatServerService.UpdateServerInvitationAsync(
+                new UpdateServerInvitationRequest
+                {
+                    Id = invitation.Id,
+                    Status = InvitationStatus.Accepted
+                }, userId2, ct));
+
+            await ValidateServerInvitationRevokedAsync(memberRepository, invitationRepository, invitation, userId, userId2, server.Id, ct);
+            (await chatServerService.GetServerDtosByUserIdAsync(new PageRequest(), userId2, ct)).Items.Should().BeEmpty();
+        }
+
 
         private static async Task ValidateServerInvitationAcceptedAsync(IServerMemberRepository memberRepository, IServerInvitationRepository invitationRepository, ServerInvitationDto invitation, Guid invitedBy, Guid userId, Guid serverId, CancellationToken ct)
         {

@@ -75,8 +75,8 @@
   <Modal title="Update Channel" ref="update-channel-form-modal">
     <template v-slot:body>
       <UpdateChannelForm
-        :channel="channelToEdit"
-        :server="currentServer"
+        :channel="channelToEdit!"
+        :server="currentServer!"
         @success="onUpdatedChannelSuccess"
         @deleted="onChannelDeleted"
       />
