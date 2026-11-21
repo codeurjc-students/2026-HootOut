@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
-import { WebSocketMessageService } from '@/services/common/websocketsMesage/WebSocketsMessageService'
+import { WebSocketMessageService } from '@/services/common/websocketsMessage/WebSocketsMessageService'
 import type { WebSocketHandlers } from '@/services/common/websockets/WebSocketService'
 import { WSMessageType, type ChatChannel, type WebSocketMessage } from '@/types'
 
@@ -557,7 +557,7 @@ describe('WebSocketMessageService', () => {
     // so each test loads a fresh copy of the module
     beforeEach(async () => {
       vi.resetModules()
-      const module = await import('@/services/common/websocketsMesage/WebSocketsMessageService')
+      const module = await import('@/services/common/websocketsMessage/WebSocketsMessageService')
       wsMessageService = module.default
       await connectService(wsMessageService)
       firstConnection = handlers()

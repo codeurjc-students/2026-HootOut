@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import GoBackLink from '@/components/shared/GoBackLink.vue'
   import PaginatedTable from '@/components/shared/table/PaginatedTable.vue'
-  import router from '@/router'
   import { dateTimeMapper } from '@/services/common/utils'
   import FriendsService from '@/services/friendsService/FriendsService'
   import {
@@ -21,19 +20,22 @@
     return await FriendsService.getReceivedFriendRequests(request)
   }
 
-  // Ids of the invitations being revoked, to disable their button and ignore double clicks
-  const revoking = ref(new Set<string>())
+  // Ids of the friend requests being updated, to disable their buttons and ignore double clicks
+  const updating = ref(new Set<string>())
 
-  async function updateFriendRequest(friendRequest: any, status: InvitationStatus) {
-    await FriendsService.updateFriendRequest({
-      id: friendRequest.id,
-      status: status,
-    })
+  // The friends list loads again when the direct messages view is opened: no reload needed
+  async function updateFriendRequest(friendRequest: { id: string }, status: InvitationStatus) {
+    if (updating.value.has(friendRequest.id)) return
 
-    if (status == InvitationStatus.Accepted) {
-      router.go(0)
-    } else {
-      await table.value?.getPage(0)
+    updating.value.add(friendRequest.id)
+    try {
+      await FriendsService.updateFriendRequest({ id: friendRequest.id, status })
+      // Reloads the current page with the table's own loading state and error handling
+      await table.value?.refresh()
+    } catch (err) {
+      // TODO: show the error to the user. The friend request stays as it was.
+    } finally {
+      updating.value.delete(friendRequest.id)
     }
   }
 </script>
@@ -43,7 +45,6 @@
     <GoBackLink class="p-2 text-sm font-semibold" :to="{ name: 'friendRequests' }">
       Received Friend Requests:
     </GoBackLink>
-    <h2 class="px-4 pt-0 pb-2 text-sm font-semibold md:hidden">Received Friend Requests</h2>
 
     <h1 class="mb-4 hidden text-2xl md:block">Received Friend Requests:</h1>
     <div class="h-[80%] max-h-[80%]">
@@ -62,12 +63,14 @@
           <div class="flex justify-center gap-2">
             <button
               class="pointer button-action py-1!"
+              :disabled="updating.has(row.id)"
               @click="async () => await updateFriendRequest(row, InvitationStatus.Accepted)"
             >
               Accept
             </button>
             <button
               class="pointer button-action py-1!"
+              :disabled="updating.has(row.id)"
               @click="async () => await updateFriendRequest(row, InvitationStatus.Rejected)"
             >
               Reject

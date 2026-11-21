@@ -59,7 +59,7 @@ namespace HootOut.ChatChannels.Services
             ChatChannel? channel = await search.GetChannelByIdAsync(channelId, ct); // TO-DO Check 
             if (channel == null)
             {
-                throw new ValidationException(new[] { new ValidationFailure("channel", "Channel not found") });
+                throw new ValidationException(new[] { new ValidationFailure("Channel", "Channel not found") });
             }
 
             await saver.DeleteAsync(channel, ct);

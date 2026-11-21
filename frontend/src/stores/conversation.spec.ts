@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@/services/chatMessage/ChatMessageService', () => ({ default: mocks.messageService }))
-vi.mock('@/services/common/websocketsMesage/WebSocketsMessageService', () => ({
+vi.mock('@/services/common/websocketsMessage/WebSocketsMessageService', () => ({
   default: mocks.ws,
 }))
 
@@ -328,6 +328,48 @@ describe('conversationStore', () => {
         store.confirmMessage(wsMessage(chatMessage('saved-1'), { replyTo: 'ack-1' }))
       ).not.toThrow()
       expect(store.currentMessages).toEqual([])
+    })
+    // Tests for removePendingMessage(), to paste at the end of describe('pending messages', ...)
+    // in src/stores/__tests__/conversation.test.ts. They use the helpers that file already has:
+    // storeWithConversation(), chatMessage(), page() and messageService.
+
+    it('removes a pending message without adding it to the messages', async () => {
+      const store = await storeWithConversation('conv-1', [chatMessage('m1')])
+      store.addPendingMessage('ack-1', chatMessage('p1'))
+      store.addPendingMessage('ack-2', chatMessage('p2'))
+
+      store.removePendingMessage('ack-1')
+
+      expect(store.pendingMessages['conv-1']).toEqual({ 'ack-2': chatMessage('p2') })
+      expect(store.currentMessages).toEqual([chatMessage('m1')])
+    })
+
+    it('ignores the removal of a message that is not pending', async () => {
+      const store = await storeWithConversation('conv-1')
+      store.addPendingMessage('ack-1', chatMessage('p1'))
+
+      store.removePendingMessage('unknown')
+
+      expect(store.pendingMessages['conv-1']).toEqual({ 'ack-1': chatMessage('p1') })
+    })
+
+    it('does not remove a pending message of another conversation', async () => {
+      const store = await storeWithConversation('conv-1')
+      store.addPendingMessage('ack-1', chatMessage('p1'))
+      messageService.getMessagesByConversationId.mockResolvedValueOnce(page([]))
+      await store.selectConversation('conv-2')
+      store.pendingMessages['conv-1'] = { 'ack-1': chatMessage('p1') }
+
+      store.removePendingMessage('ack-1')
+
+      expect(store.pendingMessages['conv-1']).toEqual({ 'ack-1': chatMessage('p1') })
+    })
+
+    it('ignores the removal when no conversation is open', () => {
+      const store = conversationStore()
+
+      expect(() => store.removePendingMessage('ack-1')).not.toThrow()
+      expect(store.pendingMessages).toEqual({})
     })
   })
 

@@ -2,7 +2,7 @@
   import ChatConversationView from '@/components/chat/ChatConversationView.vue'
   import ChatSideBar from '@/components/chat/ChatSideBar.vue'
   import FriendsBar from '@/components/directConversation/FriendsBar.vue'
-  import wsMessageService from '@/services/common/websocketsMesage/WebSocketsMessageService'
+  import wsMessageService from '@/services/common/websocketsMessage/WebSocketsMessageService'
   import { conversationStore } from '@/stores/conversation'
   import { storeToRefs } from 'pinia'
   import { onMounted, ref, watch } from 'vue'

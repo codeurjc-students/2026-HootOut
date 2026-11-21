@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-import wsMessageService from '@/services/common/websocketsMesage/WebSocketsMessageService'
+import wsMessageService from '@/services/common/websocketsMessage/WebSocketsMessageService'
 import ChatMessageService from '@/services/chatMessage/ChatMessageService'
 import type { ChatMessage, PageResult, WebSocketMessage } from '@/types'
 import { ref } from 'vue'
@@ -118,6 +118,13 @@ export const conversationStore = defineStore('conversation', () => {
     ;(pendingMessages.value[conversationId] ??= {})[id] = chatMessage
   }
 
+  // Removes a pending message of the open conversation (e.g. when sending it failed)
+  function removePendingMessage(id: string) {
+    const conversationId = currentConversationId?.value
+    const pending = conversationId ? pendingMessages.value[conversationId] : undefined
+    if (pending) delete pending[id]
+  }
+
   function clearConversation() {
     currentMessages.value = []
     lastPage.value = { items: [], next: null, pageSize: 10, total: -1 }
@@ -147,6 +154,7 @@ export const conversationStore = defineStore('conversation', () => {
     pendingMessages,
     currentConversationId,
     addPendingMessage,
+    removePendingMessage,
     confirmMessage,
     newMessage,
     setCurrentMessages,

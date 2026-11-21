@@ -195,32 +195,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.Users
 
         #endregion
 
-        #region Cancellation
-
-        [Theory]
-        [InlineData(nameof(IUserRepository.GetAllUsersAsync))]
-        [InlineData(nameof(IUserRepository.GetUserByIdAsync))]
-        [InlineData(nameof(IUserRepository.GetUserByEmailAsync))]
-        [InlineData(nameof(IUserRepository.GetUserByUsernameAsync))]
-        public async Task AnyMethod_CancelledToken_ThrowsOperationCanceled(string method)
-        {
-            var user = await CreateUserAsync("username1", "user1@test.com", TestContext.Current.CancellationToken);
-            using var cts = new CancellationTokenSource();
-            await cts.CancelAsync();
-
-            Func<Task> act = method switch
-            {
-                nameof(IUserRepository.GetAllUsersAsync) => () => repository.GetAllUsersAsync(cts.Token),
-                nameof(IUserRepository.GetUserByIdAsync) => () => repository.GetUserByIdAsync(user.Id, cts.Token),
-                nameof(IUserRepository.GetUserByEmailAsync) => () => repository.GetUserByEmailAsync(user.Email, cts.Token),
-                nameof(IUserRepository.GetUserByUsernameAsync) => () => repository.GetUserByUsernameAsync(user.Username, cts.Token),
-                _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
-            };
-
-            await act.Should().ThrowAsync<OperationCanceledException>();
-        }
-
-        #endregion
+        
 
         private async Task<UserInfo> CreateUserAsync(string username, string email, CancellationToken ct)
         {

@@ -6,7 +6,7 @@
 
   const { backLink, chatName } = defineProps<{
     backLink: RouteLocationRaw
-    chatName: String | undefined
+    chatName: string | undefined
   }>()
 </script>
 

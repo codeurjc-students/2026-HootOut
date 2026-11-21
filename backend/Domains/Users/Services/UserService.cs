@@ -39,7 +39,7 @@ namespace HootOut.Users.Services
         {
             if (Guid.Empty == id)
             {
-                throw new ValidationException(new[] { new ValidationFailure("userId", "Invalid Request") });
+                throw new ValidationException(new[] { new ValidationFailure("UserId", "Invalid Request") });
             }
 
             return (await userRepository.GetUserByIdAsync(id, ct))?.ToDto();
@@ -49,7 +49,7 @@ namespace HootOut.Users.Services
         {
             if (string.IsNullOrEmpty(username))
             {
-                throw new ValidationException(new[] { new ValidationFailure("username", "username cannot be empty") });
+                throw new ValidationException(new[] { new ValidationFailure("Username", "username cannot be empty") });
             }
 
             return (await userRepository.GetUserByUsernameAsync(username, ct))?.ToDto();

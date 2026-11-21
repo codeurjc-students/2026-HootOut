@@ -1,13 +1,13 @@
 <script setup lang="ts">
   import FilePreviewList from '@/components/shared/filePreview/FilePreviewList.vue'
-  import wsMessageService from '@/services/common/websocketsMesage/WebSocketsMessageService'
+  import wsMessageService from '@/services/common/websocketsMessage/WebSocketsMessageService'
   import MediaFileService from '@/services/mediaFile/MediaFileService'
   import { conversationStore } from '@/stores/conversation'
   import type { ChatMessage, MessageAttachment } from '@/types'
-  import { ref } from 'vue'
+  import { computed, ref } from 'vue'
 
   const { chatName } = defineProps<{
-    chatName: String
+    chatName: string
   }>()
 
   const conversation = conversationStore()
@@ -15,53 +15,76 @@
   const message = ref('')
   const fileInput = ref<HTMLInputElement>()
   const attachments = ref<MessageAttachment[]>([])
+  const uploading = ref(false)
+
+  const canSend = computed(
+    () => !uploading.value && (message.value.trim() !== '' || attachments.value.length > 0)
+  )
 
   async function sendMessage() {
-    if (!message.value && attachments.value.length == 0) return
-    const chatMessage: ChatMessage = {
-      content: message.value,
-      attachments: attachments.value.flatMap(
-        (x) => <MessageAttachment>{ mediaFileId: x.mediaFileId }
-      ),
-    } as ChatMessage
+    const conversationId = conversation.currentConversationId
+    if (!conversationId || !canSend.value) return
+
+    // The input is emptied at once, so the user can keep writing while the message is sent
+    const content = message.value.trim()
+    const sentAttachments = attachments.value
     message.value = ''
-    if (!conversation.currentConversationId) return
+    attachments.value = []
 
-    const ackPromise = await wsMessageService.sendMessage(
-      conversation.currentConversationId,
-      chatMessage
-    )
-    chatMessage.createdAt = new Date().toISOString()
-    conversation.addPendingMessage(ackPromise.id, chatMessage)
+    const chatMessage = {
+      content,
+      attachments: sentAttachments.map((x) => ({ mediaFileId: x.mediaFileId })),
+    } as ChatMessage
 
-    const wsMessage = await ackPromise.promise
-    conversation.confirmMessage(wsMessage)
+    let ackId: string | undefined
+    try {
+      const ack = wsMessageService.sendMessage(conversationId, chatMessage)
+      ackId = ack.id
+      // Shown as pending, with the time it was sent, until the ack arrives
+      conversation.addPendingMessage(ack.id, {
+        ...chatMessage,
+        createdAt: new Date().toISOString(),
+      })
 
-    attachments.value.length = 0
+      conversation.confirmMessage(await ack.promise)
+    } catch (err) {
+      // Not sent: the message goes back to the input so it can be sent again
+      if (ackId) conversation.removePendingMessage(ackId)
+      if (message.value === '') message.value = content
+      attachments.value = [...sentAttachments, ...attachments.value]
+    }
   }
 
-  async function selectFile() {
-    fileInput?.value?.click()
+  function selectFile() {
+    fileInput.value?.click()
   }
 
   async function uploadFile() {
-    const files = fileInput.value?.files
-    if (!files || files.length == 0) {
-      return
-    }
+    const input = fileInput.value
+    const file = input?.files?.item(0)
+    if (!input || !file) return
 
-    const response = await MediaFileService.uploadFile(files.item(0))
-    if (response)
-      attachments.value?.push({
-        mediaFileId: response.id,
-        contentType: response.contentType,
-        url: response.url,
-        fileName: response.fileName,
-      })
+    uploading.value = true
+    try {
+      const response = await MediaFileService.uploadFile(file)
+      if (response)
+        attachments.value.push({
+          mediaFileId: response.id,
+          contentType: response.contentType,
+          url: response.url,
+          fileName: response.fileName,
+        })
+    } catch (err) {
+      // TODO: show the error to the user
+    } finally {
+      uploading.value = false
+      // Lets the same file be selected again
+      input.value = ''
+    }
   }
 
   function removeFile(file: MessageAttachment) {
-    attachments.value = attachments.value?.filter((x) => x.mediaFileId != file.mediaFileId)
+    attachments.value = attachments.value.filter((x) => x.mediaFileId != file.mediaFileId)
   }
 </script>
 
@@ -78,7 +101,15 @@
         class="max-width-full m-0 flex h-12 items-center rounded-[10px] border-1 background-primary p-3 md:mx-auto md:max-w-[80%]"
       >
         <div id="message-box-icons" class="flex items-center">
-          <div class="inline-btn material-symbols-sharp pointer" @click="selectFile">add</div>
+          <button
+            type="button"
+            class="inline-btn material-symbols-sharp pointer"
+            aria-label="Attach file"
+            :disabled="uploading"
+            @click="selectFile"
+          >
+            add
+          </button>
           <input id="file-input" ref="fileInput" type="file" hidden @change="uploadFile" />
         </div>
         <input
@@ -91,14 +122,16 @@
           :placeholder="`Write a message to ${chatName}`"
           autocomplete="off"
         />
-        <div
-          class="inline-btn pointer material-symbols-sharp"
+        <button
           type="button"
-          @click="sendMessage"
+          class="inline-btn pointer material-symbols-sharp"
           id="wsmessage-btn"
+          aria-label="Send message"
+          :disabled="!canSend"
+          @click="sendMessage"
         >
           send
-        </div>
+        </button>
       </div>
     </div>
   </div>

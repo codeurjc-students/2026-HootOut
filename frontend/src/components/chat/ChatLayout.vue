@@ -1,47 +1,47 @@
 <script setup lang="ts">
   import ChatSideBar from './ChatSideBar.vue'
-  import { onMounted, ref, watch } from 'vue'
-  import { useRoute } from 'vue-router'
-  import { serverInfoStore } from '@/stores/serverInfo.ts'
+  import { computed, onMounted, watch } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import { serverInfoStore } from '@/stores/serverInfo'
   import ChatLeftBar from './ChatLeftBar.vue'
   import ChatConversationView from './ChatConversationView.vue'
-  import wsMessageService from '@/services/common/websocketsMesage/WebSocketsMessageService.ts'
+  import wsMessageService from '@/services/common/websocketsMessage/WebSocketsMessageService'
   import { storeToRefs } from 'pinia'
 
   const serverInfo = serverInfoStore()
   const { currentChatChannel, currentServer } = storeToRefs(serverInfo)
 
   const route = useRoute()
+  const router = useRouter()
 
   onMounted(async () => {
     await wsMessageService.tryReconnect()
   })
 
-  const mobileClass = ref('view-channels')
+  // On mobile only one side is shown: the channels, or the chat when a channel is open
+  const mobileClass = computed(() => (route.params.channelId ? 'view-chat' : 'view-channels'))
 
+  // The app remounts this component on every route change (RouterView key), so this runs
+  // on mount with the server and the channel of the route
   watch(
     () => route.params.serverId,
-    async (newId, oldId) => {
+    async (newId) => {
       if (newId) {
-        await serverInfo.setCurrentServer(newId as string)
+        try {
+          await serverInfo.setCurrentServer(newId as string)
+        } catch (err) {
+          // The server does not exist or the user cannot open it
+          await router.push({ name: 'chat' })
+          return
+        }
       }
 
       if (route.params.channelId) {
-        await serverInfo.selectChannel(route.params.channelId as string)
-      }
-    },
-    {
-      immediate: true,
-    }
-  )
-
-  watch(
-    () => route.params.channelId,
-    async (newId) => {
-      if (newId) {
-        mobileClass.value = 'view-chat'
-      } else {
-        mobileClass.value = 'view-channels'
+        try {
+          await serverInfo.selectChannel(route.params.channelId as string)
+        } catch (err) {
+          // TODO: show the error to the user (the messages could not be loaded)
+        }
       }
     },
     {
@@ -62,7 +62,7 @@
       :chat-name="currentChatChannel?.name"
       :back-link="{
         name: 'server',
-        params: { serverId: currentServer?.id, channelId: '' },
+        params: { serverId: currentServer?.id },
       }"
     />
   </section>
@@ -78,7 +78,7 @@
     max-height: calc(100vh - var(--navbar-height));
   }
 
-  @media (max-width: 520px) {
+  @media (width < 520px) {
     .chat-layout.view-chat {
       grid-template-columns: 1fr;
     }

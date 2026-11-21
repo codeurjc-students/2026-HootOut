@@ -101,7 +101,7 @@ namespace HootOut.ChatServers.Services
 
             if (invitedUser == null)
             {
-                throw new ValidationException(new[] { new ValidationFailure("username", "Cannot find a user with this username") });
+                throw new ValidationException(new[] { new ValidationFailure("Username", "Cannot find a user with this username") });
             }
 
             await ValidateUserIsAlreadyAMember(request.ChatServerId, invitedUser.Id, ct);
@@ -132,7 +132,7 @@ namespace HootOut.ChatServers.Services
                 case InvitationStatus.Revoked:
                     return await RevokeServerInvitation(request, userId, ct);
                 default:
-                    throw new ValidationException(new[] { new ValidationFailure("status", "Invalid invitation status") });
+                    throw new ValidationException(new[] { new ValidationFailure("Status", "Invalid invitation status") });
             }
         }
 
@@ -146,7 +146,7 @@ namespace HootOut.ChatServers.Services
             var serverId = await serverRepository.GetServerIdByConversationAndUserIdAsync(conversationId, userId, ct);
             if (serverId == null)
             {
-                throw new ValidationException(new[] { new ValidationFailure("message", $"The conversation could not be found {conversationId} {userId}", new { conversationId, userId }) });
+                throw new ValidationException(new[] { new ValidationFailure("Message", $"The conversation could not be found {conversationId} {userId}", new { conversationId, userId }) });
             }
         }
 
@@ -172,12 +172,12 @@ namespace HootOut.ChatServers.Services
 
             if (invitation == null || invitation.Status != InvitationStatus.Pending)
             {
-                throw new ValidationException(new[] { new ValidationFailure("invitation", "Invalid invitation") });
+                throw new ValidationException(new[] { new ValidationFailure("Invitation", "Invalid invitation") });
             }
 
             ServerMember? member = await memberRepository.GetServerMemberAsync(invitation.ChatServerId, userId, ct);
             if (member == null)
-                throw new ValidationException(new[] { new ValidationFailure("member", "User is not a member of the server") });
+                throw new ValidationException(new[] { new ValidationFailure("Member", "User is not a member of the server") });
 
             invitation.Status = InvitationStatus.Revoked;
             await serverInvitationSaver.SaveAsync(invitation, ct);
@@ -191,7 +191,7 @@ namespace HootOut.ChatServers.Services
 
             if (invitation == null || invitation.UserId != userId || invitation.Status != InvitationStatus.Pending)
             {
-                throw new ValidationException(new[] { new ValidationFailure("invitation", "Invalid invitation") });
+                throw new ValidationException(new[] { new ValidationFailure("Invitation", "Invalid invitation") });
             }
 
             await ValidateUserIsAlreadyAMember(invitation.ChatServerId, userId, ct);
@@ -205,7 +205,7 @@ namespace HootOut.ChatServers.Services
             ServerMember? member = await memberRepository.GetServerMemberAsync(serverId, userId, ct);
             if (member == null)
             {
-                throw new ValidationException(new[] { new ValidationFailure("validation", "The user is not a member of the server") });
+                throw new ValidationException(new[] { new ValidationFailure("Validation", "The user is not a member of the server") });
             }
             return;
         }
@@ -214,7 +214,7 @@ namespace HootOut.ChatServers.Services
         {
             ServerMember? member = await memberRepository.GetServerMemberAsync(serverId, userId, ct);
             if (member != null)
-                throw new ValidationException(new[] { new ValidationFailure("member", "User is already a member") });
+                throw new ValidationException(new[] { new ValidationFailure("Member", "User is already a member") });
         }
     }
 }

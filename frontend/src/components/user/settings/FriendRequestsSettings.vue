@@ -5,8 +5,8 @@
 
   const route = useRoute()
 
-  // On mobile only one side is shown: the list on the members page itself,
-  // and the selected view (active members, invitations...) on its child routes
+  // On mobile only one side is shown: the list on the friend requests page itself,
+  // and the selected view (received or sent requests) on its child routes
   const mobileClass = computed(() =>
     route.name == 'friendRequests' ? 'settings-list' : 'settings-view'
   )
@@ -18,7 +18,7 @@
   >
     <div class="border-left-1 members-side-bar flex w-full grow flex-col" :class="mobileClass">
       <GoBackLink class="p-2 text-sm font-semibold" :to="{ name: 'userSettings' }">
-        Server Members:
+        Friend Requests:
       </GoBackLink>
 
       <h2 class="-mt-[1px] hidden p-4 text-xl font-semibold border-bottom-1 md:block">

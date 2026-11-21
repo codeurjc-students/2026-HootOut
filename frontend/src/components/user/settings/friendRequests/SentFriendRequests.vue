@@ -18,10 +18,10 @@
     return await FriendsService.getSentFriendRequests(request)
   }
 
-  // Ids of the invitations being revoked, to disable their button and ignore double clicks
+  // Ids of the friend requests being revoked, to disable their button and ignore double clicks
   const revoking = ref(new Set<string>())
 
-  async function revokeFriendRequest(friendRequest: any) {
+  async function revokeFriendRequest(friendRequest: { id: string }) {
     if (revoking.value.has(friendRequest.id)) return
 
     revoking.value.add(friendRequest.id)
@@ -33,7 +33,7 @@
       // Reloads the current page with the table's own loading state and error handling
       await table.value?.refresh()
     } catch (err) {
-      // TODO: show the error to the user. The invitation stays as it was.
+      // TODO: show the error to the user. The friend request stays as it was.
     } finally {
       revoking.value.delete(friendRequest.id)
     }
@@ -43,9 +43,8 @@
 <template>
   <div class="h-full w-full background-soft p-0 md:border-1 md:p-4">
     <GoBackLink class="p-2 text-sm font-semibold" :to="{ name: 'friendRequests' }">
-      Received Friend Requests:
+      Sent Friend Requests:
     </GoBackLink>
-    <h2 class="px-4 pt-0 pb-2 text-sm font-semibold md:hidden">Sent Friend Requests</h2>
 
     <h1 class="mb-4 hidden text-2xl md:block">Sent Friend Requests:</h1>
     <div class="h-[80%] max-h-[80%]">

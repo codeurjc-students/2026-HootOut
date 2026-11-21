@@ -43,17 +43,17 @@ namespace HootOut.Friends.Services
 
             if (invitedUser == null)
             {
-                throw new ValidationException(new[] { new ValidationFailure("username", "Cannot find a user with this username") });
+                throw new ValidationException(new[] { new ValidationFailure("Username", "Cannot find a user with this username") });
             }
 
             if (invitedUser.Id == userId)
             {
-                throw new ValidationException(new[] { new ValidationFailure("username", "You cannot send a friend request to yourself") });
+                throw new ValidationException(new[] { new ValidationFailure("Username", "You cannot send a friend request to yourself") });
             }
 
             if (await friendRelationRepository.AreFriendsAsync(userId, invitedUser.Id, ct))
             {
-                throw new ValidationException(new[] { new ValidationFailure("username", "You are already friends with this user") });
+                throw new ValidationException(new[] { new ValidationFailure("Username", "You are already friends with this user") });
             }
 
             var pending = await friendRequestRepository.GetPendingFriendRequestAsync(userId, invitedUser.Id, ct);
@@ -61,14 +61,14 @@ namespace HootOut.Friends.Services
             {
                 if (pending.InvitedBy == userId)
                 {
-                    throw new ValidationException(new[] { new ValidationFailure("username", "You already sent a friend request to this user") });
+                    throw new ValidationException(new[] { new ValidationFailure("Username", "You already sent a friend request to this user") });
                 }
 
                 // The other user had already invited this one: accept that request instead of opening a new one
                 var relationId = await friendRequestRepository.AcceptFriendRequestAsync(pending, ct);
                 if (relationId == null)
                 {
-                    throw new ValidationException(new[] { new ValidationFailure("invitation", "Invalid invitation") });
+                    throw new ValidationException(new[] { new ValidationFailure("Invitation", "Invalid invitation") });
                 }
 
                 pending.Status = InvitationStatus.Accepted;
@@ -101,7 +101,7 @@ namespace HootOut.Friends.Services
                 case InvitationStatus.Revoked:
                     return await RevokeFriendRequestAsync(request, userId, ct);
                 default:
-                    throw new ValidationException(new[] { new ValidationFailure("status", "Invalid invitation status") });
+                    throw new ValidationException(new[] { new ValidationFailure("Status", "Invalid invitation status") });
             }
         }
 
@@ -131,7 +131,7 @@ namespace HootOut.Friends.Services
             var directConversationId = await friendRelationRepository.GetDirectConverationByConversationAndUserId(chatConversationId, userId, ct);
             if (directConversationId == null)
             {
-                throw new ValidationException(new[] { new ValidationFailure("message", "The conversation could not be found") });
+                throw new ValidationException(new[] { new ValidationFailure("Message", "The conversation could not be found") });
             }
         }
 
@@ -141,7 +141,7 @@ namespace HootOut.Friends.Services
 
             if (invitation.UserId != userId)
             {
-                throw new ValidationException(new[] { new ValidationFailure("invitation", "You cannot accept this invitation") });
+                throw new ValidationException(new[] { new ValidationFailure("Invitation", "You cannot accept this invitation") });
             }
 
             return await friendRequestRepository.AcceptFriendRequestAsync(invitation, ct);
@@ -153,7 +153,7 @@ namespace HootOut.Friends.Services
 
             if (invitation.UserId != userId)
             {
-                throw new ValidationException(new[] { new ValidationFailure("invitation", "You cannot reject this invitation") });
+                throw new ValidationException(new[] { new ValidationFailure("Invitation", "You cannot reject this invitation") });
             }
 
             invitation.Status = InvitationStatus.Rejected;
@@ -167,7 +167,7 @@ namespace HootOut.Friends.Services
 
             if (invitation.InvitedBy != userId)
             {
-                throw new ValidationException(new[] { new ValidationFailure("invitation", "You cannot revoke this invitation") });
+                throw new ValidationException(new[] { new ValidationFailure("Invitation", "You cannot revoke this invitation") });
             }
 
             invitation.Status = InvitationStatus.Revoked;
@@ -182,7 +182,7 @@ namespace HootOut.Friends.Services
 
             if (invitation == null || invitation.Status != InvitationStatus.Pending)
             {
-                throw new ValidationException(new[] { new ValidationFailure("invitation", "Invalid invitation") });
+                throw new ValidationException(new[] { new ValidationFailure("Invitation", "Invalid invitation") });
             }
 
             return invitation;

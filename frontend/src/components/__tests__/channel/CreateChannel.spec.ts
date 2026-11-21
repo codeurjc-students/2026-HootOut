@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/services/chatChannel/ChatChannelService', () => ({ default: {} }))
 vi.mock('@/services/chatMessage/ChatMessageService', () => ({ default: {} }))
 vi.mock('@/services/chatServer/ChatServerService', () => ({ default: {} }))
-vi.mock('@/services/common/websocketsMesage/WebSocketsMessageService', () => ({
+vi.mock('@/services/common/websocketsMessage/WebSocketsMessageService', () => ({
   default: mocks.ws,
 }))
 

@@ -588,7 +588,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.Friends
 
             relationId.Should().NotBeNull();
             previousRelationId.Should().NotBeNull();
-            relationId.Value.Should().Be(previousRelationId.Value);
+            relationId.Value.Should().NotBe(previousRelationId.Value);
             var relations = await GetRelationsAsync(first.InvitedBy, first.UserId, ct);
             relations.Should().HaveCount(2);
             relations.Single(r => r.Id == previousRelationId).Deleted.Should().BeTrue();

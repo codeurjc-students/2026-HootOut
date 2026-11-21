@@ -4,7 +4,7 @@
   import CreateServerForm from '../server/CreateServerForm.vue'
   import { useTemplateRef } from 'vue'
   import ServerList from '../server/ServerList.vue'
-  import { serverInfoStore } from '@/stores/serverInfo.ts'
+  import { serverInfoStore } from '@/stores/serverInfo'
   import { useRouter } from 'vue-router'
 
   const createServerFormModal = useTemplateRef('create-server-form-modal')
@@ -15,16 +15,16 @@
     createServerFormModal.value?.open()
   }
 
-  async function setCurrentServer(server: ChatServer) {
+  // The chat view loads the server of the route
+  async function goToServer(server: ChatServer) {
     await router.push({ name: 'server', params: { serverId: server.id } })
   }
 
   async function onCreateServerSuccess(server: ChatServer) {
     serverstore.addChatServer(server)
-    serverstore.setCurrentServer(server.id)
     createServerFormModal.value?.close()
 
-    await setCurrentServer(server)
+    await goToServer(server)
   }
 </script>
 
@@ -54,7 +54,13 @@
       id="new-server"
       class="separator relative flex scrollbar-gutter-stable items-center justify-center py-4"
     >
-      <div id="new-server-btn" class="round-btn pointer" @click="openModal"></div>
+      <button
+        id="new-server-btn"
+        type="button"
+        class="round-btn pointer"
+        aria-label="Create server"
+        @click="openModal"
+      ></button>
       <Modal title="Create New Server" ref="create-server-form-modal">
         <template v-slot:body>
           <CreateServerForm @success="onCreateServerSuccess" />

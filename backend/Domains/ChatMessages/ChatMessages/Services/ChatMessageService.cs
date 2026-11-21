@@ -86,7 +86,7 @@ namespace HootOut.ChatMessages.Services
             var conversation = await chatConversationsService.GetChatConversationByIdAsync(request.ChatConversationId, ct);
             if (conversation == null)
             {
-                throw new ValidationException(new[] { new ValidationFailure("conversation", "Conversation cannot be found", request.ChatConversationId) });
+                throw new ValidationException(new[] { new ValidationFailure("Conversation", "Conversation cannot be found", request.ChatConversationId) });
             }
 
             switch (conversation.ConversationType)
@@ -98,7 +98,7 @@ namespace HootOut.ChatMessages.Services
                     await ValidateDirectMessage(request, ct);
                     break;
                 default:
-                    throw new ValidationException(new[] { new ValidationFailure("conversation", "Invalid conversation type") });
+                    throw new ValidationException(new[] { new ValidationFailure("Conversation", "Invalid conversation type") });
             }
         }
 
