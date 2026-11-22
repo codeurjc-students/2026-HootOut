@@ -105,16 +105,46 @@ namespace HootOut.PostgreSQL.Properties {
         ///
         ///end $$; 
         ///
-        ///-- CHAT MESSAGE ATTACHMENT TABLE ---------------------------------------------------------------
+        ///-- CHAT CONVERSATION TABLE ---------------------------------------------------------------
         ///----------------------------------------------------------------------------------
         ///
         ///DO $$
         ///BEGIN
         ///if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
         ///				WHERE TABLE_SCHEMA = &apos;HootOut&apos;
-        ///				AND   TABLE_NAME = &apos;ChatMessageATtachment&apos;)
+        ///				AND   TABLE_NAME = &apos;ChatConversation&apos;)
+        ///then        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ChatConversationTable {
+            get {
+                return ResourceManager.GetString("ChatConversationTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DO $$
+        ///BEGIN
+        ///
+        ///if NOT EXISTS  (
+        ///SELECT  schema_name
+        ///FROM	information_schema.schemata
+        ///WHERE	schema_name = &apos;HootOut&apos; )
+        ///then 
+        ///	CREATE SCHEMA &quot;HootOut&quot;;
+        ///end if;
+        ///
+        ///end $$;
+        ///
+        ///--CHAT MESSAGE ATTACHMENT TABLE--------------------------------------------------------------
+        ///----------------------------------------------------------------------------------
+        ///
+        ///DO $$
+        ///BEGIN
+        ///if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
+        ///				WHERE TABLE_SCHEMA = &apos;HootOut&apos;
+        ///				AND   TABLE_NAME = &apos;ChatMessageAttachment&apos;)
         ///then
-        ///	CREATE TA [rest of string was truncated]&quot;;.
+        ///	CREATE TABLE  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ChatMessageAttachmentTable {
             get {
@@ -170,17 +200,70 @@ namespace HootOut.PostgreSQL.Properties {
         ///-- CHAT SERVER TABLE ---------------------------------------------------------------
         ///----------------------------------------------------------------------------------
         ///
-        ///DO $$
+        ///DO $$ 
         ///BEGIN
         ///if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
         ///				WHERE TABLE_SCHEMA = &apos;HootOut&apos;
         ///				AND   TABLE_NAME = &apos;ChatServer&apos;)
         ///then
-        ///	CREATE TABLE &quot;HootOut&quot;.&quot;ChatServ [rest of string was truncated]&quot;;.
+        ///	CREATE TABLE &quot;HootOut&quot;.&quot;ChatSer [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ChatServerTable {
             get {
                 return ResourceManager.GetString("ChatServerTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DO $$
+        ///BEGIN
+        ///
+        ///if NOT EXISTS  (
+        ///SELECT  schema_name
+        ///FROM	information_schema.schemata
+        ///WHERE	schema_name = &apos;HootOut&apos; )
+        ///then 
+        ///	CREATE SCHEMA &quot;HootOut&quot;;
+        ///end if;
+        ///
+        ///end $$; 
+        ///
+        ///-- DIRECT CONVERSATION TABLE --------------------------------------------------------
+        ///----------------------------------------------------------------------------------
+        ///-- &quot;Id&quot; is also the &quot;Id&quot; of its ChatConversation row (Type = 10).
+        ///-- One conversation per pair of users, kept forever: if they unfriend and
+        ///-- become friends ag [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string DirectConversationTable {
+            get {
+                return ResourceManager.GetString("DirectConversationTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DO $$
+        ///BEGIN
+        ///
+        ///if NOT EXISTS  (
+        ///SELECT  schema_name
+        ///FROM	information_schema.schemata
+        ///WHERE	schema_name = &apos;HootOut&apos; )
+        ///then 
+        ///	CREATE SCHEMA &quot;HootOut&quot;;
+        ///end if;
+        ///
+        ///end $$; 
+        ///
+        ///-- FRIEND REQUEST TABLE -------------------------------------------------------------
+        ///----------------------------------------------------------------------------------
+        ///-- &quot;InvitedBy&quot; sends the request, &quot;UserId&quot; receives it (same as ServerInvitation).
+        ///-- &quot;Status&quot;: 0 = Pending, 10 = Accepted, 20 = Rejected, 30 = Cancelled
+        ///
+        ///DO $ [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string FriendTable {
+            get {
+                return ResourceManager.GetString("FriendTable", resourceCulture);
             }
         }
         

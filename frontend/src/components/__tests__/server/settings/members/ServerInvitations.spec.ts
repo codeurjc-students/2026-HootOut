@@ -6,8 +6,8 @@ import ServerInvitations from '@/components/server/settings/Members/ServerInvita
 import { serverInfoStore } from '@/stores/serverInfo'
 import { dateTimeMapper } from '@/services/common/utils'
 import {
-  ServerInvitationStatus,
-  serverInvitationStatusMapper,
+  InvitationStatus,
+  InvitationStatusMapper,
   type ChatServer,
   type PageResult,
   type ServerInvitation,
@@ -25,7 +25,7 @@ vi.mock('@/services/chatServer/ChatServerService', () => ({ default: serverServi
 
 const server = { id: 'server-1', name: 'My Server' } as ChatServer
 
-function invitation(id: number, status = ServerInvitationStatus.Pending): ServerInvitation {
+function invitation(id: number, status = InvitationStatus.Pending): ServerInvitation {
   return {
     id: `invitation-${id}`,
     username: `user-${id}`,
@@ -88,7 +88,7 @@ describe('ServerInvitations.vue', () => {
     serverService.getServerInvitations.mockReset()
     serverService.updateServerInvitation.mockReset()
     serverService.getServerInvitations.mockResolvedValue(
-      page([invitation(1), invitation(2, ServerInvitationStatus.Revoked)])
+      page([invitation(1), invitation(2, InvitationStatus.Revoked)])
     )
     serverService.updateServerInvitation.mockResolvedValue(undefined)
     // Dates are shown in the local time zone: fix it so the tests behave the same everywhere
@@ -146,7 +146,7 @@ describe('ServerInvitations.vue', () => {
 
       const [username, status, invitedDate, lastUpdate] = cells(wrapper, 0).map((td) => td.text())
       expect(username).toBe('user-1')
-      expect(status).toBe(serverInvitationStatusMapper(ServerInvitationStatus.Pending))
+      expect(status).toBe(InvitationStatusMapper(InvitationStatus.Pending))
       expect(invitedDate).toBe(dateTimeMapper('2026-11-05T10:42:00Z'))
       expect(lastUpdate).toBe(dateTimeMapper('2026-11-06T09:15:00Z'))
     })
@@ -179,10 +179,10 @@ describe('ServerInvitations.vue', () => {
     it('is shown only for pending invitations', async () => {
       serverService.getServerInvitations.mockResolvedValueOnce(
         page([
-          invitation(1, ServerInvitationStatus.Pending),
-          invitation(2, ServerInvitationStatus.Accepted),
-          invitation(3, ServerInvitationStatus.Rejected),
-          invitation(4, ServerInvitationStatus.Revoked),
+          invitation(1, InvitationStatus.Pending),
+          invitation(2, InvitationStatus.Accepted),
+          invitation(3, InvitationStatus.Rejected),
+          invitation(4, InvitationStatus.Revoked),
         ])
       )
 
@@ -205,22 +205,20 @@ describe('ServerInvitations.vue', () => {
       expect(serverService.updateServerInvitation).toHaveBeenCalledTimes(1)
       expect(serverService.updateServerInvitation).toHaveBeenCalledWith({
         id: 'invitation-2',
-        status: ServerInvitationStatus.Revoked,
+        status: InvitationStatus.Revoked,
       })
     })
 
     it('reloads the table after revoking, so the new status is shown', async () => {
       serverService.getServerInvitations
         .mockResolvedValueOnce(page([invitation(1)]))
-        .mockResolvedValueOnce(page([invitation(1, ServerInvitationStatus.Revoked)]))
+        .mockResolvedValueOnce(page([invitation(1, InvitationStatus.Revoked)]))
       const wrapper = await mountServerInvitations()
 
       await clickRevoke(wrapper, 0)
 
       expect(serverService.getServerInvitations).toHaveBeenCalledTimes(2)
-      expect(cells(wrapper, 0)[1]!.text()).toBe(
-        serverInvitationStatusMapper(ServerInvitationStatus.Revoked)
-      )
+      expect(cells(wrapper, 0)[1]!.text()).toBe(InvitationStatusMapper(InvitationStatus.Revoked))
       expect(revokeButton(wrapper, 0)).toBeUndefined()
     })
 
@@ -228,7 +226,7 @@ describe('ServerInvitations.vue', () => {
       serverService.getServerInvitations
         .mockResolvedValueOnce(page([invitation(1)], 'cursor-2', 15))
         .mockResolvedValueOnce(page([invitation(11)], null, 15))
-        .mockResolvedValueOnce(page([invitation(11, ServerInvitationStatus.Revoked)], null, 15))
+        .mockResolvedValueOnce(page([invitation(11, InvitationStatus.Revoked)], null, 15))
       const wrapper = await mountServerInvitations()
       await nextButton(wrapper)!.trigger('click')
       await flushPromises()
@@ -295,9 +293,7 @@ describe('ServerInvitations.vue', () => {
       await clickRevoke(wrapper, 0)
 
       expect(serverService.getServerInvitations).toHaveBeenCalledTimes(1)
-      expect(cells(wrapper, 0)[1]!.text()).toBe(
-        serverInvitationStatusMapper(ServerInvitationStatus.Pending)
-      )
+      expect(cells(wrapper, 0)[1]!.text()).toBe(InvitationStatusMapper(InvitationStatus.Pending))
       expect(revokeButton(wrapper, 0)!.attributes('disabled')).toBeUndefined()
     })
 

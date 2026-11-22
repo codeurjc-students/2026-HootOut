@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common.Saver;
 using HootOut.PostgreSQL.Savers.Users;

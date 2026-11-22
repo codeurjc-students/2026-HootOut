@@ -1,4 +1,4 @@
-﻿using Autofac;
+using Autofac;
 using Dapper;
 using FluentAssertions;
 using HootOut.CommonDomain.DefaultValues;
@@ -6,9 +6,10 @@ using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.Common.Saver;
-using HootOut.Infraestructure.DI;
 using HootOut.MediaFiles.Entities;
 using HootOut.MediaFiles.Repositories;
+using HootOut.Infraestructure.DI;
+using HootOut.Users.Entities;
 
 namespace HootOut.PostgreSQL.IntegrationTests.Repositories.MediaFiles
 {
@@ -18,6 +19,10 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.MediaFiles
         private readonly IContainer container;
 
         private readonly ClearAllTables clearTables;
+
+        private UserInfo owner = null!;
+
+        private readonly ISaver<UserInfo> userSaver;
 
         private readonly IMediaFileRepository repository;
 
@@ -36,6 +41,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.MediaFiles
             Assert.Same(postgresContainer.postgreSQLProvider, provider);
 
             clearTables = container.Resolve<ClearAllTables>();
+            userSaver = container.Resolve<ISaver<UserInfo>>();
             var defaultValues = container.Resolve<IEnumerable<IDefaultValues>>().OrderBy(x => x.Priority);
 
             foreach (var value in defaultValues)
@@ -50,6 +56,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.MediaFiles
         public async ValueTask InitializeAsync()
         {
             await clearTables.ClearTablesAsync();
+            owner = await CreateOwnerAsync();
         }
 
         public async ValueTask DisposeAsync()
@@ -140,7 +147,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.MediaFiles
             await act.Should().ThrowAsync<OperationCanceledException>();
         }
 
-        private static MediaFile BuildMediaFile(string fileName)
+        private MediaFile BuildMediaFile(string fileName)
         {
             var now = DateTime.UtcNow;
             return new MediaFile
@@ -151,7 +158,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.MediaFiles
                 ContentType = "image/png",
                 BytesSize = 1024,
                 Url = $"http://localhost/media/{fileName}",
-                OwnerId = Guid.NewGuid(),
+                OwnerId = owner.Id,
                 CreatedAt = now,
                 ModifiedAt = now
             };
@@ -164,6 +171,19 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.MediaFiles
                 """UPDATE "HootOut"."MediaFile" SET "Deleted" = true WHERE "Id" = @Id""",
                 new { Id = id },
                 cancellationToken: ct));
+        }
+
+        /// <summary>
+        /// ChatServer.OwnerId and MediaFile.OwnerId have a foreign key to UserInfo, so every test gets an existing owner.
+        /// </summary>
+        private async Task<UserInfo> CreateOwnerAsync()
+        {
+            var user = Persistable.CreateNew<UserInfo>();
+            user.Username = $"owner-{user.Id}";
+            user.Email = $"owner-{user.Id}@test.com";
+            user.Password = "hash-owner";
+            await userSaver.SaveAsync(user, TestContext.Current.CancellationToken);
+            return user;
         }
     }
 }

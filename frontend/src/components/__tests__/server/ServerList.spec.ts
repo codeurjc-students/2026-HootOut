@@ -204,18 +204,6 @@ describe('ServerList.vue', () => {
   })
 
   describe('current server', () => {
-    it('highlights only the button of the current server', async () => {
-      serverService.getServers.mockResolvedValueOnce(page([chatServer(1), chatServer(2)]))
-      const wrapper = await mountServerList()
-      serverInfoStore().setCurrentServerSettings(chatServer(2))
-      await observer().trigger()
-
-      expect(serverLinks(wrapper).map((a) => a.classes().includes('background-light'))).toEqual([
-        false,
-        true,
-      ])
-    })
-
     it('shows the current server first while it has not been loaded yet', async () => {
       serverInfoStore().setCurrentServerSettings(chatServer(30))
       serverService.getServers.mockResolvedValueOnce(

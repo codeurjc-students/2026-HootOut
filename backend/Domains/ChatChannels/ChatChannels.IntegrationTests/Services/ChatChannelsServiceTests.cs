@@ -10,6 +10,7 @@ using HootOut.Contracts.ChatChannels.Dtos;
 using HootOut.Contracts.ChatChannels.Requests;
 using HootOut.Contracts.ChatChannels.Services;
 using HootOut.Contracts.Common.Saver;
+using HootOut.Users.Entities;
 
 namespace HootOut.ChatChannels.IntegrationTests.Services
 {
@@ -21,6 +22,7 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
 
         private IChatChannelsService chatChannelsService;
         private ISaver<ChatServer> serverSaver;
+        private ISaver<UserInfo> userSaver;
 
         public ChatChannelsServiceTests(PostgresTestContainer postgresContainer)
         {
@@ -40,6 +42,7 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
 
             chatChannelsService = container.Resolve<IChatChannelsService>();
             serverSaver = container.Resolve<ISaver<ChatServer>>();
+            userSaver = container.Resolve<ISaver<UserInfo>>();
         }
         public async ValueTask InitializeAsync()
         {
@@ -65,10 +68,12 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
             var ct = TestContext.Current.CancellationToken;
             string name = "nameTest";
             Guid serverId = Guid.NewGuid();
+            var user = await CreateUserAsync(ct);
 
             await serverSaver.SaveAsync(new ChatServer
             {
                 Id = serverId,
+                OwnerId = user.Id,
                 Name = "test",
             }, ct);
 
@@ -93,11 +98,15 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
         public async Task GetChatChannelsByServerId_Many()
         {
             var ct = TestContext.Current.CancellationToken;
+
+            var user = await CreateUserAsync(ct);
+
             Guid serverId = Guid.NewGuid();
 
             await serverSaver.SaveAsync(new ChatServer
             {
                 Id = serverId,
+                OwnerId = user.Id,
                 Name = "test",
             }, ct);
 
@@ -105,6 +114,7 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
             await serverSaver.SaveAsync(new ChatServer
             {
                 Id = serverId2,
+                OwnerId = user.Id,
                 Name = "other test server",
             }, ct);
 
@@ -122,9 +132,12 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
             var ct = TestContext.Current.CancellationToken;
             Guid serverId = Guid.NewGuid();
 
+            var user = await CreateUserAsync(ct);
+
             await serverSaver.SaveAsync(new ChatServer
             {
                 Id = serverId,
+                OwnerId = user.Id,
                 Name = "test",
             }, ct);
 
@@ -152,11 +165,13 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
         public async Task DeleteChannel_Ok()
         {
             var ct = TestContext.Current.CancellationToken;
+            var user = await CreateUserAsync(ct);
             Guid serverId = Guid.NewGuid();
 
             await serverSaver.SaveAsync(new ChatServer
             {
                 Id = serverId,
+                OwnerId = user.Id,
                 Name = "test",
             }, ct);
 
@@ -174,6 +189,16 @@ namespace HootOut.ChatChannels.IntegrationTests.Services
             var channels = await chatChannelsService.GetChannelsByServerIdAsync(serverId, ct);
             channels.Should().NotBeNull();
             channels.Should().BeEmpty();
+        }
+
+        private async Task<UserInfo> CreateUserAsync(CancellationToken ct)
+        {
+            var user = Persistable.CreateNew<UserInfo>();
+            user.Username = $"User-{user.Id}";
+            user.Email = $"{user.Id}@hootout.com";
+            user.Password = "12345";
+            await userSaver.SaveAsync(user, ct);
+            return user;
         }
     }
 }

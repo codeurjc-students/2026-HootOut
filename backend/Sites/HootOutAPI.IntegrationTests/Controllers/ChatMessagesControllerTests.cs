@@ -61,10 +61,10 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var loginResponse = await LoginAsync(DefaultEmail, DefaultPassword, ct);
             var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>(ct);
 
-            Guid channelId = Guid.NewGuid();
+            Guid chatConversationId = Guid.NewGuid();
             var response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get,
-                $"/api/v1/chatMessages/channelMessages?channelId={channelId.ToString()}",
+                $"/api/v1/chatMessages?chatConversationId={chatConversationId.ToString()}",
                 auth?.AccessToken!,
                 ct
             );
@@ -100,14 +100,14 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
                 ChatServerId = server.Id,
                 Name = "test123"
             }, ct);
-             
+
             string content = "test1";
 
             IChatMessageService chatMessageService = container.Resolve<IChatMessageService>();
             await chatMessageService.CreateChatMessageAsync(
                 new CreateChatMessageRequest
                 {
-                    ChatChannelId = channel.Id,
+                    ChatConversationId = channel.ChatConversationId,
                     AuthorId = authorId,
                     Content = content
                 }, ct);
@@ -127,14 +127,14 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             await chatMessageService.CreateChatMessageAsync(
                 new CreateChatMessageRequest
                 {
-                    ChatChannelId = channel2.Id,
+                    ChatConversationId = channel2.ChatConversationId,
                     AuthorId = authorId,
                     Content = content
                 }, ct);
 
             var response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get,
-                $"/api/v1/chatMessages/channelMessages?channelId={channel.Id.ToString()}",
+                $"/api/v1/chatMessages?chatConversationId={channel.ChatConversationId.ToString()}",
                 auth?.AccessToken!,
                 ct
             );
@@ -152,12 +152,12 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             message.Id.Should().NotBeEmpty();
             message.Author.Should().NotBeNull();
             message.Author.Id.Should().Be(authorId);
-            message.ChatChannelId.Should().Be(channel.Id);
+            message.ChatConversationId.Should().Be(channel.ChatConversationId);
             message.Content.Should().Be(content);
 
             response = await SendAuthorizeHttpRequest(
                 HttpMethod.Get,
-                $"/api/v1/chatMessages/channelMessages?channelId={Guid.NewGuid().ToString()}",
+                $"/api/v1/chatMessages?chatConversationId={Guid.NewGuid().ToString()}",
                 auth?.AccessToken!,
                 ct
             );

@@ -3,20 +3,21 @@ import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { createPinia, setActivePinia, type Pinia } from 'pinia'
 import { createMemoryHistory, createRouter, type Router } from 'vue-router'
-import ChannelsList from '@/components/channel/ChannelsList.vue'
+import ChannelsLists from '@/components/channel/ChannelsList.vue'
 import { serverInfoStore } from '@/stores/serverInfo'
+import { conversationStore } from '@/stores/conversation'
 import type { ChatChannel, ChatMessage, ChatServer, PageResult } from '@/types'
 
 // ---------- mocks ----------
 
 const mocks = vi.hoisted(() => ({
   channelService: { getChannelsByServerId: vi.fn() },
-  messageService: { getMessagesByChannelId: vi.fn() },
+  messageService: { getMessagesByConversationId: vi.fn() },
   ws: { subscribe: vi.fn(), unsubscribe: vi.fn(), addPendingSubscription: vi.fn() },
 }))
 vi.mock('@/services/chatChannel/ChatChannelService', () => ({ default: mocks.channelService }))
 vi.mock('@/services/chatMessage/ChatMessageService', () => ({ default: mocks.messageService }))
-vi.mock('@/services/common/websocketsMesage/WebSocketsMessageService', () => ({
+vi.mock('@/services/common/websocketsMessage/WebSocketsMessageService', () => ({
   default: mocks.ws,
 }))
 vi.mock('@/services/chatServer/ChatServerService', () => ({ default: {} }))
@@ -50,12 +51,20 @@ const server: ChatServer = {
   id: 's1',
   name: 'My Server',
   channels: [],
-  createdAt: '123',
-  modifiedAt: '123',
+  createdAt: '',
+  modifiedAt: '',
 }
 
+// Each channel has its own conversation, with the id "conversation-<channel id>"
 function channel(id: string, name = id): ChatChannel {
-  return { id, name, serverId: '123', modifiedAt: '123', createdAt: '123' }
+  return {
+    id,
+    name,
+    chatConversationId: `conversation-${id}`,
+    serverId: '123',
+    createdAt: '',
+    modifiedAt: '',
+  }
 }
 
 function messagesPage(items: ChatMessage[]): PageResult<ChatMessage> {
@@ -87,7 +96,7 @@ async function setUpStore(channels: ChatChannel[], openChannelId?: string) {
   store.setCurrentServerSettings({ ...server, channels })
   store.setServerChannels(channels)
   if (openChannelId) {
-    messageService.getMessagesByChannelId.mockResolvedValueOnce(
+    messageService.getMessagesByConversationId.mockResolvedValueOnce(
       messagesPage([{ id: 'old-message' } as ChatMessage])
     )
     await store.selectChannel(openChannelId)
@@ -99,7 +108,7 @@ async function setUpStore(channels: ChatChannel[], openChannelId?: string) {
 async function mountChannelLists(path = '/chat/server/s1') {
   await router.push(path)
   await router.isReady()
-  const wrapper = mount(ChannelsList, {
+  const wrapper = mount(ChannelsLists, {
     global: {
       plugins: [pinia, router],
       stubs: { Modal: ModalStub, UpdateChannelForm: UpdateChannelFormStub },
@@ -260,7 +269,7 @@ describe('ChannelLists.vue', () => {
     it('keeps the open channel and reloads its messages when another channel is deleted', async () => {
       await setUpStore([channel('c1', 'general'), channel('c2', 'random')], 'c1')
       channelService.getChannelsByServerId.mockResolvedValueOnce([channel('c1', 'general')])
-      messageService.getMessagesByChannelId.mockResolvedValueOnce(
+      messageService.getMessagesByConversationId.mockResolvedValueOnce(
         messagesPage([{ id: 'm1' } as ChatMessage])
       )
       const wrapper = await mountChannelLists('/chat/server/s1/channel/c1')
@@ -269,8 +278,8 @@ describe('ChannelLists.vue', () => {
 
       expect(router.currentRoute.value.params.channelId).toBe('c1')
       expect(serverInfoStore().currentChatChannel?.id).toBe('c1')
-      expect(messageService.getMessagesByChannelId).toHaveBeenCalledWith('c1')
-      expect(serverInfoStore().channelMessages).toEqual([{ id: 'm1' }])
+      expect(messageService.getMessagesByConversationId).toHaveBeenCalledWith('conversation-c1')
+      expect(conversationStore().currentMessages).toEqual([{ id: 'm1' }])
     })
 
     it('only reloads the list when no channel is open', async () => {
@@ -281,7 +290,7 @@ describe('ChannelLists.vue', () => {
       await emitFromForm(wrapper, 'deleted', 'c2')
 
       expect(router.currentRoute.value.name).toBe('server')
-      expect(messageService.getMessagesByChannelId).not.toHaveBeenCalled()
+      expect(messageService.getMessagesByConversationId).not.toHaveBeenCalled()
       expect(serverInfoStore().currentChatChannel).toBeUndefined()
     })
 
@@ -299,7 +308,7 @@ describe('ChannelLists.vue', () => {
     it('does not fail when reloading the messages of the open channel fails', async () => {
       await setUpStore([channel('c1', 'general'), channel('c2', 'random')], 'c1')
       channelService.getChannelsByServerId.mockResolvedValueOnce([channel('c1', 'general')])
-      messageService.getMessagesByChannelId.mockRejectedValueOnce(new Error('500'))
+      messageService.getMessagesByConversationId.mockRejectedValueOnce(new Error('500'))
       const wrapper = await mountChannelLists('/chat/server/s1/channel/c1')
 
       await emitFromForm(wrapper, 'deleted', 'c2')

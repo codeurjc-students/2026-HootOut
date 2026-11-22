@@ -17,8 +17,8 @@
 
   function onUpdatedChannelSuccess(channel: ChatChannel) {
     updateChannelModal.value?.close()
-    // Only the name changes in the list: the user stays in the channel they are in
-    if (channelToEdit.value) channelToEdit.value.name = channel.name
+    // By id: the list may have been reloaded since the modal was opened
+    serverInfo.updateChannel(channel)
   }
 
   function openUpdateChannelModal(channel: ChatChannel) {
@@ -75,8 +75,8 @@
   <Modal title="Update Channel" ref="update-channel-form-modal">
     <template v-slot:body>
       <UpdateChannelForm
-        :channel="channelToEdit"
-        :server="currentServer"
+        :channel="channelToEdit!"
+        :server="currentServer!"
         @success="onUpdatedChannelSuccess"
         @deleted="onChannelDeleted"
       />

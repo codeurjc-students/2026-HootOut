@@ -4,6 +4,7 @@ export interface ChatMessage {
   id: string
   author: UserInfo
   content: string
+  chatConversationId: string
   attachments: MessageAttachment[]
   createdAt: string | null
   modifiedAt: string | null

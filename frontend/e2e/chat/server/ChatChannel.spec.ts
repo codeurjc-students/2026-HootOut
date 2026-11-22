@@ -1,5 +1,5 @@
 import { test, expect } from '../../fixtures.js'
-import { createChannel, createTestServer } from './Common.js'
+import { createChannel, createTestServer, uniqueName } from './Common.js'
 
 test('test create and enter channel', async ({ page }) => {
   await page.goto('/chat')
@@ -27,7 +27,7 @@ test('test create and update channel', async ({ page }) => {
   const channel = await createChannel(page, server)
 
   //Edit channel
-  await page.locator('.channel-name-row.background-light').getByRole('button').click()
+  await page.getByRole('button', { name: `Edit channel ${channel.name}`, exact: true }).click()
 
   await expect(page.locator('.modal')).toBeVisible()
   await expect(page.locator('.modal-title')).toContainText('Update Channel')
@@ -37,11 +37,11 @@ test('test create and update channel', async ({ page }) => {
 
   await expect(page.getByLabel('Channel Name')).toHaveValue(channel.name)
   const updatedChannel = {
-    name: 'playwright-test-updated',
+    name: uniqueName('channel-updated'),
   }
   await page.getByLabel('Channel Name').fill(updatedChannel.name)
 
-  const updateChannelBtn = page.getByRole('button', { name: 'Update Channel' })
+  const updateChannelBtn = page.getByRole('button', { name: 'Update Channel', exact: true })
   await expect(updateChannelBtn).toBeEnabled()
 
   const updateChannelResponse = page.waitForResponse(
@@ -60,4 +60,9 @@ test('test create and update channel', async ({ page }) => {
 
   await expect(page).toHaveURL(new RegExp(`.*/chat/server/${server.id}/channel/${channel.id}`))
   await expect(page.locator('.modal')).not.toBeVisible()
+
+  // The list shows the new name
+  await expect(
+    page.getByRole('button', { name: `Edit channel ${updatedChannel.name}`, exact: true })
+  ).toBeVisible()
 })

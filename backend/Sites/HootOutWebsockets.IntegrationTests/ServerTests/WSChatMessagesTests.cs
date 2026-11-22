@@ -14,6 +14,7 @@ using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
 using HootOut.Contracts.ChatServers.Requests;
 using HootOut.Contracts.ChatServers.Services;
+using HootOut.Contracts.Common.Enums;
 using HootOut.Contracts.WebSockets.Dtos;
 using HootOut.Contracts.WebSockets.Handlers;
 using HootOut.Contracts.WebSockets.Services;
@@ -29,7 +30,7 @@ using System.Net.WebSockets;
 namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 {
     [Collection("IntegrationTests")]
-    public class WSChatMessagesTests : IClassFixture<WebSocketServerFixture>, IClassFixture<TestContaineRabbitConnectionFactory>, IDisposable
+    public class WSChatMessagesTests : IClassFixture<WebSocketServerFixture>, IClassFixture<TestContaineRabbitConnectionFactory>, IAsyncLifetime, IDisposable
     {
         private readonly WebSocketServerFixture serverFixture;
         private readonly ILifetimeScope container;
@@ -129,7 +130,19 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
                 Name = "test123"
             }, ct);
 
-            var channelId = channel.Id;
+            var conversationId = channel.ChatConversationId;
+
+            // Subscriptions are validated now: user 2 has to be a member of the server
+            var invitation = await serverService.InviteMemberAsync(new InviteServerMemberRequest
+            {
+                ChatServerId = server.Id,
+                Username = username2
+            }, userId1, ct);
+            await serverService.UpdateServerInvitationAsync(new UpdateServerInvitationRequest
+            {
+                Id = invitation.Id,
+                Status = InvitationStatus.Accepted
+            }, userId2, ct);
 
             WSConnectionManager? connectionManager = null;
             if (IconnectionManager is WSConnectionManager)
@@ -149,13 +162,13 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
             await Task.Delay(100, ct); //TO-DO Replace with ACK from Server
 
             socket2.Socket.State.Should().Be(WebSocketState.Open);
-            connectionManager!.Connections.Count.Should().Be(2); 
+            connectionManager!.Connections.Count.Should().Be(2);
 
             var id1 = Guid.NewGuid();
             await socket1.SendWithAckAsync(new WebSocketMessageDto
             {
                 Type = WSHandlerType.Subscribe,
-                Channel = channelId.ToString()
+                Channel = conversationId.ToString()
             }, ct);
 
             IWSPubSubService IpubSubService = container.Resolve<IWSPubSubService>();
@@ -165,7 +178,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
             {
                 pubSubService = (IpubSubService as WSPubSubService)!;
             }
-            pubSubService!.ChannelSubscribers.TryGetValue(channelId.ToString(), out var subscribers).Should().BeTrue();
+            pubSubService!.ChannelSubscribers.TryGetValue(conversationId.ToString(), out var subscribers).Should().BeTrue();
             subscribers!.Count.Should().Be(1);
 
             pubSubService!.ConnectionSubscriptions.Count.Should().Be(1);
@@ -173,14 +186,20 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
             await socket2.SendWithAckAsync(new WebSocketMessageDto
             {
                 Type = WSHandlerType.Subscribe,
-                Channel = channelId.ToString()
+                Channel = conversationId.ToString()
             }, ct);
 
-            pubSubService!.ChannelSubscribers.TryGetValue(channelId.ToString(), out subscribers).Should().BeTrue();
+            pubSubService!.ChannelSubscribers.TryGetValue(conversationId.ToString(), out subscribers).Should().BeTrue();
             subscribers!.Count.Should().Be(2);
             pubSubService!.ConnectionSubscriptions.Count.Should().Be(2);
 
-            Guid otherChannelId = Guid.NewGuid();
+            // Subscriptions are validated now: the second subscription has to be a real channel of the server
+            var otherChannel = await channelService.CreateChatChannelAsync(new CreateChatChannelRequest
+            {
+                ChatServerId = server.Id,
+                Name = "test456"
+            }, ct);
+            Guid otherChannelId = otherChannel.ChatConversationId;
             await socket2.SendWithAckAsync(new WebSocketMessageDto
             {
                 Type = WSHandlerType.Subscribe,
@@ -201,7 +220,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
             await socket1.SendWithAckAsync(new WebSocketMessageDto
             {
                 Type = WSHandlerType.ChatMessage,
-                Channel = channelId.ToString(),
+                Channel = conversationId.ToString(),
                 Payload = JsonConvert.SerializeObject(chatMessage)
             }, ct);
 
@@ -209,19 +228,19 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 
             IChatMessageService chatMessageService = container.Resolve<IChatMessageService>();
 
-            var messages = await chatMessageService.GetMessagesByChannelAsync(channelId, ct: ct);
+            var messages = await chatMessageService.GetMessagesByConversationIdAsync(conversationId, ct: ct);
             messages.Items.Should().NotBeNullOrEmpty();
             messages.Items.Should().HaveCount(1);
             var message1 = messages.Items.Single();
             message1.Should().NotBeNull();
             message1.Author.Should().NotBeNull();
             message1.Author.Id.Should().Be(userId1);
-            message1.ChatChannelId.Should().Be(channelId);
+            message1.ChatConversationId.Should().Be(channel.ChatConversationId);
             message1.Content.Should().Be(messageContent);
 
             var receivedMessage = await socket2.ReceiveAsync(ct);
             receivedMessage.Should().NotBeNull();
-            receivedMessage.Channel.Should().Be(channelId.ToString());
+            receivedMessage.Channel.Should().Be(conversationId.ToString());
 
             receivedMessage.Payload.Should().NotBeNullOrWhiteSpace();
             ChatMessageDto? receivedChatMessage = JsonConvert.DeserializeObject<ChatMessageDto>(receivedMessage.Payload);
@@ -236,7 +255,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 
             connectionManager!.Connections.Count.Should().Be(1);
 
-            pubSubService!.ChannelSubscribers.TryGetValue(channelId.ToString(), out subscribers).Should().BeTrue();
+            pubSubService!.ChannelSubscribers.TryGetValue(conversationId.ToString(), out subscribers).Should().BeTrue();
             subscribers!.Count.Should().Be(1);
             pubSubService!.ConnectionSubscriptions.Count.Should().Be(1);
 
@@ -245,7 +264,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 
             connectionManager!.Connections.Count.Should().Be(0);
 
-            pubSubService!.ChannelSubscribers.TryGetValue(channelId.ToString(), out subscribers).Should().BeFalse();
+            pubSubService!.ChannelSubscribers.TryGetValue(conversationId.ToString(), out subscribers).Should().BeFalse();
             subscribers.Should().BeNull();
             pubSubService!.ConnectionSubscriptions.Should().BeEmpty();
         }

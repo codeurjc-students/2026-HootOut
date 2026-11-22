@@ -1,6 +1,7 @@
 export interface ChatChannel {
   id: string
   serverId: string
+  chatConversationId: string
   name: string
   createdAt: string | null
   modifiedAt: string | null

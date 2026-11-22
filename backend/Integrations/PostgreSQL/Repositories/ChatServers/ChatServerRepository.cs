@@ -78,7 +78,8 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                     {serverColumns},
                     channel."Id", 
                     channel."ChatServerId",
-                    channel."Name"
+                    channel."Name",
+                    channel."ChatConversationId"
                 FROM "HootOut"."ChatServer" m
                 LEFT JOIN "HootOut"."ChatChannel" channel
                     ON m."Id" = channel."ChatServerId" AND channel."Deleted" = FALSE
@@ -108,6 +109,35 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
             }, splitOn: "Id");
 
             return result;
+        }
+
+        public async Task<Guid?> GetServerIdByConversationAndUserIdAsync(Guid conversationId, Guid userId, CancellationToken ct)
+        {
+            await using var conn = await provider.OpenConnectionAsync(ct);
+
+            return await conn.QueryFirstOrDefaultAsync<Guid?>(new CommandDefinition("""
+        WITH channel AS (
+            SELECT channel."Id", channel."ChatServerId"
+            FROM "HootOut"."ChatConversation" conversation
+            INNER JOIN "HootOut"."ChatChannel" channel
+                ON conversation."Id" = channel."ChatConversationId"
+            WHERE conversation."Id" = @ConversationId
+              AND channel."Deleted" = FALSE
+        )
+        SELECT 
+            s."Id"
+        FROM "HootOut"."ChatServer" s
+        INNER JOIN "HootOut"."ServerMember" m
+            ON s."Id" = m."ChatServerId" AND m."UserId" = @UserId AND m."Deleted" = FALSE
+        INNER JOIN channel
+            ON s."Id" = channel."ChatServerId"
+        WHERE s."Deleted" = FALSE
+        """
+                , new
+                {
+                    ConversationId = conversationId,
+                    UserId = userId,
+                }, cancellationToken: ct));
         }
     }
 }

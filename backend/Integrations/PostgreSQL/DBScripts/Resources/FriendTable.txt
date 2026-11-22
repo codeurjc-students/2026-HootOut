@@ -1,0 +1,87 @@
+﻿DO $$
+BEGIN
+
+if NOT EXISTS  (
+SELECT  schema_name
+FROM	information_schema.schemata
+WHERE	schema_name = 'HootOut' )
+then 
+	CREATE SCHEMA "HootOut";
+end if;
+
+end $$;
+
+--FRIEND REQUEST TABLE -------------------------------------------------------------
+----------------------------------------------------------------------------------
+--"InvitedBy" sends the request, "UserId" receives it (same as ServerInvitation).
+-- "Status": 0 = Pending, 10 = Accepted, 20 = Rejected, 30 = Cancelled
+
+DO $$
+BEGIN
+if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES
+				WHERE TABLE_SCHEMA = 'HootOut'
+				AND   TABLE_NAME = 'FriendRequest')
+then
+	CREATE TABLE "HootOut"."FriendRequest"(
+		"Id" UUID NOT NULL PRIMARY KEY,
+		"InvitedBy" UUID NOT NULL REFERENCES "HootOut"."UserInfo"("Id"),
+		"UserId" UUID NOT NULL REFERENCES "HootOut"."UserInfo"("Id"),
+		"Status" smallint NOT NULL DEFAULT 0 CHECK ("Status" IN (0, 10, 20, 30)),
+		"CreatedAt" timestamptz NOT NULL,
+		"ModifiedAt" timestamptz NOT NULL,
+        CONSTRAINT ck_friend_request_not_self CHECK ("InvitedBy" <> "UserId")
+	);
+end if;
+
+--Only one pending request per pair of users, in either direction
+-- (if A already invited B, B cannot open a second request to A)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_friend_request_pending
+ON "HootOut"."FriendRequest" (LEAST("InvitedBy", "UserId"), GREATEST("InvitedBy", "UserId"))
+WHERE "Status" = 0;
+
+--Requests I received
+CREATE INDEX IF NOT EXISTS ix_friend_request_invitee
+ON "HootOut"."FriendRequest" ("UserId", "CreatedAt" DESC)
+WHERE "Status" = 0;
+
+--Requests I sent
+CREATE INDEX IF NOT EXISTS ix_friend_request_inviter
+ON "HootOut"."FriendRequest" ("InvitedBy", "CreatedAt" DESC)
+WHERE "Status" = 0;
+
+
+
+--FRIEND RELATION TABLE ------------------------------------------------------------
+----------------------------------------------------------------------------------
+--One row per friendship. "User1Id" is always the smaller id, so a pair
+-- of users can only be stored one way. "Deleted" = true means unfriended;
+--becoming friends again creates a new row.
+
+if NOT EXISTS(SELECT * FROM INFORMATION_SCHEMA.TABLES
+
+                WHERE TABLE_SCHEMA = 'HootOut'
+
+                AND   TABLE_NAME = 'FriendRelation')
+then
+    CREATE TABLE "HootOut"."FriendRelation"(
+		"Id" UUID NOT NULL PRIMARY KEY,
+		"User1Id" UUID NOT NULL REFERENCES "HootOut"."UserInfo"("Id"),
+		"User2Id" UUID NOT NULL REFERENCES "HootOut"."UserInfo"("Id"),
+		"FriendRequestId" UUID REFERENCES "HootOut"."FriendRequest"("Id"),
+		"Deleted" boolean NOT NULL DEFAULT false,
+		"CreatedAt" timestamptz NOT NULL,
+		"ModifiedAt" timestamptz NOT NULL,
+        CONSTRAINT ck_friend_relation_order CHECK ("User1Id" < "User2Id")
+	);
+end if;
+
+--One active friendship per pair. Also serves lookups by "User1Id".
+CREATE UNIQUE INDEX IF NOT EXISTS ux_friend_relation_active
+ON "HootOut"."FriendRelation" ("User1Id", "User2Id")
+WHERE "Deleted" = false;
+
+CREATE INDEX IF NOT EXISTS ix_friend_relation_user2
+ON "HootOut"."FriendRelation" ("User2Id")
+WHERE "Deleted" = false;
+
+end $$;

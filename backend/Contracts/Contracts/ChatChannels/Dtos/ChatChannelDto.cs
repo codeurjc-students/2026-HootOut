@@ -5,6 +5,7 @@
         public Guid Id { get; set; }
 
         public Guid ChatServerId { get; set; }
+        public Guid ChatConversationId { get; set; }
 
         public string Name { get; set; } = String.Empty;
 

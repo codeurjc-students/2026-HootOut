@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using HootOut.ChatServers.Entities;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common;
@@ -15,6 +15,7 @@ namespace HootOut.PostgreSQL.UnitTests.Repositories.ChatServers
             nameof(ServerInvitationRepository.GetServerInvitationDtosAsync),
             nameof(ServerInvitationRepository.GetUserServerInvitationDtosAsync),
             nameof(ServerInvitationRepository.GetServerInvitationByIdAsync),
+            nameof(ServerInvitationRepository.GetPendingServerInvitationAsync),
             nameof(ServerInvitationRepository.AcceptServerInvitationAsync)
         ];
 
@@ -61,6 +62,7 @@ namespace HootOut.PostgreSQL.UnitTests.Repositories.ChatServers
             nameof(ServerInvitationRepository.GetServerInvitationDtosAsync) => repository.GetServerInvitationDtosAsync(Guid.NewGuid(), new PageRequest(), ct),
             nameof(ServerInvitationRepository.GetUserServerInvitationDtosAsync) => repository.GetUserServerInvitationDtosAsync(Guid.NewGuid(), new PageRequest(), ct),
             nameof(ServerInvitationRepository.GetServerInvitationByIdAsync) => repository.GetServerInvitationByIdAsync(Guid.NewGuid(), ct),
+            nameof(ServerInvitationRepository.GetPendingServerInvitationAsync) => repository.GetPendingServerInvitationAsync(Guid.NewGuid(), Guid.NewGuid(), ct),
             nameof(ServerInvitationRepository.AcceptServerInvitationAsync) => repository.AcceptServerInvitationAsync(Persistable.CreateNew<ServerInvitation>(), ct),
             _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
         };

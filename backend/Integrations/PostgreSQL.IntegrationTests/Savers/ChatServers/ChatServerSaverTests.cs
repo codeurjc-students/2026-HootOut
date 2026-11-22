@@ -1,4 +1,4 @@
-﻿using Autofac;
+using Autofac;
 using Dapper;
 using FluentAssertions;
 using HootOut.ChatServers.Entities;
@@ -8,6 +8,7 @@ using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Infraestructure.DI;
+using HootOut.Users.Entities;
 using Npgsql;
 
 namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
@@ -18,6 +19,10 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         private readonly IContainer container;
 
         private readonly ClearAllTables clearTables;
+
+        private UserInfo owner = null!;
+
+        private readonly ISaver<UserInfo> userSaver;
 
         private readonly ISaver<ChatServer> saver;
 
@@ -34,6 +39,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
             Assert.Same(postgresContainer.postgreSQLProvider, provider);
 
             clearTables = container.Resolve<ClearAllTables>();
+            userSaver = container.Resolve<ISaver<UserInfo>>();
             var defaultValues = container.Resolve<IEnumerable<IDefaultValues>>().OrderBy(x => x.Priority);
 
             foreach (var value in defaultValues)
@@ -47,6 +53,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         public async ValueTask InitializeAsync()
         {
             await clearTables.ClearTablesAsync();
+            owner = await CreateOwnerAsync();
         }
 
         public async ValueTask DisposeAsync()
@@ -121,6 +128,22 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         }
 
         [Fact]
+        public async Task SaveAsync_NotExistingOwner_ThrowsWrappedForeignKeyViolation()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var server = BuildServer("server");
+            server.OwnerId = Guid.NewGuid();
+
+            var act = () => saver.SaveAsync(server, ct);
+
+            var exception = await act.Should().ThrowExactlyAsync<Exception>()
+                .WithMessage($"*{server.Id}*");
+            exception.WithInnerException<PostgresException>()
+                .Which.SqlState.Should().Be(PostgresErrorCodes.ForeignKeyViolation);
+            (await CountRowsAsync(ct)).Should().Be(0);
+        }
+
+        [Fact]
         public async Task SaveAsync_CancelledToken_ThrowsOperationCanceledAndDoesNotPersist()
         {
             var server = BuildServer("server");
@@ -134,12 +157,12 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
             (await CountRowsAsync(TestContext.Current.CancellationToken)).Should().Be(0);
         }
 
-        private static ChatServer BuildServer(string name)
+        private ChatServer BuildServer(string name)
         {
             var server = Persistable.CreateNew<ChatServer>();
             server.Name = name;
             server.Description = $"Description of {name}";
-            server.OwnerId = Guid.NewGuid();
+            server.OwnerId = owner.Id;
             return server;
         }
 
@@ -176,6 +199,19 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
             public bool Deleted { get; set; }
             public DateTime CreatedAt { get; set; }
             public DateTime ModifiedAt { get; set; }
+        }
+
+        /// <summary>
+        /// ChatServer.OwnerId and MediaFile.OwnerId have a foreign key to UserInfo, so every test gets an existing owner.
+        /// </summary>
+        private async Task<UserInfo> CreateOwnerAsync()
+        {
+            var user = Persistable.CreateNew<UserInfo>();
+            user.Username = $"owner-{user.Id}";
+            user.Email = $"owner-{user.Id}@test.com";
+            user.Password = "hash-owner";
+            await userSaver.SaveAsync(user, TestContext.Current.CancellationToken);
+            return user;
         }
     }
 }

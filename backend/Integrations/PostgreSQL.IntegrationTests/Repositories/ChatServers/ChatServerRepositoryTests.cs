@@ -1,4 +1,4 @@
-﻿using Autofac;
+using Autofac;
 using Dapper;
 using FluentAssertions;
 using HootOut.ChatChannels.Entities;
@@ -8,6 +8,7 @@ using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.CommonIntegrationTests.S3;
+using HootOut.Contracts.ChatConversations.Enums;
 using HootOut.Contracts.ChatServers.Dtos;
 using HootOut.Contracts.Common;
 using HootOut.Contracts.Common.Saver;
@@ -24,6 +25,8 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
         private readonly IContainer container;
 
         private readonly ClearAllTables clearTables;
+
+        private UserInfo owner = null!;
 
         private readonly IChatServerRepository repository;
 
@@ -65,6 +68,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
         public async ValueTask InitializeAsync()
         {
             await clearTables.ClearTablesAsync();
+            owner = await CreateOwnerAsync();
         }
 
         public async ValueTask DisposeAsync()
@@ -428,6 +432,8 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             result.Channels.Select(c => c.Id).Should().Equal(alpha.Id, bravo.Id, charlie.Id);
             result.Channels.Select(c => c.Name).Should().Equal("alpha", "bravo", "charlie");
             result.Channels.Should().OnlyContain(c => c.ChatServerId == server.Id);
+            result.Channels.Select(c => c.ChatConversationId)
+                .Should().Equal(alpha.ChatConversationId, bravo.ChatConversationId, charlie.ChatConversationId);
         }
 
         [Fact]
@@ -480,11 +486,152 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
 
         #endregion
 
+        #region GetServerIdByConversationAndUserIdAsync
+
+        [Fact]
+        public async Task GetServerIdByConversationAndUserId_Member_ReturnsServerId()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var user = await CreateUserAsync("user1", ct);
+            var server = await CreateServerAsync("server", BaseDate, ct, user.Id);
+            var channel = await CreateChannelAsync(server.Id, "general", ct);
+            await CreateChannelAsync(server.Id, "random", ct);
+
+            var result = await repository.GetServerIdByConversationAndUserIdAsync(channel.ChatConversationId, user.Id, ct);
+
+            result.Should().Be(server.Id);
+        }
+
+        [Fact]
+        public async Task GetServerIdByConversationAndUserId_NotMember_ReturnsNull()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var owner = await CreateUserAsync("owner", ct);
+            var stranger = await CreateUserAsync("stranger", ct);
+            var server = await CreateServerAsync("server", BaseDate, ct, owner.Id);
+            var channel = await CreateChannelAsync(server.Id, "general", ct);
+
+            var result = await repository.GetServerIdByConversationAndUserIdAsync(channel.ChatConversationId, stranger.Id, ct);
+
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetServerIdByConversationAndUserId_MemberOfAnotherServer_ReturnsNull()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var owner = await CreateUserAsync("owner", ct);
+            var user = await CreateUserAsync("user1", ct);
+            var server = await CreateServerAsync("server", BaseDate, ct, owner.Id);
+            await CreateServerAsync("other", BaseDate, ct, user.Id);
+            var channel = await CreateChannelAsync(server.Id, "general", ct);
+
+            var result = await repository.GetServerIdByConversationAndUserIdAsync(channel.ChatConversationId, user.Id, ct);
+
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetServerIdByConversationAndUserId_DeletedMembership_ReturnsNull()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var user = await CreateUserAsync("user1", ct);
+            var server = await CreateServerAsync("server", BaseDate, ct, user.Id);
+            var channel = await CreateChannelAsync(server.Id, "general", ct);
+            await MarkMembershipAsDeletedAsync(server.Id, user.Id, ct);
+
+            var result = await repository.GetServerIdByConversationAndUserIdAsync(channel.ChatConversationId, user.Id, ct);
+
+            // A user who left the server must lose access to its channels
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetServerIdByConversationAndUserId_DeletedServer_ReturnsNull()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var user = await CreateUserAsync("user1", ct);
+            var server = await CreateServerAsync("server", BaseDate, ct, user.Id);
+            var channel = await CreateChannelAsync(server.Id, "general", ct);
+            await MarkServerAsDeletedAsync(server.Id, ct);
+
+            var result = await repository.GetServerIdByConversationAndUserIdAsync(channel.ChatConversationId, user.Id, ct);
+
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetServerIdByConversationAndUserId_DeletedChannel_ReturnsNull()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var user = await CreateUserAsync("user1", ct);
+            var server = await CreateServerAsync("server", BaseDate, ct, user.Id);
+            var channel = await CreateChannelAsync(server.Id, "general", ct);
+            await channelSaver.DeleteAsync(channel, ct);
+
+            var result = await repository.GetServerIdByConversationAndUserIdAsync(channel.ChatConversationId, user.Id, ct);
+
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetServerIdByConversationAndUserId_ChannelIdInsteadOfConversationId_ReturnsNull()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var user = await CreateUserAsync("user1", ct);
+            var server = await CreateServerAsync("server", BaseDate, ct, user.Id);
+            var channel = await CreateChannelAsync(server.Id, "general", ct);
+
+            var result = await repository.GetServerIdByConversationAndUserIdAsync(channel.Id, user.Id, ct);
+
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetServerIdByConversationAndUserId_NotExistingConversation_ReturnsNull()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var user = await CreateUserAsync("user1", ct);
+            var server = await CreateServerAsync("server", BaseDate, ct, user.Id);
+            await CreateChannelAsync(server.Id, "general", ct);
+
+            var result = await repository.GetServerIdByConversationAndUserIdAsync(Guid.NewGuid(), user.Id, ct);
+
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetServerIdByConversationAndUserId_DirectConversation_ReturnsNull()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var user = await CreateUserAsync("user1", ct);
+            await CreateServerAsync("server", BaseDate, ct, user.Id);
+            var conversationId = Guid.CreateVersion7();
+            await using (var conn = await provider.OpenConnectionAsync(ct))
+            {
+                await conn.ExecuteAsync(new CommandDefinition(
+                    """
+                        INSERT INTO "HootOut"."ChatConversation" ("Id", "ConversationType", "CreatedAt", "ModifiedAt")
+                        VALUES (@Id, @Type, @Now, @Now)
+                    """,
+                    new { Id = conversationId, Type = (short)ChatConversationType.Direct, Now = BaseDate },
+                    cancellationToken: ct));
+            }
+
+            var result = await repository.GetServerIdByConversationAndUserIdAsync(conversationId, user.Id, ct);
+
+            // A conversation without a channel does not belong to any server
+            result.Should().BeNull();
+        }
+
+        #endregion
+
         #region Cancellation
 
         [Theory]
         [InlineData(nameof(IChatServerRepository.GetServerDtosByUserIdAsync))]
         [InlineData(nameof(IChatServerRepository.GetServerDtoByIdAsync))]
+        [InlineData(nameof(IChatServerRepository.GetServerIdByConversationAndUserIdAsync))]
         public async Task AnyMethod_CancelledToken_ThrowsOperationCanceled(string method)
         {
             var ct = TestContext.Current.CancellationToken;
@@ -497,6 +644,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             {
                 nameof(IChatServerRepository.GetServerDtosByUserIdAsync) => () => repository.GetServerDtosByUserIdAsync(new PageRequest(), user.Id, cts.Token),
                 nameof(IChatServerRepository.GetServerDtoByIdAsync) => () => repository.GetServerDtoByIdAsync(server.Id, cts.Token),
+                nameof(IChatServerRepository.GetServerIdByConversationAndUserIdAsync) => () => repository.GetServerIdByConversationAndUserIdAsync(Guid.NewGuid(), user.Id, cts.Token),
                 _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
             };
 
@@ -520,7 +668,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             var server = Persistable.CreateNew<ChatServer>();
             server.Name = name;
             server.Description = $"Description of {name}";
-            server.OwnerId = memberIds.Length > 0 ? memberIds[0] : Guid.NewGuid();
+            server.OwnerId = memberIds.Length > 0 ? memberIds[0] : owner.Id;
             server.CreatedAt = createdAt;
             server.ModifiedAt = createdAt;
             await serverSaver.SaveAsync(server, ct);
@@ -612,6 +760,19 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
             // timestamptz stores microseconds while DateTime has 100 ns ticks
             actual.CreatedAt.Should().BeCloseTo(expected.CreatedAt, TimeSpan.FromMilliseconds(1));
             actual.ModifiedAt.Should().BeCloseTo(expected.ModifiedAt, TimeSpan.FromMilliseconds(1));
+        }
+
+        /// <summary>
+        /// ChatServer.OwnerId and MediaFile.OwnerId have a foreign key to UserInfo, so every test gets an existing owner.
+        /// </summary>
+        private async Task<UserInfo> CreateOwnerAsync()
+        {
+            var user = Persistable.CreateNew<UserInfo>();
+            user.Username = $"owner-{user.Id}";
+            user.Email = $"owner-{user.Id}@test.com";
+            user.Password = "hash-owner";
+            await userSaver.SaveAsync(user, TestContext.Current.CancellationToken);
+            return user;
         }
     }
 }

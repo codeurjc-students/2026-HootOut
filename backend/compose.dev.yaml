@@ -71,7 +71,7 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      - pgdata2:/var/lib/postgresql
+      - pgdata3:/var/lib/postgresql
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -130,7 +130,7 @@ services:
       - ${HOOTOUTAPI_HTTPS_PORTS}:8443
 
 volumes:
-  pgdata2:
+  pgdata3:
   s3-data:
   logs:
   rabbitmq:

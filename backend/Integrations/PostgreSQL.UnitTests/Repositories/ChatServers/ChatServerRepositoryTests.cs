@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common;
 using HootOut.PostgreSQL.Repositories.ChatServers;
@@ -11,7 +11,8 @@ namespace HootOut.PostgreSQL.UnitTests.Repositories.ChatServers
         public static TheoryData<string> RepositoryMethods =>
         [
             nameof(ChatServerRepository.GetServerDtosByUserIdAsync),
-            nameof(ChatServerRepository.GetServerDtoByIdAsync)
+            nameof(ChatServerRepository.GetServerDtoByIdAsync),
+            nameof(ChatServerRepository.GetServerIdByConversationAndUserIdAsync)
         ];
 
         [Fact]
@@ -56,6 +57,7 @@ namespace HootOut.PostgreSQL.UnitTests.Repositories.ChatServers
         {
             nameof(ChatServerRepository.GetServerDtosByUserIdAsync) => repository.GetServerDtosByUserIdAsync(new PageRequest(), Guid.NewGuid(), ct),
             nameof(ChatServerRepository.GetServerDtoByIdAsync) => repository.GetServerDtoByIdAsync(Guid.NewGuid(), ct),
+            nameof(ChatServerRepository.GetServerIdByConversationAndUserIdAsync) => repository.GetServerIdByConversationAndUserIdAsync(Guid.NewGuid(), Guid.NewGuid(), ct),
             _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
         };
     }

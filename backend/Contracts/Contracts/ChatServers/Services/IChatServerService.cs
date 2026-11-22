@@ -14,5 +14,6 @@ namespace HootOut.Contracts.ChatServers.Services
         Task<ServerInvitationDto> InviteMemberAsync(InviteServerMemberRequest request, Guid invitedBy, CancellationToken ct = default);
         Task<Guid?> UpdateServerInvitationAsync(UpdateServerInvitationRequest request, Guid userId, CancellationToken ct = default);
         Task<PageResult<ServerMemberDto>> GetServerMemberDtosAsync(Guid serverId, Guid userId, PageRequest request, CancellationToken ct = default);
+        Task ValidateUserCanSendMessageAsync(Guid conversationId, Guid userId, CancellationToken ct);
     }
 }

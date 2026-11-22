@@ -11,7 +11,7 @@ namespace HootOut.ChatMessages.Mappers
             {
                 Id = chatMessage.Id,
                 Content = chatMessage.Content,
-                ChatChannelId = chatMessage.ChatChannelId,
+                ChatConversationId = chatMessage.ChatConversationId,
                 Author = new Contracts.Users.Dtos.UserDto
                 {
                     Id = chatMessage.AuthorId

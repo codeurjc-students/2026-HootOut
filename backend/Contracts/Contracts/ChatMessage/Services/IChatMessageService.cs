@@ -8,6 +8,7 @@ namespace HootOut.Contracts.ChatMessage.Services
     public interface IChatMessageService
     {
         Task<ChatMessageDto> CreateChatMessageAsync(CreateChatMessageRequest request, CancellationToken ct = default);
-        Task<PageResult<ChatMessageDto>> GetMessagesByChannelAsync(Guid channelId, Guid? next = null, int pageSize = 10, CancellationToken ct = default);
+        Task<PageResult<ChatMessageDto>> GetMessagesByConversationIdAsync(Guid channelId, Guid? next = null, int pageSize = 10, CancellationToken ct = default);
+        Task ValidateUserCanAccessConversationAsync(Guid conversationId, Guid userId, CancellationToken ct = default);
     }
 }

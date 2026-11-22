@@ -1,16 +1,16 @@
 <script setup lang="ts">
   import ChatChannelService from '@/services/chatChannel/ChatChannelService'
   import { getValidationErrors } from '@/services/common/utils'
-  import { ApiError, ValidationError, type ChatChannel } from '@/types'
-  import { computed, onMounted, reactive, ref } from 'vue'
+  import { ApiError, ValidationError, type ChatChannel, type ChatServer } from '@/types'
+  import { computed, reactive, ref } from 'vue'
 
   defineExpose({
     cleanForm,
   })
 
-  const props = defineProps({
-    server: Object,
-  })
+  const props = defineProps<{
+    server?: ChatServer | null
+  }>()
 
   const emit = defineEmits<{
     (e: 'success', channel: ChatChannel): void
@@ -21,13 +21,13 @@
   const error = ref('')
 
   const canSubmit = computed(
-    () => !submitting.value && form.name.trim() !== '' && props.server?.Id?.trim() !== ''
+    () => !submitting.value && form.name.trim() !== '' && !!props.server?.id?.trim()
   )
 
   const formErrors = ref(new Map<string, Map<string, string>>())
 
   async function onSubmit() {
-    if (!canSubmit.value) return
+    if (!canSubmit.value || !props.server) return
 
     error.value = ''
     formErrors.value = new Map()
@@ -35,8 +35,8 @@
 
     try {
       const newChannel = await ChatChannelService.createNewChannel({
-        name: form.name,
-        chatServerId: props.server?.id,
+        name: form.name.trim(),
+        chatServerId: props.server.id,
       })
       form.name = ''
       emit('success', newChannel)
@@ -55,7 +55,8 @@
     }
   }
 
-  async function cleanForm() {
+  function cleanForm() {
+    error.value = ''
     formErrors.value = new Map()
     form.name = ''
     submitting.value = false
@@ -67,17 +68,13 @@
     <p class="custom-form-row" :aria-label="props.server?.name">Server: {{ props.server?.name }}</p>
     <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
 
-    <p v-for="err in formErrors.get('Name')?.values()" :key="err" class="custom-form-field-error">
-      {{ err }}
-    </p>
-
     <div class="custom-form-row">
       <div class="custom-form-label-wrapper">
-        <label for="server-name">Channel Name *</label>
+        <label for="create-channel-name">Channel Name *</label>
       </div>
       <div class="custom-form-input-wrapper">
         <input
-          id="server-name"
+          id="create-channel-name"
           class="custom-form-text-input"
           v-model="form.name"
           type="text"
@@ -94,8 +91,6 @@
       </p>
     </div>
 
-    <button class="button-action" type="submit" :disabled="submitting || !form.name">
-      Create Channel
-    </button>
+    <button class="button-action" type="submit" :disabled="!canSubmit">Create Channel</button>
   </form>
 </template>

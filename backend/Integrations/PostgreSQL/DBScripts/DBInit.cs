@@ -18,12 +18,15 @@ namespace HootOut.PostgreSQL.DBScripts
         {
             await using var conn = await sqlProvider.OpenConnectionAsync(ct);
 
-            await conn.ExecuteAsync(Resources.UserInfoTable, ct);
-            await conn.ExecuteAsync(Resources.ChatServerTable, ct);
-            await conn.ExecuteAsync(Resources.ChatChannelTable, ct);
-            await conn.ExecuteAsync(Resources.ChatMessageTable, ct);
-            await conn.ExecuteAsync(Resources.MediaFileTable, ct);
-            await conn.ExecuteAsync(Resources.ChatMessageAttachmentTable, ct);
+            await conn.ExecuteAsync(new CommandDefinition(Resources.UserInfoTable, cancellationToken: ct));
+            await conn.ExecuteAsync(new CommandDefinition(Resources.ChatConversationTable, cancellationToken: ct));
+            await conn.ExecuteAsync(new CommandDefinition(Resources.ChatServerTable, cancellationToken: ct));
+            await conn.ExecuteAsync(new CommandDefinition(Resources.ChatChannelTable, cancellationToken: ct));
+            await conn.ExecuteAsync(new CommandDefinition(Resources.ChatMessageTable, cancellationToken: ct));
+            await conn.ExecuteAsync(new CommandDefinition(Resources.MediaFileTable, cancellationToken: ct));
+            await conn.ExecuteAsync(new CommandDefinition(Resources.ChatMessageAttachmentTable, cancellationToken: ct));
+            await conn.ExecuteAsync(new CommandDefinition(Resources.FriendTable, cancellationToken: ct));
+            await conn.ExecuteAsync(new CommandDefinition(Resources.DirectConversationTable, cancellationToken: ct));
         }
 
         public int Priority => 0;

@@ -3,7 +3,7 @@ import { createTestServer } from './Common.js'
 
 test('test close server modal', async ({ page }) => {
   await page.goto('/chat')
-  await page.locator('#new-server-btn').click()
+  await page.getByRole('button', { name: 'Create server', exact: true }).click()
 
   const modal = page.locator('.modal')
   await expect(modal).toBeVisible()
@@ -24,7 +24,7 @@ test('test create and enter server', async ({ page }) => {
   const serverList = page.locator('#server-list')
   const serverbtn = serverList.locator(`[server-id="${server.id}"]`)
 
-  expect(serverbtn).not.toBeNull()
+  await expect(serverbtn).toBeVisible()
 
   await serverbtn.click()
 

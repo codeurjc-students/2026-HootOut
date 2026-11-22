@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using HootOut.ChatMessages.Entities;
 using HootOut.CommonDomain.Persistence;
 using HootOut.PostgreSQL.Savers.ChatMessages;

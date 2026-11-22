@@ -30,10 +30,16 @@ then
 		"ContentType" TEXT NOT NULL,
 		"Deleted" boolean NOT NULL DEFAULT false,
 		"CreatedAt" timestamptz  NOT NULL,
-		"ModifiedAt" timestamptz NOT NULL 
+		"ModifiedAt" timestamptz NOT NULL,
+		CONSTRAINT fk_media_file_owner FOREIGN KEY ("OwnerId") REFERENCES "HootOut"."UserInfo" ("Id")
 	);
 
+
 end if;
+
+CREATE INDEX IF NOT EXISTS ix_media_file_owner
+ON "HootOut"."MediaFile" ("OwnerId")
+WHERE "Deleted" = false;
  
 
 end $$;

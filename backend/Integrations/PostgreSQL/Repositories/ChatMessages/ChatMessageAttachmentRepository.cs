@@ -2,6 +2,7 @@
 using HootOut.ChatMessages.Repositories;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.ChatMessage.Dtos;
+using HootOut.Contracts.MediaFile.Dtos;
 
 namespace HootOut.PostgreSQL.Repositories.ChatMessages
 {
@@ -36,6 +37,19 @@ namespace HootOut.PostgreSQL.Repositories.ChatMessages
                 {
                     MessageId = messageId
                 }, cancellationToken: ct));
+        }
+
+        public async Task<MediaFileDto?> GetMediaFileByIdAsync(Guid mediaFileId, CancellationToken ct = default)
+        {
+            await using var conn = await provider.OpenConnectionAsync(ct);
+            return await conn.QueryFirstOrDefaultAsync<MediaFileDto?>(new CommandDefinition(
+                """
+                 SELECT 
+                 "Id", "FileName", "OwnerId", "ContentType"
+                 FROM "HootOut"."MediaFile"
+                 WHERE "Id" = @Id
+                """
+                , new {Id = mediaFileId },cancellationToken: ct));
         }
     }
 }

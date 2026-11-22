@@ -14,7 +14,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatChannels
         }
 
         private const string ChatChannelColums =
-            """ "Id", "Name", "ChatServerId", "CreatedAt", "ModifiedAt" """;
+            """ "Id", "Name", "ChatServerId", "ChatConversationId", "CreatedAt", "ModifiedAt" """;
 
         public async Task<IEnumerable<ChatChannel>> GetChannelsByServerId(Guid serverId, CancellationToken ct = default)
         {

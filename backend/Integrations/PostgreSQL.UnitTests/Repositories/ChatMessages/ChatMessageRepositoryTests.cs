@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using HootOut.CommonDomain.Persistence;
 using HootOut.PostgreSQL.Repositories.ChatMessages;
 using Moq;
@@ -27,7 +27,7 @@ namespace HootOut.PostgreSQL.UnitTests.Repositories.ChatMessages
         }
 
         [Fact]
-        public async Task SearchMessagesByChannelIdAsync_ConnectionFails_PropagatesExceptionAndPassesToken()
+        public async Task SearchMessagesByConversationIdAsync_ConnectionFails_PropagatesExceptionAndPassesToken()
         {
             using var cts = new CancellationTokenSource();
             var provider = new Mock<IPersistenceProvider>(MockBehavior.Strict);
@@ -37,7 +37,7 @@ namespace HootOut.PostgreSQL.UnitTests.Repositories.ChatMessages
 
             var repository = new ChatMessageRepository(provider.Object);
 
-            var act = () => repository.SearchMessagesByChannelIdAsync(Guid.NewGuid(), Guid.NewGuid(), 10, cts.Token);
+            var act = () => repository.SearchMessagesByConversationIdAsync(Guid.NewGuid(), Guid.NewGuid(), 10, cts.Token);
 
             await act.Should().ThrowAsync<InvalidOperationException>()
                 .WithMessage("connection failed");

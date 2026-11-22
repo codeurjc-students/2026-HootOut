@@ -15,8 +15,8 @@ namespace HootOut.PostgreSQL.Savers.ChatMessages
         }
 
         private const string addChatMessage = """
-            INSERT INTO "HootOut"."ChatMessage" ("Id", "AuthorId", "ChatChannelId", "Content", "CreatedAt", "ModifiedAt") 
-            VALUES (@Id, @AuthorId, @ChatChannelId, @Content, @CreatedAt, @ModifiedAt)
+            INSERT INTO "HootOut"."ChatMessage" ("Id", "AuthorId", "ChatConversationId", "Content", "CreatedAt", "ModifiedAt") 
+            VALUES (@Id, @AuthorId, @ChatConversationId, @Content, @CreatedAt, @ModifiedAt)
         """;
 
         public async Task SaveAsync(ChatMessage item, CancellationToken ct = default)
@@ -30,11 +30,10 @@ namespace HootOut.PostgreSQL.Savers.ChatMessages
                     {
                         item.Id,
                         item.AuthorId,
-                        item.ChatChannelId,
+                        item.ChatConversationId,
                         item.Content,
                         item.CreatedAt,
                         item.ModifiedAt
-
                     }, tx, cancellationToken: ct));
                 await tx.CommitAsync(ct);
             }

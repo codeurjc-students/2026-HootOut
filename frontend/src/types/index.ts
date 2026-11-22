@@ -5,6 +5,8 @@ export * from './chatMessage'
 export * from './chatChannel'
 export * from './chatServer'
 export * from './mediaFile'
+export * from './friends'
+export * from './chatConversation'
 
 export class ApiError extends Error {
   constructor(
@@ -41,7 +43,7 @@ export interface PageResult<T> {
 
 export interface PageRequest extends Record<string, unknown> {
   next?: string | null
-  descending: boolean
+  descending?: boolean | null
   sortBy?: string | null
   pageSize?: number | null
 }

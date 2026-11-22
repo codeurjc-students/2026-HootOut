@@ -1,4 +1,4 @@
-﻿using HootOut.Contracts.ChatServers.Enums;
+﻿using HootOut.Contracts.Common.Enums;
 
 namespace HootOut.Contracts.ChatServers.Dtos
 {
@@ -9,7 +9,7 @@ namespace HootOut.Contracts.ChatServers.Dtos
         public string ServerName { get; set; } = string.Empty;
         public Guid UserId { get; set; }
         public string Username { get; set; } = string.Empty;
-        public ServerInvitationStatus Status { get; set; }
+        public InvitationStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime ModifiedAt { get; set; }
     }

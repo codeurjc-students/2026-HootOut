@@ -1,10 +1,10 @@
-﻿using Autofac;
+using Autofac;
 using Dapper;
 using FluentAssertions;
 using HootOut.ChatChannels.Entities;
 using HootOut.ChatMessages.Entities;
-using HootOut.ChatMessages.Repositories;
 using HootOut.ChatServers.Entities;
+using HootOut.ChatMessages.Repositories;
 using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
@@ -24,6 +24,10 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         private readonly IContainer container;
 
         private readonly ClearAllTables clearTables;
+
+        private UserInfo owner = null!;
+
+        private readonly ISaver<UserInfo> userSaver;
 
         private readonly IChatMessageAttachmentRepository repository;
 
@@ -46,6 +50,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
             Assert.Same(postgresContainer.postgreSQLProvider, provider);
 
             clearTables = container.Resolve<ClearAllTables>();
+            userSaver = container.Resolve<ISaver<UserInfo>>();
             var defaultValues = container.Resolve<IEnumerable<IDefaultValues>>().OrderBy(x => x.Priority);
 
             foreach (var value in defaultValues)
@@ -62,6 +67,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
         public async ValueTask InitializeAsync()
         {
             await clearTables.ClearTablesAsync();
+            owner = await CreateOwnerAsync();
         }
 
         public async ValueTask DisposeAsync()
@@ -256,7 +262,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
 
         private async Task<ChatMessage> CreateMessageAsync(CancellationToken ct)
         {
-            // ChatMessage has foreign keys to UserInfo and ChatChannel, and ChatChannel to ChatServer
+            // ChatMessage has foreign keys to UserInfo and ChatConversation; the channel saver creates the conversation and ChatChannel needs a ChatServer
             var author = Persistable.CreateNew<UserInfo>();
             author.Username = $"user-{author.Id}";
             author.Email = $"{author.Id}@test.com";
@@ -276,7 +282,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
 
             var message = Persistable.CreateNew<ChatMessage>();
             message.AuthorId = author.Id;
-            message.ChatChannelId = channel.Id;
+            message.ChatConversationId = channel.ChatConversationId;
             message.Content = "message with attachments";
             await messageSaver.SaveAsync(message, ct);
             return message;
@@ -290,7 +296,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
             mediaFile.ContentType = contentType;
             mediaFile.BytesSize = 1024;
             mediaFile.Url = $"http://localhost/media/{fileName}";
-            mediaFile.OwnerId = Guid.NewGuid();
+            mediaFile.OwnerId = owner.Id;
             await mediaFileSaver.SaveAsync(mediaFile, ct);
             return mediaFile;
         }
@@ -316,6 +322,19 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatMessages
                 $"""UPDATE "HootOut"."{table}" SET "Deleted" = true WHERE "Id" = @Id""",
                 new { Id = id },
                 cancellationToken: ct));
+        }
+
+        /// <summary>
+        /// MediaFile.OwnerId has a foreign key to UserInfo, so every test gets an existing owner for its files.
+        /// </summary>
+        private async Task<UserInfo> CreateOwnerAsync()
+        {
+            var user = Persistable.CreateNew<UserInfo>();
+            user.Username = $"owner-{user.Id}";
+            user.Email = $"owner-{user.Id}@test.com";
+            user.Password = "hash-owner";
+            await userSaver.SaveAsync(user, TestContext.Current.CancellationToken);
+            return user;
         }
     }
 }

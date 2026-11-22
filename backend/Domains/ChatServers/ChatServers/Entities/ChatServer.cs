@@ -2,7 +2,7 @@
 
 namespace HootOut.ChatServers.Entities
 {
-    public class ChatServer : Persistable
+    public sealed class ChatServer : Persistable
     {
         public string Name { get; set; } = string.Empty;
 

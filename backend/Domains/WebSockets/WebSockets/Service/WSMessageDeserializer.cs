@@ -1,4 +1,4 @@
-﻿
+﻿using FluentValidation;
 using HootOut.Contracts.WebSockets.Dtos;
 using HootOut.Contracts.WebSockets.Entities;
 using HootOut.Contracts.WebSockets.Handlers;
@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 namespace HootOut.WebSockets.Service
 {
     public class WSMessageDeserializer : IWSMessageDeserializer
-    {
+    {   
         private ILogger<WSMessageDeserializer> logger;
         private IEnumerable<IWSMessageHandler> wsMessageHandlers;
 
@@ -58,7 +58,14 @@ namespace HootOut.WebSockets.Service
                     ConnectionId = connectionId,
                 };
 
-                foreach (var handler in wsMessageHandlers.Where(x => x.Type == message.Type))
+                var handlers = wsMessageHandlers.Where(x => x.Type == message.Type).ToList();
+                if (handlers.Count == 0)
+                {
+                    // Invalid (0), Ack, Error or an unknown value: nobody handles it
+                    throw new ValidationException("Unsupported message type");
+                }
+
+                foreach (var handler in handlers)
                 {
                     await handler.HandleMessageAsync(connectionId, user, message, ct);
                 }
@@ -76,21 +83,31 @@ namespace HootOut.WebSockets.Service
                     await wsMessageSender.SendMessageAsync(connectionId, ackMessage);
                 }
             }
+            catch (ValidationException ex)
+            {
+                // Validation messages are meant for the user, so they are sent back
+                logger.LogInformation("Rejected {Type} from connection {ConnectionId} for user {UserId}: {Error}", messageDto.Type, connectionId, user.UserId, ex.Message);
+                await SendErrorAsync(connectionId, messageDto, ex.Errors.FirstOrDefault()?.ErrorMessage ?? ex.Message);
+            }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 logger.LogError(ex, "Handler failed for {Type}", messageDto.Type);
-
-                if (messageDto.Id.HasValue)
-                {
-                    await wsMessageSender.SendMessageAsync(connectionId, new WebSocketMessageDto
-                    {
-                        Type = WSHandlerType.Error,
-                        ReplyTo = messageDto.Id,
-                        Error = "Could not process message"
-                    });
-                }
-
+                await SendErrorAsync(connectionId, messageDto, "Could not process message");
             }
+        }
+
+        private async Task SendErrorAsync(Guid connectionId, WebSocketMessageDto messageDto, string error)
+        {
+            if (!messageDto.Id.HasValue)
+                return;
+
+            await wsMessageSender.SendMessageAsync(connectionId, new WebSocketMessageDto
+            {
+                Type = WSHandlerType.Error,
+                ReplyTo = messageDto.Id,
+                Channel = messageDto.Channel,
+                Error = error
+            });
         }
     }
 }

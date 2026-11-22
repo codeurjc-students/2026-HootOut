@@ -45,9 +45,13 @@
 
         <div class="modal-options pointer flex md:ml-auto">
           <slot name="options"></slot>
-          <div class="material-symbols-sharp modal-close" @click="close" aria-label="close">
+          <button
+            class="pointer inline-btn material-symbols-sharp modal-close"
+            @click="close"
+            aria-label="close"
+          >
             close
-          </div>
+          </button>
         </div>
       </div>
       <div class="modal-body max-h-full flex-1" @keyup.esc="close">

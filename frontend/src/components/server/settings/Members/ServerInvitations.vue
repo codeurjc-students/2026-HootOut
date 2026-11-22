@@ -5,8 +5,8 @@
   import { dateTimeMapper } from '@/services/common/utils'
   import { serverInfoStore } from '@/stores/serverInfo'
   import {
-    ServerInvitationStatus,
-    serverInvitationStatusMapper,
+    InvitationStatus,
+    InvitationStatusMapper,
     type PageRequest,
     type PageResult,
     type ServerInvitation,
@@ -31,7 +31,7 @@
     try {
       await ChatServerService.updateServerInvitation({
         id: invitation.id,
-        status: ServerInvitationStatus.Revoked,
+        status: InvitationStatus.Revoked,
       })
       // Reloads the current page with the table's own loading state and error handling
       await table.value?.refresh()
@@ -57,7 +57,7 @@
       <PaginatedTable
         :headers="[
           { key: 'username', name: 'Username', canSort: true, default: true },
-          { key: 'status', name: 'Status', canSort: true, mapper: serverInvitationStatusMapper },
+          { key: 'status', name: 'Status', canSort: true, mapper: InvitationStatusMapper },
           { key: 'createdAt', name: 'Invited Date', canSort: true, mapper: dateTimeMapper },
           { key: 'modifiedAt', name: 'Last Update', canSort: true, mapper: dateTimeMapper },
         ]"
@@ -70,7 +70,7 @@
             class="pointer button-action py-1!"
             :disabled="revoking.has(row.id)"
             @click="async () => await revokeInvitation(row)"
-            v-if="row.status.value == ServerInvitationStatus.Pending"
+            v-if="row.status.value == InvitationStatus.Pending"
           >
             Revoke
           </button>

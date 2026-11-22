@@ -23,22 +23,65 @@ then
 	CREATE TABLE "HootOut"."ChatMessage"(
 		"Id" UUID NOT NULL PRIMARY KEY ,
 		"AuthorId" UUID NOT NULL,
-		"ChatChannelId" UUID NOT NULL,
+		"ChatConversationId" UUID NOT NULL,
 		"Content" TEXT NOT NULL,
 		"Deleted" boolean NOT NULL DEFAULT false,
 		"CreatedAt" timestamptz  NOT NULL,
 		"ModifiedAt" timestamptz NOT NULL,
-		CONSTRAINT fk_chat_message_author FOREIGN KEY ("AuthorId") REFERENCES "HootOut"."UserInfo" ("Id"),
-		CONSTRAINT fk_chat_message_channel FOREIGN KEY ("ChatChannelId") REFERENCES "HootOut"."ChatChannel" ("Id")
+		CONSTRAINT fk_chat_message_author
+			FOREIGN KEY ("AuthorId") REFERENCES "HootOut"."UserInfo" ("Id"),
+		CONSTRAINT fk_chat_message_conversation
+			FOREIGN KEY ("ChatConversationId") REFERENCES "HootOut"."ChatConversation" ("Id")
 	); 
- 
+
 end if;
 
-CREATE INDEX IF NOT EXISTS ix_chat_message_channel_created
-ON "HootOut"."ChatMessage" ("ChatChannelId", "CreatedAt" DESC, "Id" DESC)
+-- Databases created before the foreign keys existed
+if NOT EXISTS (SELECT 1 FROM pg_constraint
+				WHERE conname = 'fk_chat_message_author')
+then
+	ALTER TABLE "HootOut"."ChatMessage"
+		ADD CONSTRAINT fk_chat_message_author
+		FOREIGN KEY ("AuthorId") REFERENCES "HootOut"."UserInfo" ("Id");
+end if;
+
+-- Databases created before ChatConversation existed:
+-- copy each message's conversation from its channel, then drop "ChatChannelId"
+-- (dropping the column also drops fk_chat_message_channel and ix_chat_message_channel_created)
+if EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+			WHERE TABLE_SCHEMA = 'HootOut'
+			AND   TABLE_NAME = 'ChatMessage'
+			AND   COLUMN_NAME = 'ChatChannelId')
+then
+	ALTER TABLE "HootOut"."ChatMessage"
+		ADD COLUMN IF NOT EXISTS "ChatConversationId" UUID;
+
+	UPDATE "HootOut"."ChatMessage" m
+	SET "ChatConversationId" = c."ChatConversationId"
+	FROM "HootOut"."ChatChannel" c
+	WHERE c."Id" = m."ChatChannelId";
+
+	ALTER TABLE "HootOut"."ChatMessage"
+		ALTER COLUMN "ChatConversationId" SET NOT NULL;
+
+	ALTER TABLE "HootOut"."ChatMessage"
+		DROP COLUMN "ChatChannelId";
+end if;
+
+if NOT EXISTS (SELECT 1 FROM pg_constraint
+				WHERE conname = 'fk_chat_message_conversation')
+then
+	ALTER TABLE "HootOut"."ChatMessage"
+		ADD CONSTRAINT fk_chat_message_conversation
+		FOREIGN KEY ("ChatConversationId") REFERENCES "HootOut"."ChatConversation" ("Id");
+end if;
+
+CREATE INDEX IF NOT EXISTS ix_chat_message_conversation_created
+ON "HootOut"."ChatMessage" ("ChatConversationId", "CreatedAt" DESC, "Id" DESC)
 WHERE "Deleted" = false; 
 
+-- ChatConversations are never hard deleted, so ix_chat_message_conversation_created is enough for that foreign key
 CREATE INDEX IF NOT EXISTS ix_chat_message_author
-ON "HootOut"."ChatMessage" ("AuthorId"); 
+ON "HootOut"."ChatMessage" ("AuthorId");
 
 end $$;

@@ -1,4 +1,4 @@
-﻿using Autofac;
+using Autofac;
 using Dapper;
 using FluentAssertions;
 using HootOut.ChatServers.Entities;
@@ -6,7 +6,7 @@ using HootOut.CommonDomain.DefaultValues;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.CommonIntegrationTests.S3;
-using HootOut.Contracts.ChatServers.Enums;
+using HootOut.Contracts.Common.Enums;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Infraestructure.DI;
 using HootOut.Users.Entities;
@@ -66,11 +66,11 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         #region Insert
 
         [Theory]
-        [InlineData(ServerInvitationStatus.Pending)]
-        [InlineData(ServerInvitationStatus.Accepted)]
-        [InlineData(ServerInvitationStatus.Rejected)]
-        [InlineData(ServerInvitationStatus.Revoked)]
-        public async Task SaveAsync_NewInvitation_PersistsAllColumns(ServerInvitationStatus status)
+        [InlineData(InvitationStatus.Pending)]
+        [InlineData(InvitationStatus.Accepted)]
+        [InlineData(InvitationStatus.Rejected)]
+        [InlineData(InvitationStatus.Revoked)]
+        public async Task SaveAsync_NewInvitation_PersistsAllColumns(InvitationStatus status)
         {
             var ct = TestContext.Current.CancellationToken;
             var (server, inviter, user) = await CreateScenarioAsync(ct);
@@ -95,9 +95,9 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
             var (server, inviter, user) = await CreateScenarioAsync(ct);
-            await saver.SaveAsync(BuildInvitation(server.Id, inviter.Id, user.Id, ServerInvitationStatus.Pending), ct);
+            await saver.SaveAsync(BuildInvitation(server.Id, inviter.Id, user.Id, InvitationStatus.Pending), ct);
 
-            var duplicate = BuildInvitation(server.Id, inviter.Id, user.Id, ServerInvitationStatus.Pending);
+            var duplicate = BuildInvitation(server.Id, inviter.Id, user.Id, InvitationStatus.Pending);
 
             var act = () => saver.SaveAsync(duplicate, ct);
 
@@ -109,16 +109,16 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         }
 
         [Theory]
-        [InlineData(ServerInvitationStatus.Accepted)]
-        [InlineData(ServerInvitationStatus.Rejected)]
-        [InlineData(ServerInvitationStatus.Revoked)]
-        public async Task SaveAsync_NewPendingAfterPreviousWasClosed_Persists(ServerInvitationStatus previousStatus)
+        [InlineData(InvitationStatus.Accepted)]
+        [InlineData(InvitationStatus.Rejected)]
+        [InlineData(InvitationStatus.Revoked)]
+        public async Task SaveAsync_NewPendingAfterPreviousWasClosed_Persists(InvitationStatus previousStatus)
         {
             var ct = TestContext.Current.CancellationToken;
             var (server, inviter, user) = await CreateScenarioAsync(ct);
             await saver.SaveAsync(BuildInvitation(server.Id, inviter.Id, user.Id, previousStatus), ct);
 
-            await saver.SaveAsync(BuildInvitation(server.Id, inviter.Id, user.Id, ServerInvitationStatus.Pending), ct);
+            await saver.SaveAsync(BuildInvitation(server.Id, inviter.Id, user.Id, InvitationStatus.Pending), ct);
 
             (await CountRowsAsync(ct)).Should().Be(2);
         }
@@ -130,8 +130,8 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
             var (server, inviter, user) = await CreateScenarioAsync(ct);
             var otherServer = await CreateServerAsync("other", inviter.Id, ct);
 
-            await saver.SaveAsync(BuildInvitation(server.Id, inviter.Id, user.Id, ServerInvitationStatus.Pending), ct);
-            await saver.SaveAsync(BuildInvitation(otherServer.Id, inviter.Id, user.Id, ServerInvitationStatus.Pending), ct);
+            await saver.SaveAsync(BuildInvitation(server.Id, inviter.Id, user.Id, InvitationStatus.Pending), ct);
+            await saver.SaveAsync(BuildInvitation(otherServer.Id, inviter.Id, user.Id, InvitationStatus.Pending), ct);
 
             (await CountRowsAsync(ct)).Should().Be(2);
         }
@@ -141,7 +141,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
             var (server, inviter, user) = await CreateScenarioAsync(ct);
-            var invitation = BuildInvitation(server.Id, inviter.Id, user.Id, (ServerInvitationStatus)5);
+            var invitation = BuildInvitation(server.Id, inviter.Id, user.Id, (InvitationStatus)5);
 
             var act = () => saver.SaveAsync(invitation, ct);
 
@@ -163,7 +163,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
                 missingReference == "server" ? Guid.NewGuid() : server.Id,
                 missingReference == "invitedBy" ? Guid.NewGuid() : inviter.Id,
                 missingReference == "user" ? Guid.NewGuid() : user.Id,
-                ServerInvitationStatus.Pending);
+                InvitationStatus.Pending);
 
             var act = () => saver.SaveAsync(invitation, ct);
 
@@ -178,16 +178,16 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         #region Update
 
         [Theory]
-        [InlineData(ServerInvitationStatus.Accepted)]
-        [InlineData(ServerInvitationStatus.Rejected)]
-        [InlineData(ServerInvitationStatus.Revoked)]
-        public async Task SaveAsync_ExistingInvitation_UpdatesStatusAndModifiedAtOnly(ServerInvitationStatus newStatus)
+        [InlineData(InvitationStatus.Accepted)]
+        [InlineData(InvitationStatus.Rejected)]
+        [InlineData(InvitationStatus.Revoked)]
+        public async Task SaveAsync_ExistingInvitation_UpdatesStatusAndModifiedAtOnly(InvitationStatus newStatus)
         {
             var ct = TestContext.Current.CancellationToken;
             var (server, inviter, user) = await CreateScenarioAsync(ct);
             var otherServer = await CreateServerAsync("other", inviter.Id, ct);
             var otherUser = await CreateUserAsync("other", ct);
-            var original = BuildInvitation(server.Id, inviter.Id, user.Id, ServerInvitationStatus.Pending);
+            var original = BuildInvitation(server.Id, inviter.Id, user.Id, InvitationStatus.Pending);
             await saver.SaveAsync(original, ct);
 
             var updated = new ServerInvitation
@@ -219,17 +219,17 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
             var (server, inviter, user) = await CreateScenarioAsync(ct);
-            var rejected = BuildInvitation(server.Id, inviter.Id, user.Id, ServerInvitationStatus.Rejected);
+            var rejected = BuildInvitation(server.Id, inviter.Id, user.Id, InvitationStatus.Rejected);
             await saver.SaveAsync(rejected, ct);
-            await saver.SaveAsync(BuildInvitation(server.Id, inviter.Id, user.Id, ServerInvitationStatus.Pending), ct);
+            await saver.SaveAsync(BuildInvitation(server.Id, inviter.Id, user.Id, InvitationStatus.Pending), ct);
 
-            rejected.Status = ServerInvitationStatus.Pending;
+            rejected.Status = InvitationStatus.Pending;
             var act = () => saver.SaveAsync(rejected, ct);
 
             var exception = await act.Should().ThrowExactlyAsync<Exception>();
             exception.WithInnerException<PostgresException>()
                 .Which.ConstraintName.Should().Be("ux_server_invitation_pending");
-            (await GetRowAsync(rejected.Id, ct))!.Status.Should().Be((short)ServerInvitationStatus.Rejected);
+            (await GetRowAsync(rejected.Id, ct))!.Status.Should().Be((short)InvitationStatus.Rejected);
         }
 
         #endregion
@@ -239,7 +239,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
         {
             var ct = TestContext.Current.CancellationToken;
             var (server, inviter, user) = await CreateScenarioAsync(ct);
-            var invitation = BuildInvitation(server.Id, inviter.Id, user.Id, ServerInvitationStatus.Pending);
+            var invitation = BuildInvitation(server.Id, inviter.Id, user.Id, InvitationStatus.Pending);
             using var cts = new CancellationTokenSource();
             await cts.CancelAsync();
 
@@ -278,7 +278,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Savers.ChatServers
             return server;
         }
 
-        private static ServerInvitation BuildInvitation(Guid serverId, Guid invitedBy, Guid userId, ServerInvitationStatus status)
+        private static ServerInvitation BuildInvitation(Guid serverId, Guid invitedBy, Guid userId, InvitationStatus status)
         {
             var invitation = Persistable.CreateNew<ServerInvitation>();
             invitation.ChatServerId = serverId;
