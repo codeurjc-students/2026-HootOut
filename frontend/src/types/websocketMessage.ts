@@ -2,7 +2,7 @@ export interface WebSocketMessage {
   id?: string
   replyTo?: string
   type: number
-  channel: string | null
+  channel: string | undefined
   payload?: any | null
 }
 

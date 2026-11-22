@@ -42,6 +42,10 @@
       updating.value.delete(invitation.id)
     }
   }
+
+  // ReceivedFriendRequests.vue
+  const acceptInvitation = (row: { id: string }) => updateInvitation(row, InvitationStatus.Accepted)
+  const rejectInvitation = (row: { id: string }) => updateInvitation(row, InvitationStatus.Rejected)
 </script>
 
 <template>
@@ -66,14 +70,14 @@
             <button
               class="pointer button-action py-1!"
               :disabled="updating.has(row.id)"
-              @click="async () => await updateInvitation(row, InvitationStatus.Accepted)"
+              @click="async () => await acceptInvitation(row)"
             >
               Join
             </button>
             <button
               class="pointer button-action py-1!"
               :disabled="updating.has(row.id)"
-              @click="async () => await updateInvitation(row, InvitationStatus.Rejected)"
+              @click="async () => await rejectInvitation(row)"
             >
               Reject
             </button>

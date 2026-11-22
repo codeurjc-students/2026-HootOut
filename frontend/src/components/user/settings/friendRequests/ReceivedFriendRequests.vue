@@ -38,6 +38,11 @@
       updating.value.delete(friendRequest.id)
     }
   }
+
+  const acceptFriendRequest = (row: { id: string }) =>
+    updateFriendRequest(row, InvitationStatus.Accepted)
+  const rejectFriendRequest = (row: { id: string }) =>
+    updateFriendRequest(row, InvitationStatus.Rejected)
 </script>
 
 <template>
@@ -64,14 +69,14 @@
             <button
               class="pointer button-action py-1!"
               :disabled="updating.has(row.id)"
-              @click="async () => await updateFriendRequest(row, InvitationStatus.Accepted)"
+              @click="async () => await acceptFriendRequest(row)"
             >
               Accept
             </button>
             <button
               class="pointer button-action py-1!"
               :disabled="updating.has(row.id)"
-              @click="async () => await updateFriendRequest(row, InvitationStatus.Rejected)"
+              @click="async () => await rejectFriendRequest(row)"
             >
               Reject
             </button>

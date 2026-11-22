@@ -223,7 +223,7 @@ describe('WebSocketMessageService', () => {
       const callback = vi.fn()
       service.subscribe('general', callback)
 
-      service.unsubscribe('general', callback)
+      service.unsubscribe('general')
 
       expect(lastSentMessage()).toEqual({ channel: 'general', type: WSMessageType.Unsubscribe })
     })
@@ -232,7 +232,7 @@ describe('WebSocketMessageService', () => {
       const callback = vi.fn()
       service.subscribe('general', callback)
 
-      service.unsubscribe('general', callback)
+      service.unsubscribe('general')
       receive({ channel: 'general', type: WSMessageType.ChatMessage })
 
       expect(callback).not.toHaveBeenCalled()
@@ -243,7 +243,7 @@ describe('WebSocketMessageService', () => {
       service.subscribe('general', vi.fn())
       service.subscribe('random', random)
 
-      service.unsubscribe('general', vi.fn())
+      service.unsubscribe('general')
       receive({ channel: 'random', type: WSMessageType.ChatMessage })
 
       expect(random).toHaveBeenCalledTimes(1)

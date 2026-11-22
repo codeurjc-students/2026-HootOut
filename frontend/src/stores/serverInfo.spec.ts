@@ -26,7 +26,14 @@ const { serverService, channelService, messageService, ws } = mocks
 
 // Each channel has its own conversation, with the id "conversation-<channel id>"
 function channel(id: string): ChatChannel {
-  return { id, name: id, chatConversationId: `conversation-${id}` }
+  return {
+    id,
+    name: id,
+    chatConversationId: `conversation-${id}`,
+    createdAt: '',
+    modifiedAt: '',
+    serverId: '',
+  }
 }
 
 const general = channel('general')
@@ -54,7 +61,13 @@ async function storeWithServer(
   openChannelId?: string
 ) {
   const store = serverInfoStore()
-  await store.setCurrentServerSettings({ id: 's1', name: 'My Server', channels })
+  await store.setCurrentServerSettings({
+    id: 's1',
+    name: 'My Server',
+    channels,
+    createdAt: '',
+    modifiedAt: '',
+  })
   store.setServerChannels(channels)
   if (openChannelId) {
     messageService.getMessagesByConversationId.mockResolvedValueOnce(page([chatMessage('m1')]))
