@@ -1,4 +1,4 @@
-import { APIRequestContext } from '@playwright/test'
+import { type APIRequestContext } from '@playwright/test'
 import { test, expect, acquireAccount } from '../fixtures.js'
 
 // Reset storage state for this file to avoid being authenticated
@@ -24,7 +24,7 @@ test('test login user bad request', async ({ page }) => {
   const title = page.locator('h1')
   await expect(title).toHaveText('Welcome Back!')
 
-  const logInBtn = page.getByRole('button', { name: 'Log In' })
+  const logInBtn = page.getByRole('button', { name: 'Log In', exact: true })
   await expect(logInBtn).toBeDisabled()
 
   await page.getByLabel('Email').fill(account.email)
@@ -49,7 +49,7 @@ test('test login user ok', async ({ page, request }) => {
   await page.getByLabel('Email').fill(account.email)
   await page.getByLabel('Password', { exact: true }).fill(account.password)
 
-  await page.getByRole('button', { name: 'Log In' }).click()
+  await page.getByRole('button', { name: 'Log In', exact: true }).click()
 
   await expect(page).toHaveURL(/\/chat/)
 
@@ -70,12 +70,12 @@ test('test logged user redirects', async ({ page, request }) => {
   await page.getByLabel('Email').fill(account.email)
   await page.getByLabel('Password', { exact: true }).fill(account.password)
 
-  await page.getByRole('button', { name: 'Log In' }).click()
+  await page.getByRole('button', { name: 'Log In', exact: true }).click()
 
   await expect(page).toHaveURL(/\/chat/)
 
   const username = page.locator('#navbar-user')
-  expect(username).toContainText(account.username)
+  await expect(username).toContainText(account.username)
 
   await page.goto('/login')
   await expect(page).toHaveURL(/\/chat/)
@@ -83,14 +83,15 @@ test('test logged user redirects', async ({ page, request }) => {
   await page.goto('/register')
   await expect(page).toHaveURL(/\/chat/)
 
+  // The home page is public: it does not redirect
   await page.goto('/')
-  await expect(page).toHaveURL(/\//)
+  await expect(page).toHaveURL(/\/$/)
 })
 
 test('test login link', async ({ page }) => {
   await page.goto('/login')
   const link = page.locator('#login').getByRole('link', { name: 'Register' })
-  link.click()
+  await link.click()
 
-  await page.waitForURL(`/register`)
+  await expect(page).toHaveURL(/\/register$/)
 })

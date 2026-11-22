@@ -6,6 +6,7 @@ export * from './chatChannel'
 export * from './chatServer'
 export * from './mediaFile'
 export * from './friends'
+export * from './chatConversation'
 
 export class ApiError extends Error {
   constructor(

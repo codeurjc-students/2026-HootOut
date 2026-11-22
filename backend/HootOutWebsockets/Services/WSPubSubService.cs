@@ -85,8 +85,20 @@ namespace HootOut.WebSockets.Service
 
         public async Task RemoveAllConnectionSubscriptions(Guid connectionId, CancellationToken ct)
         {
-            if (!ConnectionSubscriptions.TryGetValue(connectionId, out var channels))
-                return;
+            List<string> channels;
+            await initLock.WaitAsync(ct);
+            try
+            {
+                if (!ConnectionSubscriptions.TryGetValue(connectionId, out var subscriptions))
+                    return;
+
+                // Copy inside the lock: Subscribe can modify the set from another connection's thread
+                channels = subscriptions.ToList();
+            }
+            finally
+            {
+                initLock.Release();
+            }
 
             foreach (var channel in channels)
             {
@@ -101,13 +113,24 @@ namespace HootOut.WebSockets.Service
 
         public async Task ReceiveMessageAsync(string exchange, string channel, WebSocketMessage message)
         {
-            if (!ChannelSubscribers.TryGetValue(channel, out var subscribers))
-                return;
+            List<Guid> currentSubscribers;
+            await initLock.WaitAsync();
+            try
+            {
+                if (!ChannelSubscribers.TryGetValue(channel, out var subscribers))
+                    return;
+
+                // Copy inside the lock: HashSet is not thread safe and Subscribe/Unsubscribe can modify it meanwhile
+                currentSubscribers = subscribers.Where(x => x != message.ConnectionId).ToList();
+            }
+            finally
+            {
+                initLock.Release();
+            }
 
             var serializedMessage = JsonConvert.SerializeObject(message.ToDto()); //DTO removes server data, like the original connectionId
             var rawMessage = Encoding.UTF8.GetBytes(serializedMessage);
 
-            IEnumerable<Guid> currentSubscribers = subscribers.Where(x => x != message.ConnectionId).ToList();
             foreach (var subscriber in currentSubscribers)
             {
                 try
@@ -116,8 +139,8 @@ namespace HootOut.WebSockets.Service
                 }
                 catch (Exception ex)
                 {
+                    // A broken socket must not stop the delivery to the other subscribers
                     logger.LogWarning(ex, "Error sending message to Websocket {ConnectionId}", subscriber);
-                    throw;
                 }
             }
         }

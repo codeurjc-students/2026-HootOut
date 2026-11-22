@@ -35,7 +35,7 @@
       <RouterLink
         :to="{ name: 'server', params: { serverId: (item as any).id } }"
         class="round-btn pointer mb-2 flex h-full justify-center self-center"
-        :class="{ 'background-light': currentServer?.id == (item as any).id }"
+        active-class="background-light"
         :key="(item as any).id"
         v-tooltip:right="(item as any).name"
         :aria-label="(item as any).name"

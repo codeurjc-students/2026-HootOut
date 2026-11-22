@@ -1,4 +1,5 @@
-﻿using HootOut.Contracts.ChatMessage.Dtos;
+﻿using FluentValidation;
+using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
 using HootOut.Contracts.WebSockets.Dtos;
@@ -10,7 +11,8 @@ using Newtonsoft.Json;
 namespace HootOut.WebSockets.Actions
 {
     public class ChatMessageHandler : IWSMessageHandler
-    {
+    {  
+
         public WSHandlerType Type => WSHandlerType.ChatMessage;
         private IWSPubSubService wsPubSubService;
 
@@ -26,9 +28,30 @@ namespace HootOut.WebSockets.Actions
 
         public async Task HandleMessageAsync(Guid connectionId, WSUserInfo user, WebSocketMessage message, CancellationToken ct = default)
         {
-            CreateChatMessageRequest request = JsonConvert.DeserializeObject<CreateChatMessageRequest>(message.Payload!)!;
+            if (!Guid.TryParse(message.Channel, out var conversationId))
+            {
+                throw new ValidationException("Invalid channel");
+            }
 
-            request.ChatConversationId = Guid.Parse(message.Channel!);
+            CreateChatMessageRequest? request;
+            try
+            {
+                request = string.IsNullOrWhiteSpace(message.Payload)
+                    ? null
+                    : JsonConvert.DeserializeObject<CreateChatMessageRequest>(message.Payload);
+            }
+            catch (JsonException)
+            {
+                request = null;
+            }
+
+            if (request == null)
+            {
+                throw new ValidationException("Invalid message");
+            }
+
+            // The conversation and the author always come from the socket, never from the payload
+            request.ChatConversationId = conversationId;
             request.AuthorId = user.UserId;
 
             ChatMessageDto savedMessage = await chatMessageService.CreateChatMessageAsync(request, ct);

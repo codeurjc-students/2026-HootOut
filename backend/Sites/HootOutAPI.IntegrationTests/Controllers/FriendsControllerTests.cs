@@ -7,6 +7,7 @@ using HootOut.Contracts.Common;
 using HootOut.Contracts.Common.Enums;
 using HootOut.Contracts.Friends.Dtos;
 using HootOut.Contracts.Friends.Requests;
+using HootOut.Contracts.Friends.Responses;
 using HootOut.HootOutAPI.IntegrationTests.Common;
 using System.Net;
 using System.Net.Http.Json;
@@ -259,20 +260,22 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var relationId = await response.Content.ReadFromJsonAsync<Guid?>(ct);
             relationId.Should().NotBeNull().And.NotBeEmpty();
 
-            var friendsA = await GetPageAsync<FriendRelationDto>(FriendsUrl, userA, ct);
+            var friendsA = await GetPageAsync<UserFriendResponse>(FriendsUrl, userA, ct);
             var relationA = friendsA.Items.Should().ContainSingle().Subject;
-            relationA.Id.Should().Be(relationId!.Value);
+            relationA.FriendRelationId.Should().Be(relationId!.Value);
             relationA.Friend.Should().NotBeNull();
             relationA.Friend.Id.Should().Be(userB.Id);
             relationA.Friend.Username.Should().Be(userB.Username);
             relationA.ChatConversationId.Should().NotBeEmpty();
+            relationA.DirectConversationId.Should().NotBeEmpty().And.NotBe(relationA.ChatConversationId);
 
-            var friendsB = await GetPageAsync<FriendRelationDto>(FriendsUrl, userB, ct);
+            var friendsB = await GetPageAsync<UserFriendResponse>(FriendsUrl, userB, ct);
             var relationB = friendsB.Items.Should().ContainSingle().Subject;
-            relationB.Id.Should().Be(relationId.Value);
+            relationB.FriendRelationId.Should().Be(relationId.Value);
             relationB.Friend.Id.Should().Be(userA.Id);
             relationB.Friend.Username.Should().Be(userA.Username);
             relationB.ChatConversationId.Should().Be(relationA.ChatConversationId);
+            relationB.DirectConversationId.Should().Be(relationA.DirectConversationId);
 
             // An accepted request is no longer listed
             (await GetPageAsync<FriendRequestDto>(SentRequestsUrl, userA, ct)).Items.Should().BeEmpty();
@@ -309,7 +312,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             await AssertNotFriendsAsync(userA, userB, ct);
             await AssertNotFriendsAsync(userA, userC, ct);
-            (await GetPageAsync<FriendRelationDto>(FriendsUrl, userC, ct)).Items.Should().BeEmpty();
+            (await GetPageAsync<UserFriendResponse>(FriendsUrl, userC, ct)).Items.Should().BeEmpty();
             (await GetPageAsync<FriendRequestDto>(ReceivedRequestsUrl, userB, ct)).Items
                 .Should().ContainSingle().Which.Id.Should().Be(friendRequest.Id);
         }
@@ -326,8 +329,8 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var response = await UpdateFriendRequestAsync(userB, friendRequest.Id, InvitationStatus.Accepted, ct);
 
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            (await GetPageAsync<FriendRelationDto>(FriendsUrl, userA, ct)).Items
-                .Should().ContainSingle().Which.Id.Should().Be(relationId);
+            (await GetPageAsync<UserFriendResponse>(FriendsUrl, userA, ct)).Items
+                .Should().ContainSingle().Which.FriendRelationId.Should().Be(relationId);
         }
 
         [Fact]
@@ -339,7 +342,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var response = await UpdateFriendRequestAsync(userA, Guid.NewGuid(), InvitationStatus.Accepted, ct);
 
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            (await GetPageAsync<FriendRelationDto>(FriendsUrl, userA, ct)).Items.Should().BeEmpty();
+            (await GetPageAsync<UserFriendResponse>(FriendsUrl, userA, ct)).Items.Should().BeEmpty();
         }
 
         [Fact]
@@ -619,7 +622,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var ct = TestContext.Current.CancellationToken;
             var userA = await CreateUserAsync("user-test-a", ct);
 
-            var friends = await GetPageAsync<FriendRelationDto>(FriendsUrl, userA, ct);
+            var friends = await GetPageAsync<UserFriendResponse>(FriendsUrl, userA, ct);
 
             friends.Items.Should().BeEmpty();
             friends.Total.Should().Be(0);
@@ -648,13 +651,13 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 
             conversationAB.Should().NotBe(conversationAC);
 
-            var friendsA = await GetPageAsync<FriendRelationDto>(FriendsUrl, userA, ct);
+            var friendsA = await GetPageAsync<UserFriendResponse>(FriendsUrl, userA, ct);
             friendsA.Items.Select(x => x.Friend.Id).Should().BeEquivalentTo([userB.Id, userC.Id]);
 
-            var friendsB = await GetPageAsync<FriendRelationDto>(FriendsUrl, userB, ct);
+            var friendsB = await GetPageAsync<UserFriendResponse>(FriendsUrl, userB, ct);
             friendsB.Items.Should().ContainSingle().Which.Friend.Id.Should().Be(userA.Id);
 
-            var friendsC = await GetPageAsync<FriendRelationDto>(FriendsUrl, userC, ct);
+            var friendsC = await GetPageAsync<UserFriendResponse>(FriendsUrl, userC, ct);
             friendsC.Items.Should().ContainSingle().Which.Friend.Id.Should().Be(userA.Id);
 
             await AssertNotFriendsAsync(userB, userC, ct);
@@ -688,10 +691,10 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 
             int pageSize = 3;
             Guid? next = null;
-            var pagedFriends = new List<FriendRelationDto>();
+            var pagedFriends = new List<UserFriendResponse>();
             do
             {
-                var page = await GetPageAsync<FriendRelationDto>(FriendsUrl, userA, ct, new PageRequest
+                var page = await GetPageAsync<UserFriendResponse>(FriendsUrl, userA, ct, new PageRequest
                 {
                     Next = next,
                     Descending = false,
@@ -712,6 +715,9 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             pagedFriends.Should().HaveCount(friendsCount);
             pagedFriends.Select(x => x.Friend.Username).Should().ContainInConsecutiveOrder(sortedUsernames);
             pagedFriends.Select(x => x.ChatConversationId).Should().OnlyHaveUniqueItems();
+            pagedFriends.Select(x => x.DirectConversationId).Should().OnlyHaveUniqueItems();
+            pagedFriends.Select(x => x.FriendRelationId).Should().OnlyHaveUniqueItems();
+            pagedFriends.Select(x => x.Friend.Id).Should().BeEquivalentTo(friends.Select(x => x.Id));
         }
 
         #endregion
@@ -759,7 +765,7 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
             var friendRequest = await SendFriendRequestAndReadAsync(user, friend.Username, ct);
             await AcceptFriendRequestAsync(friend, friendRequest.Id, ct);
 
-            var friends = await GetPageAsync<FriendRelationDto>(FriendsUrl, user, ct, new PageRequest { PageSize = 50 });
+            var friends = await GetPageAsync<UserFriendResponse>(FriendsUrl, user, ct, new PageRequest { PageSize = 50 });
             return friends.Items.Single(x => x.Friend.Id == friend.Id).ChatConversationId;
         }
 
@@ -793,19 +799,20 @@ namespace HootOut.HootOutAPI.IntegrationTests.Controllers
 
         private async Task AssertFriendsAsync(TestUser userA, TestUser userB, CancellationToken ct)
         {
-            var friendsA = await GetPageAsync<FriendRelationDto>(FriendsUrl, userA, ct, new PageRequest { PageSize = 50 });
-            var friendsB = await GetPageAsync<FriendRelationDto>(FriendsUrl, userB, ct, new PageRequest { PageSize = 50 });
+            var friendsA = await GetPageAsync<UserFriendResponse>(FriendsUrl, userA, ct, new PageRequest { PageSize = 50 });
+            var friendsB = await GetPageAsync<UserFriendResponse>(FriendsUrl, userB, ct, new PageRequest { PageSize = 50 });
 
             var relationA = friendsA.Items.Should().ContainSingle(x => x.Friend.Id == userB.Id).Subject;
             var relationB = friendsB.Items.Should().ContainSingle(x => x.Friend.Id == userA.Id).Subject;
-            relationA.Id.Should().Be(relationB.Id);
+            relationA.FriendRelationId.Should().NotBeEmpty().And.Be(relationB.FriendRelationId);
             relationA.ChatConversationId.Should().NotBeEmpty().And.Be(relationB.ChatConversationId);
+            relationA.DirectConversationId.Should().NotBeEmpty().And.Be(relationB.DirectConversationId);
         }
 
         private async Task AssertNotFriendsAsync(TestUser userA, TestUser userB, CancellationToken ct)
         {
-            var friendsA = await GetPageAsync<FriendRelationDto>(FriendsUrl, userA, ct, new PageRequest { PageSize = 50 });
-            var friendsB = await GetPageAsync<FriendRelationDto>(FriendsUrl, userB, ct, new PageRequest { PageSize = 50 });
+            var friendsA = await GetPageAsync<UserFriendResponse>(FriendsUrl, userA, ct, new PageRequest { PageSize = 50 });
+            var friendsB = await GetPageAsync<UserFriendResponse>(FriendsUrl, userB, ct, new PageRequest { PageSize = 50 });
 
             friendsA.Items.Should().NotContain(x => x.Friend.Id == userB.Id);
             friendsB.Items.Should().NotContain(x => x.Friend.Id == userA.Id);

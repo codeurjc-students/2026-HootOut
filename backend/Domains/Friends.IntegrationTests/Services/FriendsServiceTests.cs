@@ -13,6 +13,7 @@ using HootOut.Contracts.Common;
 using HootOut.Contracts.Common.Enums;
 using HootOut.Contracts.Friends.Dtos;
 using HootOut.Contracts.Friends.Requests;
+using HootOut.Contracts.Friends.Responses;
 using HootOut.Contracts.Friends.Services;
 using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.Users.Dtos.Request;
@@ -286,7 +287,7 @@ namespace HootOut.Friends.IntegrationTests.Services
             var friends1 = await friendsService.GetUserFriendsAsync(new PageRequest(), userId, ct);
             friends1.Items.Should().HaveCount(1);
             var first = friends1.Items[0];
-            first.Id.Should().Be(relationId!.Value);
+            first.FriendRelationId.Should().Be(relationId!.Value);
             first.Friend.Should().NotBeNull();
             first.Friend.Id.Should().Be(userId2);
             first.Friend.Username.Should().Be(username2);
@@ -298,7 +299,7 @@ namespace HootOut.Friends.IntegrationTests.Services
             var friends2 = await friendsService.GetUserFriendsAsync(new PageRequest(), userId2, ct);
             friends2.Items.Should().HaveCount(1);
             var second = friends2.Items[0];
-            second.Id.Should().Be(relationId.Value);
+            second.FriendRelationId.Should().Be(relationId.Value);
             second.Friend.Should().NotBeNull();
             second.Friend.Id.Should().Be(userId);
             second.Friend.Username.Should().Be(username1);
@@ -392,7 +393,7 @@ namespace HootOut.Friends.IntegrationTests.Services
             }, userId2, ct));
 
             var friends = await friendsService.GetUserFriendsAsync(new PageRequest(), userId, ct);
-            friends.Items.Should().ContainSingle().Which.Id.Should().Be(relationId);
+            friends.Items.Should().ContainSingle().Which.FriendRelationId.Should().Be(relationId);
         }
 
         [Fact]
@@ -783,7 +784,7 @@ namespace HootOut.Friends.IntegrationTests.Services
 
             int pageSize = 5;
             Guid? next = null;
-            var pagedFriends = new List<FriendRelationDto>();
+            var pagedFriends = new List<UserFriendResponse>();
             do
             {
                 var page = await friendsService.GetUserFriendsAsync(new PageRequest
@@ -1013,7 +1014,7 @@ namespace HootOut.Friends.IntegrationTests.Services
             var friends2 = await friendsService.GetUserFriendsAsync(new PageRequest { PageSize = 50 }, userId2, ct);
             var relation1 = friends1.Items.Should().ContainSingle(x => x.Friend.Id == userId2).Subject;
             var relation2 = friends2.Items.Should().ContainSingle(x => x.Friend.Id == userId).Subject;
-            relation1.Id.Should().Be(relation2.Id);
+            relation1.FriendRelationId.Should().Be(relation2.FriendRelationId);
             relation1.ChatConversationId.Should().Be(relation2.ChatConversationId);
 
             // Both of them can write in their direct conversation

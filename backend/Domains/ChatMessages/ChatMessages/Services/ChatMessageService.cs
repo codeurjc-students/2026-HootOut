@@ -16,7 +16,7 @@ using HootOut.Contracts.Friends.Services;
 namespace HootOut.ChatMessages.Services
 {
     public class ChatMessageService : IChatMessageService
-    {
+    {  
 
         private readonly ISaver<ChatMessage> saver;
         private readonly IChatMessageRepository search;
@@ -63,7 +63,8 @@ namespace HootOut.ChatMessages.Services
             ArgumentNullException.ThrowIfNull(request);
             request.Validate();
 
-            await ValidateCanSendMessage(request, ct);
+            await ValidateUserCanAccessConversationAsync(request.ChatConversationId, request.AuthorId, ct);
+            await attachmentService.ValidateAttachmentsAsync(request.AuthorId, request.Attachments, ct);
 
             ChatMessage chatMessage = Persistable.CreateNew<ChatMessage>();
             chatMessage.Content = request.Content;
@@ -74,42 +75,45 @@ namespace HootOut.ChatMessages.Services
             ChatMessageDto messageDto = chatMessage.ToDto();
 
             if (request != null && request.Attachments.Any())
-            {
+            { 
                 messageDto.Attachments = (await attachmentService.CreateMessageAttachments(chatMessage.Id, request.Attachments, ct)).ToList();
             }
 
             return messageDto;
         }
 
-        private async Task ValidateCanSendMessage(CreateChatMessageRequest request, CancellationToken ct = default)
+        /// <summary>
+        /// Throws a <see cref="ValidationException"/> with <see cref="CannotAccessConversationMessage"/> if the user
+        /// cannot read or write in the conversation: it does not exist, it is a direct conversation and they are not
+        /// friends, or it is a channel and the user is not a member of its server.
+        /// Used before saving a message and before subscribing to a conversation through WebSockets.
+        /// </summary>
+        public async Task ValidateUserCanAccessConversationAsync(Guid conversationId, Guid userId, CancellationToken ct = default)
         {
-            var conversation = await chatConversationsService.GetChatConversationByIdAsync(request.ChatConversationId, ct);
+            var conversation = await chatConversationsService.GetChatConversationByIdAsync(conversationId, ct);
             if (conversation == null)
             {
-                throw new ValidationException(new[] { new ValidationFailure("Conversation", "Conversation cannot be found", request.ChatConversationId) });
+                throw new ValidationException(new[] { new ValidationFailure("Conversation", "Cannot send a message to this conversation", conversationId) });
             }
 
-            switch (conversation.ConversationType)
+            try
             {
-                case ChatConversationType.Channel:
-                    await ValidateChannelMessage(request, ct);
-                    break;
-                case ChatConversationType.Direct:
-                    await ValidateDirectMessage(request, ct);
-                    break;
-                default:
-                    throw new ValidationException(new[] { new ValidationFailure("Conversation", "Invalid conversation type") });
+                switch (conversation.ConversationType)
+                {
+                    case ChatConversationType.Channel:
+                        await chatServerService.ValidateUserCanSendMessageAsync(conversationId, userId, ct);
+                        break;
+                    case ChatConversationType.Direct:
+                        await friendsService.ValidateUserCanSendMessageAsync(conversationId, userId, ct);
+                        break;
+                    default:
+                        throw new ValidationException(new[] { new ValidationFailure("Conversation", "Invalid conversation type") });
+                }
             }
-        }
-
-        private async Task ValidateChannelMessage(CreateChatMessageRequest request, CancellationToken ct = default)
-        {
-            await chatServerService.ValidateUserCanSendMessageAsync(request.ChatConversationId, request.AuthorId, ct);
-        }
-
-        private async Task ValidateDirectMessage(CreateChatMessageRequest request, CancellationToken ct = default)
-        {
-            await friendsService.ValidateUserCanSendMessageAsync(request.ChatConversationId, request.AuthorId, ct);
-        }
+            catch (ValidationException)
+            {
+                throw new ValidationException(new[] { new ValidationFailure("Conversation", "Cannot send a message to this conversation", conversationId) });
+            }
+        } 
     }
 }

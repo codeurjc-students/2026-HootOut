@@ -54,6 +54,7 @@ namespace HootOut.PostgreSQL
             builder.RegisterType<FriendRequestRepository>().As<IFriendRequestRepository>().SingleInstance();
             builder.RegisterType<FriendRelationRepository>().As<IFriendRelationRepository>().SingleInstance();
             builder.RegisterType<ChatConversationRepository>().As<IChatConversationsRepository>().SingleInstance();
+            builder.RegisterType<DirectConversationsRepository>().As<IDirectConversationsRepository>().SingleInstance();
         }
     }
 }

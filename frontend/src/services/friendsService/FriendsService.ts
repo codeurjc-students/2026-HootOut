@@ -1,15 +1,17 @@
 import type {
-  FriendRelation,
   FriendRequest,
   PageRequest,
   PageResult,
   SendFriendRequest,
   updateFriendrequest,
+  UserFriendResponse,
 } from '@/types'
 import { get, post, put } from '../common/api/ApiService'
 
 const FriendsService = {
-  getUserFriends: async function (pageRequest: PageRequest): Promise<PageResult<FriendRelation>> {
+  getUserFriends: async function (
+    pageRequest: PageRequest
+  ): Promise<PageResult<UserFriendResponse>> {
     return await get(`friends`, pageRequest)
   },
 

@@ -5,6 +5,7 @@ using HootOut.Contracts.Common.Enums;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Contracts.Friends.Dtos;
 using HootOut.Contracts.Friends.Requests;
+using HootOut.Contracts.Friends.Responses;
 using HootOut.Contracts.Friends.Services;
 using HootOut.Contracts.Users.Dtos;
 using HootOut.Contracts.Users.Services;
@@ -119,12 +120,13 @@ namespace HootOut.Friends.Services
             return await friendRequestRepository.GetSentFriendRequestsAsync(request, userId, ct);
         }
 
-        public async Task<PageResult<FriendRelationDto>> GetUserFriendsAsync(PageRequest request, Guid userId, CancellationToken ct)
+        public async Task<PageResult<UserFriendResponse>> GetUserFriendsAsync(PageRequest request, Guid userId, CancellationToken ct)
         {
             ArgumentNullException.ThrowIfNull(request);
 
             return await friendRelationRepository.GetUserFriendsAsync(request, userId, ct);
         }
+         
 
         public async Task ValidateUserCanSendMessageAsync(Guid chatConversationId, Guid userId, CancellationToken ct)
         {

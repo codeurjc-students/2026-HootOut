@@ -28,3 +28,10 @@ export interface updateFriendrequest {
   id: string
   status: InvitationStatus
 }
+
+export interface UserFriendResponse {
+  friendRelationId: string
+  friend: UserInfo
+  chatConversationId: string
+  directConversationId: string
+}

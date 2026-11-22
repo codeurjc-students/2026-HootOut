@@ -3,6 +3,7 @@ using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common;
 using HootOut.Contracts.Common.Enums;
 using HootOut.Contracts.Friends.Dtos;
+using HootOut.Contracts.Friends.Responses;
 using HootOut.Contracts.Users.Dtos;
 using HootOut.Friends.Repositories;
 using HootOut.PostgreSQL.Helpers;
@@ -27,7 +28,7 @@ namespace HootOut.PostgreSQL.Repositories.Friends
             { "username", """ lower(u."Username") COLLATE "es-x-icu" """ },
         };
 
-        public async Task<PageResult<FriendRelationDto>> GetUserFriendsAsync(PageRequest request, Guid userId, CancellationToken ct)
+        public async Task<PageResult<UserFriendResponse>> GetUserFriendsAsync(PageRequest request, Guid userId, CancellationToken ct)
         {
             await using var conn = await provider.OpenConnectionAsync(ct);
 
@@ -47,11 +48,12 @@ namespace HootOut.PostgreSQL.Repositories.Friends
             var invitationsWhere = """ WHERE (m."User1Id" = @UserId OR m."User2Id" = @UserId) AND m."Deleted" = FALSE """;
 
             var sql = $"""
-                SELECT 
-                    {friendRelationColumns},
+                SELECT  
+                    m."Id" as "FriendRelationId",
+                    dc."Id" as DirectConversationId,
+                    dc."ChatConversationId",
                     u."Id",
-                    u."Username",
-                    dc."ChatConversationId"
+                    u."Username"
                     {invitationsFrom}
                     {invitationsWhere}
                     {PaginatedQueryHelper.CursorFilter(invitationsFrom, sort, request)}
@@ -71,16 +73,15 @@ namespace HootOut.PostgreSQL.Repositories.Friends
                 Take = request.Size + 1,
             }, cancellationToken: ct));
 
-            var friendRelations = multi.Read<FriendRelationDto, UserDto, Guid, FriendRelationDto>((friendRelation, user, conversationId) =>
+            var friendRelations = multi.Read<UserFriendResponse, UserDto, UserFriendResponse>((friendRelation, user) =>
             {
-                friendRelation.Friend = user;
-                friendRelation.ChatConversationId = conversationId;
+                friendRelation.Friend = user; 
                 return friendRelation;
-            }, splitOn: "Id,ChatConversationId").ToList();
+            }, splitOn: "Id").ToList();
 
             var total = await multi.ReadSingleAsync<int>();
 
-            return PaginatedQueryHelper.ToPage(friendRelations, request, x => x.Id, total);
+            return PaginatedQueryHelper.ToPage(friendRelations, request, x => x.FriendRelationId, total);
         }
 
         public async Task<Guid?> GetDirectConverationByConversationAndUserId(Guid chatConversationId, Guid userId, CancellationToken ct)
@@ -124,6 +125,6 @@ namespace HootOut.PostgreSQL.Repositories.Friends
         """,
                 new { UserA = userA, UserB = userB },
                 cancellationToken: ct));
-        }
+        } 
     }
 }

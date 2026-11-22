@@ -14,6 +14,12 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
         public readonly WebSocket Socket;
         public readonly TimeSpan Timeout;
 
+        // Messages skipped by ReceiveUntilAsync (e.g. broadcasts that arrive while waiting for an Ack).
+        // ReceiveAsync returns them first, so no message is lost.
+        private readonly Queue<WebSocketMessageDto> pending = new();
+
+        public int PendingCount => pending.Count;
+
         public static JsonSerializerSettings JsonSettings { get; set; } = new()
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
@@ -65,7 +71,8 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
 
         // ---------- Receive ----------
 
-        public Task<WebSocketMessageDto> ReceiveAsync(CancellationToken ct = default) => ReceiveAsync<WebSocketMessageDto>(ct);
+        public Task<WebSocketMessageDto> ReceiveAsync(CancellationToken ct = default)
+            => pending.Count > 0 ? Task.FromResult(pending.Dequeue()) : ReceiveAsync<WebSocketMessageDto>(ct);
 
         public async Task<T> ReceiveAsync<T>(CancellationToken ct = default)
         {
@@ -83,14 +90,37 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
             return list;
         }
 
-        /// <summary>Keep receiving until a message matches the predicate (skips unrelated broadcasts).</summary>
+        /// <summary>
+        /// Keep receiving until a message matches the predicate. The skipped messages are kept
+        /// and returned later by <see cref="ReceiveAsync(CancellationToken)"/>, in order.
+        /// </summary>
         public async Task<WebSocketMessageDto> ReceiveUntilAsync(
             Func<WebSocketMessageDto, bool> predicate, CancellationToken ct = default)
         {
+            // First look in the messages already received
+            if (pending.Count > 0)
+            {
+                var kept = new List<WebSocketMessageDto>(pending.Count);
+                WebSocketMessageDto? found = null;
+                while (pending.Count > 0)
+                {
+                    var queued = pending.Dequeue();
+                    if (found == null && predicate(queued))
+                        found = queued;
+                    else
+                        kept.Add(queued);
+                }
+                foreach (var queued in kept)
+                    pending.Enqueue(queued);
+
+                if (found != null) return found;
+            }
+
             while (true)
             {
-                var msg = await ReceiveAsync(ct);
+                var msg = await ReceiveAsync<WebSocketMessageDto>(ct);
                 if (predicate(msg)) return msg;
+                pending.Enqueue(msg);
             }
         }
 
@@ -122,6 +152,9 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
         /// </summary>
         public async Task<bool> NoMessageWithinAsync(TimeSpan window)
         {
+            if (pending.Count > 0)
+                return false;
+
             using var cts = new CancellationTokenSource(window);
             try
             {
@@ -161,6 +194,15 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
                 throw new InvalidOperationException($"Server rejected {message.Type}: {reply.Error}");
 
             return reply;
+        }
+
+        /// <summary>Sends the message with an Id and returns the reply (Ack or Error) without throwing.</summary>
+        public async Task<WebSocketMessageDto> SendAndGetReplyAsync(WebSocketMessageDto message, CancellationToken ct = default)
+        {
+            message.Id ??= Guid.NewGuid();
+            await SendAsync(message, ct);
+
+            return await ReceiveUntilAsync(m => m.ReplyTo == message.Id, ct);
         }
 
         // ---------- Close ----------

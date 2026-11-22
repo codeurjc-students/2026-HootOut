@@ -433,6 +433,108 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
 
         #endregion
 
+        #region GetPendingServerInvitationAsync
+
+        [Fact]
+        public async Task GetPendingServerInvitation_Pending_ReturnsMappedEntity()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var (server, expected) = await CreatePendingInvitationAsync(ct);
+
+            var result = await repository.GetPendingServerInvitationAsync(server.Id, expected.UserId, ct);
+
+            result.Should().NotBeNull();
+            result.Should().BeEquivalentTo(expected, options => options
+                .Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, TimeSpan.FromMilliseconds(1)))
+                .WhenTypeIs<DateTime>());
+        }
+
+        [Fact]
+        public async Task GetPendingServerInvitation_NoInvitation_ReturnsNull()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var owner = await CreateUserAsync("owner", ct);
+            var user = await CreateUserAsync("user", ct);
+            var server = await CreateServerAsync("server", owner.Id, ct);
+
+            var result = await repository.GetPendingServerInvitationAsync(server.Id, user.Id, ct);
+
+            result.Should().BeNull();
+        }
+
+        [Theory]
+        [InlineData(InvitationStatus.Accepted)]
+        [InlineData(InvitationStatus.Rejected)]
+        [InlineData(InvitationStatus.Revoked)]
+        public async Task GetPendingServerInvitation_OnlyNonPendingInvitations_ReturnsNull(InvitationStatus status)
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var inviter = await CreateUserAsync("inviter", ct);
+            var user = await CreateUserAsync("user", ct);
+            var server = await CreateServerAsync("server", inviter.Id, ct);
+            await CreateInvitationAsync(server.Id, inviter.Id, user.Id, status, BaseDate, ct);
+
+            var result = await repository.GetPendingServerInvitationAsync(server.Id, user.Id, ct);
+
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetPendingServerInvitation_OldNonPendingAndNewPending_ReturnsOnlyThePendingOne()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var inviter = await CreateUserAsync("inviter", ct);
+            var user = await CreateUserAsync("user", ct);
+            var server = await CreateServerAsync("server", inviter.Id, ct);
+            await CreateInvitationAsync(server.Id, inviter.Id, user.Id, InvitationStatus.Rejected, BaseDate, ct);
+            await CreateInvitationAsync(server.Id, inviter.Id, user.Id, InvitationStatus.Revoked, BaseDate.AddMinutes(1), ct);
+            var pending = await CreateInvitationAsync(server.Id, inviter.Id, user.Id, InvitationStatus.Pending, BaseDate.AddMinutes(2), ct);
+
+            var result = await repository.GetPendingServerInvitationAsync(server.Id, user.Id, ct);
+
+            result.Should().NotBeNull();
+            result!.Id.Should().Be(pending.Id);
+            result.Status.Should().Be(InvitationStatus.Pending);
+        }
+
+        [Fact]
+        public async Task GetPendingServerInvitation_PendingInOtherServer_ReturnsNull()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var (_, invitation) = await CreatePendingInvitationAsync(ct);
+            var server = await CreateServerAsync("other", invitation.InvitedBy, ct);
+
+            var result = await repository.GetPendingServerInvitationAsync(server.Id, invitation.UserId, ct);
+
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetPendingServerInvitation_PendingForOtherUser_ReturnsNull()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var (server, _) = await CreatePendingInvitationAsync(ct);
+            var otherUser = await CreateUserAsync("other", ct);
+
+            var result = await repository.GetPendingServerInvitationAsync(server.Id, otherUser.Id, ct);
+
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetPendingServerInvitation_InviterIsNotTheInvitedUser_ReturnsNull()
+        {
+            var ct = TestContext.Current.CancellationToken;
+            var (server, invitation) = await CreatePendingInvitationAsync(ct);
+
+            // Filters by the invited user, not by who sent the invitation
+            var result = await repository.GetPendingServerInvitationAsync(server.Id, invitation.InvitedBy, ct);
+
+            result.Should().BeNull();
+        }
+
+        #endregion
+
         #region AcceptServerInvitationAsync
 
         [Fact]
@@ -601,6 +703,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
         [InlineData(nameof(IServerInvitationRepository.GetServerInvitationDtosAsync))]
         [InlineData(nameof(IServerInvitationRepository.GetUserServerInvitationDtosAsync))]
         [InlineData(nameof(IServerInvitationRepository.GetServerInvitationByIdAsync))]
+        [InlineData(nameof(IServerInvitationRepository.GetPendingServerInvitationAsync))]
         [InlineData(nameof(IServerInvitationRepository.AcceptServerInvitationAsync))]
         public async Task AnyMethod_CancelledToken_ThrowsOperationCanceled(string method)
         {
@@ -614,6 +717,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.ChatServers
                 nameof(IServerInvitationRepository.GetServerInvitationDtosAsync) => () => repository.GetServerInvitationDtosAsync(server.Id, new PageRequest(), cts.Token),
                 nameof(IServerInvitationRepository.GetUserServerInvitationDtosAsync) => () => repository.GetUserServerInvitationDtosAsync(invitation.UserId, new PageRequest(), cts.Token),
                 nameof(IServerInvitationRepository.GetServerInvitationByIdAsync) => () => repository.GetServerInvitationByIdAsync(invitation.Id, cts.Token),
+                nameof(IServerInvitationRepository.GetPendingServerInvitationAsync) => () => repository.GetPendingServerInvitationAsync(server.Id, invitation.UserId, cts.Token),
                 nameof(IServerInvitationRepository.AcceptServerInvitationAsync) => () => repository.AcceptServerInvitationAsync(invitation, cts.Token),
                 _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
             };

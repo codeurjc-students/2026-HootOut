@@ -34,11 +34,12 @@
       <RouterLink
         id="directConversationLink"
         :to="{ name: 'directConversation' }"
-        class="round-btn pointer mb-2 flex h-full justify-center self-center"
+        active-class="background-light"
+        class="round-btn pointer al flex-column mb-2 flex h-full items-center justify-center self-center"
         v-tooltip:right="'Direct Messages'"
         aria-label="Direct Messages"
       >
-        DM
+        <span class="material-symbols-sharp">chat</span>
       </RouterLink>
     </div>
     <div class="separator relative my-2 flex items-center pl-2"></div>

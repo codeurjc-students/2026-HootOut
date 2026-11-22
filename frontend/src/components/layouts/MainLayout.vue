@@ -1,6 +1,10 @@
 <script setup lang="ts">
   import navbarLogo from '@/assets/img/navbar-logo.svg'
   import NavbarUser from '@/components/shared/navbar/NavbarUser.vue'
+  import { userInfoStore } from '@/stores/userInfo'
+  import { storeToRefs } from 'pinia'
+
+  const { user } = storeToRefs(userInfoStore())
 </script>
 
 <template>
@@ -16,7 +20,7 @@
       </div>
     </nav>
     <section id="main-content">
-      <slot />
+      <slot v-if="user?.id" />
     </section>
   </div>
 </template>

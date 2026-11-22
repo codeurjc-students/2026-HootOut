@@ -11,12 +11,12 @@ const coverageReporter = [
       outputDir: path.resolve('coverage/e2e'),
       reports: ['v8', 'lcovonly'],
       entryFilter: (entry: { url: string }) =>
-        entry.url.startsWith('https://localhost:5173')
-        && !entry.url.includes('/node_modules/')
-        && !entry.url.includes('/@vite/')
-        && !entry.url.includes('/@id/')
-        && !entry.url.includes('type=style')
-        && !entry.url.endsWith('.css'),
+        entry.url.startsWith('https://localhost:5173') &&
+        !entry.url.includes('/node_modules/') &&
+        !entry.url.includes('/@vite/') &&
+        !entry.url.includes('/@id/') &&
+        !entry.url.includes('type=style') &&
+        !entry.url.endsWith('.css'),
       sourceFilter: (p: string) => {
         const path = p.replace(/\\/g, '/')
         return /(^|\/)src\/.+\.(vue|ts|js)$/.test(path) && !path.includes('node_modules')
@@ -49,7 +49,7 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.E2E_COVERAGE
     ? [['list'], ['html'], coverageReporter]
-    : 'html',
+    : [['html'], ['json', { outputFile: 'results.json' }]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
@@ -72,13 +72,13 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
       },
-    },
-    {
-      name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-      },
-    } //,
+      // },
+      // {
+      //   name: 'firefox',
+      //   use: {
+      //     ...devices['Desktop Firefox'],
+      //   },
+    }, //,
     // {
     //   name: 'webkit',
     //   use: {

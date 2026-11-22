@@ -10,6 +10,7 @@ namespace HootOut.ChatConversations
         public void Register(ContainerBuilder builder)
         {
             builder.RegisterType<ChatConversationsService>().As<IChatConversationsService>().SingleInstance();
+            builder.RegisterType<DirectConversationsService>().As<IDirectConversationsService>().SingleInstance();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using HootOut.Contracts.Common;
 using HootOut.Contracts.Friends.Dtos;
 using HootOut.Contracts.Friends.Requests;
+using HootOut.Contracts.Friends.Responses;
 using HootOut.Contracts.Friends.Services;
 using HootOut.HootOutAPI.Helpers;
 using Microsoft.AspNetCore.Mvc;
@@ -88,7 +89,7 @@ namespace HootOut.HootOutAPI.Controllers
 
         // Get User Friends
         [HttpGet]
-        public async Task<ActionResult<PageResult<FriendRelationDto>>> GetUserFriendsAsync(PageRequest request, CancellationToken ct)
+        public async Task<ActionResult<PageResult<UserFriendResponse>>> GetUserFriendsAsync(PageRequest request, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
             if (userId is null)

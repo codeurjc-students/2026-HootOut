@@ -1,24 +1,52 @@
-﻿using HootOut.ChatMessages.Entities;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using HootOut.ChatMessages.Entities;
 using HootOut.ChatMessages.Repositories;
 using HootOut.CommonDomain.FileStorage;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
-using HootOut.Contracts.Common.Saver;
+using HootOut.Contracts.Common.Saver; 
 
 namespace HootOut.ChatMessages.Services
 {
     public class ChatMessageAttachmentService : IChatMessageAttachmentService
     {
+        public const string InvalidAttachmentMessage = "Invalid attachment";
+
         private readonly ISaver<ChatMessageAttachment> saver;
         private readonly IMediaUrlService mediaUrlService;
-        private readonly IChatMessageAttachmentRepository chatMessageAttachmentSearch;
+        private readonly IChatMessageAttachmentRepository chatMessageAttachmentSearch; 
 
-        public ChatMessageAttachmentService(ISaver<ChatMessageAttachment> saver, IMediaUrlService mediaUrlService, IChatMessageAttachmentRepository chatMessageAttachmentSearch)
+        public ChatMessageAttachmentService(
+            ISaver<ChatMessageAttachment> saver,
+            IMediaUrlService mediaUrlService,
+            IChatMessageAttachmentRepository chatMessageAttachmentSearch)
         {
             this.saver = saver ?? throw new ArgumentNullException(nameof(saver));
             this.mediaUrlService = mediaUrlService ?? throw new ArgumentNullException(nameof(mediaUrlService));
-            this.chatMessageAttachmentSearch = chatMessageAttachmentSearch ?? throw new ArgumentNullException(nameof(chatMessageAttachmentSearch));
+            this.chatMessageAttachmentSearch = chatMessageAttachmentSearch ?? throw new ArgumentNullException(nameof(chatMessageAttachmentSearch)); 
+        }
+
+        /// <summary>
+        /// Throws a ValidationException if any media file does not exist or does not belong to the author.
+        /// The same file can be attached more than once.
+        /// </summary>
+        public async Task ValidateAttachmentsAsync(Guid authorId, IEnumerable<CreateChatAttachmentRequest> request, CancellationToken ct = default)
+        {
+            if (request == null)
+                return;
+
+            foreach (var mediaFileId in request.Select(x => x.MediaFileId).Distinct())
+            {
+                var mediaFile = await chatMessageAttachmentSearch.GetMediaFileByIdAsync(mediaFileId, ct);
+
+                // Same error for both cases, so it does not reveal which files exist
+                if (mediaFile == null || mediaFile.OwnerId != authorId)
+                {
+                    throw new ValidationException(new[] { new ValidationFailure("Attachments", InvalidAttachmentMessage, mediaFileId) });
+                }
+            }
         }
 
         public async Task<IEnumerable<ChatMessageAttachmentDto>> CreateMessageAttachments(Guid messageId, IEnumerable<CreateChatAttachmentRequest> request, CancellationToken ct = default)

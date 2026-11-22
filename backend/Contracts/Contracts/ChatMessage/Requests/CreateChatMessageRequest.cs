@@ -14,11 +14,24 @@ namespace HootOut.Contracts.ChatMessage.Requests
 
     public class CreateChatMessageRequestValidator : AbstractValidator<CreateChatMessageRequest>
     {
+        public const string EmptyMessage = "The message must have content or attachments";
+
         public CreateChatMessageRequestValidator()
         {
             RuleFor(x => x.Content).MaximumLength(6000);
             RuleFor(x => x.ChatConversationId).NotEmpty();
             RuleFor(x => x.AuthorId).NotEmpty();
+            RuleFor(x => x.Attachments).NotNull();
+            RuleForEach(x => x.Attachments).ChildRules(attachment =>
+            {
+                attachment.RuleFor(x => x.MediaFileId).NotEmpty();
+            });
+
+            // A message needs text, attachments or both
+            RuleFor(x => x)
+                .Must(x => !string.IsNullOrWhiteSpace(x.Content) || (x.Attachments != null && x.Attachments.Any()))
+                .WithName("Content")
+                .WithMessage(EmptyMessage);
         }
     }
 }

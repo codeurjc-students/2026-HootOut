@@ -48,7 +48,7 @@ const router = createRouter({
       meta: { layout: 'MainLayout' },
     },
     {
-      path: '/chat/direct/:chatConversationId?',
+      path: '/chat/direct/:directConversationId?',
       name: 'directConversation',
       component: () => import('@/views/DirectConversationView.vue'),
       meta: { layout: 'MainLayout' },

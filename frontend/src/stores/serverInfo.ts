@@ -77,6 +77,12 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     setCurrentChatChannel(undefined)
   }
 
+  function updateChannel(updated: ChatChannel) {
+    const channel = channels.value.find((x) => x.id == updated.id)
+    if (channel) channel.name = updated.name
+    if (currentChatChannel.value?.id == updated.id) currentChatChannel.value.name = updated.name
+  }
+
   return {
     currentChatChannel,
     servers,
@@ -91,5 +97,6 @@ export const serverInfoStore = defineStore('serverInfo', () => {
     setCurrentServer,
     fetchServerChannels,
     setCurrentServerSettings,
+    updateChannel,
   }
 })

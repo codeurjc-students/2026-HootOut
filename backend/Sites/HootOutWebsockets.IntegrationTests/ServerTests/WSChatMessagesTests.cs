@@ -14,6 +14,7 @@ using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
 using HootOut.Contracts.ChatServers.Requests;
 using HootOut.Contracts.ChatServers.Services;
+using HootOut.Contracts.Common.Enums;
 using HootOut.Contracts.WebSockets.Dtos;
 using HootOut.Contracts.WebSockets.Handlers;
 using HootOut.Contracts.WebSockets.Services;
@@ -29,7 +30,7 @@ using System.Net.WebSockets;
 namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 {
     [Collection("IntegrationTests")]
-    public class WSChatMessagesTests : IClassFixture<WebSocketServerFixture>, IClassFixture<TestContaineRabbitConnectionFactory>, IDisposable
+    public class WSChatMessagesTests : IClassFixture<WebSocketServerFixture>, IClassFixture<TestContaineRabbitConnectionFactory>, IAsyncLifetime, IDisposable
     {
         private readonly WebSocketServerFixture serverFixture;
         private readonly ILifetimeScope container;
@@ -131,6 +132,18 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
 
             var conversationId = channel.ChatConversationId;
 
+            // Subscriptions are validated now: user 2 has to be a member of the server
+            var invitation = await serverService.InviteMemberAsync(new InviteServerMemberRequest
+            {
+                ChatServerId = server.Id,
+                Username = username2
+            }, userId1, ct);
+            await serverService.UpdateServerInvitationAsync(new UpdateServerInvitationRequest
+            {
+                Id = invitation.Id,
+                Status = InvitationStatus.Accepted
+            }, userId2, ct);
+
             WSConnectionManager? connectionManager = null;
             if (IconnectionManager is WSConnectionManager)
             {
@@ -180,7 +193,13 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.ServerTests
             subscribers!.Count.Should().Be(2);
             pubSubService!.ConnectionSubscriptions.Count.Should().Be(2);
 
-            Guid otherChannelId = Guid.NewGuid();
+            // Subscriptions are validated now: the second subscription has to be a real channel of the server
+            var otherChannel = await channelService.CreateChatChannelAsync(new CreateChatChannelRequest
+            {
+                ChatServerId = server.Id,
+                Name = "test456"
+            }, ct);
+            Guid otherChannelId = otherChannel.ChatConversationId;
             await socket2.SendWithAckAsync(new WebSocketMessageDto
             {
                 Type = WSHandlerType.Subscribe,

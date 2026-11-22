@@ -106,6 +106,12 @@ namespace HootOut.ChatServers.Services
 
             await ValidateUserIsAlreadyAMember(request.ChatServerId, invitedUser.Id, ct);
 
+            var pending = await invitationRepository.GetPendingServerInvitationAsync(request.ChatServerId, invitedUser.Id, ct);
+            if (pending != null)
+            {
+                throw new ValidationException(new[] { new ValidationFailure("Username", "This user already has a pending invitation to the server") });
+            }
+
             var serverInvitation = Persistable.CreateNew<ServerInvitation>();
             serverInvitation.ChatServerId = request.ChatServerId;
             serverInvitation.UserId = invitedUser.Id;

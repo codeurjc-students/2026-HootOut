@@ -4,40 +4,61 @@
   import FriendsBar from '@/components/directConversation/FriendsBar.vue'
   import wsMessageService from '@/services/common/websocketsMessage/WebSocketsMessageService'
   import { conversationStore } from '@/stores/conversation'
+  import { directConversationStore } from '@/stores/directConversation'
+  import { userInfoStore } from '@/stores/userInfo'
   import { storeToRefs } from 'pinia'
-  import { onMounted, ref, watch } from 'vue'
-  import { useRoute } from 'vue-router'
+  import { computed, onMounted, watch } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
 
   const route = useRoute()
+  const router = useRouter()
   const conversation = conversationStore()
+  const directConversation = directConversationStore()
+  const { currentConversation } = storeToRefs(directConversation)
+  const { user } = storeToRefs(userInfoStore())
 
   onMounted(async () => {
     await wsMessageService.tryReconnect()
   })
 
-  const mobileClass = ref('view-channels')
-
-  watch(
-    () => route.params.chatConversationId,
-    async (newId, oldId) => {
-      conversation.clearConversation()
-      if (newId) {
-        conversation.selectConversation(newId as string)
-      }
-    },
-    {
-      immediate: true,
-    }
+  // On mobile only one side is shown: the friends list, or the chat when a conversation is open
+  const mobileClass = computed(() =>
+    route.params.directConversationId ? 'view-chat' : 'view-channels'
   )
 
   watch(
-    () => route.params.chatConversationId,
+    () => route.params.directConversationId,
     async (newId) => {
-      if (newId) {
-        mobileClass.value = 'view-chat'
-      } else {
-        mobileClass.value = 'view-channels'
+      conversation.clearConversation()
+
+      if (!newId) {
+        // No conversation open: stop receiving the messages of the previous one
+        directConversation.clearDirectConversation()
+        conversation.closeConversation()
+        return
       }
+
+      const directConversationId = newId as string
+      let found = false
+      try {
+        found = await directConversation.updateDirectConversation(
+          directConversationId,
+          user.value?.id ?? ''
+        )
+      } catch (err) {
+        // The conversation could not be loaded: same as not found
+      }
+
+      // The route changed while loading: the new route loads its own conversation
+      if (route.params.directConversationId !== directConversationId) return
+
+      if (!found || !currentConversation.value) {
+        // The conversation does not exist or belongs to other users
+        await router.replace({ name: 'directConversation' })
+        return
+      }
+
+      await conversation.selectConversation(currentConversation.value.chatConversationId)
     },
     {
       immediate: true,
@@ -54,7 +75,7 @@
     ></FriendsBar>
     <ChatConversationView
       :class="mobileClass"
-      :chat-name="'test'"
+      :chat-name="currentConversation?.friend?.username"
       :back-link="{
         name: 'directConversation',
       }"
@@ -72,7 +93,7 @@
     max-height: calc(100vh - var(--navbar-height));
   }
 
-  @media (max-width: 520px) {
+  @media (width < 520px) {
     .chat-layout.view-chat {
       grid-template-columns: 1fr;
     }

@@ -10,6 +10,7 @@ using HootOut.Contracts.Common;
 using HootOut.Contracts.Common.Enums;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Contracts.Friends.Dtos;
+using HootOut.Contracts.Friends.Responses;
 using HootOut.Friends.Entities;
 using HootOut.Friends.Repositories;
 using HootOut.Infraestructure.DI;
@@ -98,12 +99,11 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.Friends
             var result = await repository.GetUserFriendsAsync(new PageRequest(), user.Id, ct);
 
             var dto = result.Items.Should().ContainSingle().Subject;
-            dto.Id.Should().Be(relationId);
+            dto.FriendRelationId.Should().Be(relationId);
             dto.Friend.Should().NotBeNull();
             dto.Friend.Id.Should().Be(friend.Id);
             dto.Friend.Username.Should().Be("friend");
-            dto.ChatConversationId.Should().Be(conversation.ChatConversationId);
-            dto.CreatedAt.Should().BeCloseTo(BaseDate, TimeSpan.FromMilliseconds(1));
+            dto.ChatConversationId.Should().Be(conversation.ChatConversationId); 
             result.Total.Should().Be(1);
         }
 
@@ -121,8 +121,8 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.Friends
             // One of them is User1Id and the other User2Id: the friend is always the other user
             firstResult.Items.Should().ContainSingle().Which.Friend.Id.Should().Be(second.Id);
             secondResult.Items.Should().ContainSingle().Which.Friend.Id.Should().Be(first.Id);
-            firstResult.Items[0].Id.Should().Be(relationId);
-            secondResult.Items[0].Id.Should().Be(relationId);
+            firstResult.Items[0].FriendRelationId.Should().Be(relationId);
+            secondResult.Items[0].FriendRelationId.Should().Be(relationId);
             firstResult.Items[0].ChatConversationId.Should().Be(secondResult.Items[0].ChatConversationId);
         }
 
@@ -217,7 +217,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.Friends
             var result = await repository.GetUserFriendsAsync(new PageRequest(), user.Id, ct);
 
             var dto = result.Items.Should().ContainSingle().Subject;
-            dto.Id.Should().Be(relationId);
+            dto.FriendRelationId.Should().Be(relationId);
             dto.ChatConversationId.Should().Be(conversation.ChatConversationId);
             result.Total.Should().Be(1);
         }
@@ -234,7 +234,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.Friends
 
             var result = await repository.GetUserFriendsAsync(new PageRequest(), user.Id, ct);
 
-            result.Items.Select(f => f.Id).Should().Equal(relations[2], relations[1], relations[0]);
+            result.Items.Select(f => f.FriendRelationId).Should().Equal(relations[2], relations[1], relations[0]);
         }
 
         [Fact]
@@ -246,7 +246,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.Friends
             var request = new PageRequest { SortBy = "createdat", Descending = false };
             var result = await repository.GetUserFriendsAsync(request, user.Id, ct);
 
-            result.Items.Select(f => f.Id).Should().Equal(relations[0], relations[1], relations[2]);
+            result.Items.Select(f => f.FriendRelationId).Should().Equal(relations[0], relations[1], relations[2]);
         }
 
         [Theory]
@@ -278,7 +278,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.Friends
             var request = new PageRequest { SortBy = sortBy };
             var result = await repository.GetUserFriendsAsync(request, user.Id, ct);
 
-            result.Items.Select(f => f.Id).Should().Equal(relations[2], relations[1], relations[0]);
+            result.Items.Select(f => f.FriendRelationId).Should().Equal(relations[2], relations[1], relations[0]);
         }
 
         #endregion
@@ -293,7 +293,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.Friends
 
             var result = await repository.GetUserFriendsAsync(new PageRequest { PageSize = 2 }, user.Id, ct);
 
-            result.Items.Select(f => f.Id).Should().Equal(relations[4], relations[3]);
+            result.Items.Select(f => f.FriendRelationId).Should().Equal(relations[4], relations[3]);
             result.Next.Should().Be(relations[3]);
             result.Total.Should().Be(5);
         }
@@ -314,9 +314,9 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.Friends
 
             pages.Select(p => p.Items.Count).Should().Equal(3, 3, 1);
             pages.Should().OnlyContain(p => p.Total == 7);
-            var walked = pages.SelectMany(p => p.Items).Select(f => f.Id).ToList();
+            var walked = pages.SelectMany(p => p.Items).Select(f => f.FriendRelationId).ToList();
             walked.Should().OnlyHaveUniqueItems();
-            walked.Should().Equal(all.Items.Select(f => f.Id));
+            walked.Should().Equal(all.Items.Select(f => f.FriendRelationId));
         }
 
         [Fact]
@@ -329,7 +329,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.Friends
 
             var pages = await WalkAllPagesAsync(r => repository.GetUserFriendsAsync(r, user.Id, ct), new PageRequest { PageSize = 2 });
 
-            pages.SelectMany(p => p.Items).Select(f => f.Id).Should().Equal(relations[5], relations[3], relations[2], relations[0]);
+            pages.SelectMany(p => p.Items).Select(f => f.FriendRelationId).Should().Equal(relations[5], relations[3], relations[2], relations[0]);
             pages.Should().OnlyContain(p => p.Total == 4);
         }
 
@@ -571,10 +571,10 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.Friends
             return id;
         }
 
-        private static async Task<List<PageResult<FriendRelationDto>>> WalkAllPagesAsync(
-            Func<PageRequest, Task<PageResult<FriendRelationDto>>> getPage, PageRequest firstRequest)
+        private static async Task<List<PageResult<UserFriendResponse>>> WalkAllPagesAsync(
+            Func<PageRequest, Task<PageResult<UserFriendResponse>>> getPage, PageRequest firstRequest)
         {
-            var pages = new List<PageResult<FriendRelationDto>>();
+            var pages = new List<PageResult<UserFriendResponse>>();
             var request = firstRequest;
 
             // Upper bound to avoid an infinite loop if the cursor never ends

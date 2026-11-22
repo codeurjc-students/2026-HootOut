@@ -157,6 +157,22 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
             .FirstOrDefault();
         }
 
+        public async Task<ServerInvitation?> GetPendingServerInvitationAsync(Guid serverId, Guid userId, CancellationToken ct = default)
+        {
+            await using var conn = await provider.OpenConnectionAsync(ct);
+
+            return await conn.QuerySingleOrDefaultAsync<ServerInvitation?>(new CommandDefinition($"""
+                SELECT
+                    {serverInvitationColumns}
+                FROM "HootOut"."ServerInvitation" invitation
+                WHERE invitation."ChatServerId" = @ServerId
+                  AND invitation."UserId" = @UserId
+                  AND invitation."Status" = @Pending
+                """,
+                new { ServerId = serverId, UserId = userId, Pending = InvitationStatus.Pending },
+            cancellationToken: ct));
+        }
+
         public async Task<Guid?> AcceptServerInvitationAsync(ServerInvitation invitation, CancellationToken ct = default)
         {
             await using var conn = await provider.OpenConnectionAsync(ct);
