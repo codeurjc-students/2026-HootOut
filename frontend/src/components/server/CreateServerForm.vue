@@ -1,8 +1,10 @@
 <script lang="ts" setup>
   import ChatServerService from '@/services/chatServer/ChatServerService'
   import { getValidationErrors } from '@/services/common/utils'
-  import { ApiError, ValidationError, type ChatServer } from '@/types'
+  import MediaFileService from '@/services/mediaFile/MediaFileService'
+  import { ApiError, ValidationError, type ChatServer, type UploadFileResponse } from '@/types'
   import { computed, reactive, ref } from 'vue'
+  import RoundedProfilePicture from '../shared/filePreview/RoundedProfilePicture.vue'
 
   defineExpose({
     cleanForm,
@@ -12,11 +14,14 @@
     (e: 'success', server: ChatServer): void
   }>()
 
-  const form = reactive({ name: '', description: '' })
+  const form = reactive({ name: '', description: '', profilePictureId: '' })
   const submitting = ref(false)
   const error = ref('')
 
   const canSubmit = computed(() => !submitting.value && form.name.trim() !== '')
+  const fileInput = ref<HTMLInputElement>()
+  const uploading = ref(false)
+  const profilePicture = ref<UploadFileResponse | undefined>()
 
   const formErrors = ref(new Map<string, Map<string, string>>())
 
@@ -31,6 +36,7 @@
       const newServer = await ChatServerService.createNewServer({
         name: form.name,
         description: form.description,
+        profilePictureId: form.profilePictureId.length > 0 ? form.profilePictureId : undefined,
       })
       form.name = ''
       form.description = ''
@@ -50,6 +56,42 @@
     }
   }
 
+  async function uploadFile() {
+    const input = fileInput.value
+    const file = input?.files?.item(0)
+    if (!input || !file) return
+    formErrors.value.delete('ProfilePicture')
+    uploading.value = true
+    try {
+      const response = await MediaFileService.uploadFile(file)
+      if (response) {
+        if (!(
+          response.contentType.includes('png') ||
+          response.contentType.includes('jpg') ||
+          response.contentType.includes('jpeg') ||
+          response.contentType.includes('webp')
+        )) {
+          const err = new Map<string, string>()
+          err.set('error', 'This file type is not valid for the server profile picture')
+          formErrors.value.set('ProfilePicture', err)
+        } else {
+          profilePicture.value = response
+          form.profilePictureId = response.id
+        }
+      }
+    } catch (err) {
+      // TODO: show the error to the user
+    } finally {
+      uploading.value = false
+      // Lets the same file be selected again
+      input.value = ''
+    }
+  }
+
+  function selectFile() {
+    fileInput.value?.click()
+  }
+
   async function cleanForm() {
     formErrors.value = new Map()
     form.name = ''
@@ -61,6 +103,28 @@
 <template>
   <form class="custom-form" id="create-server-form" novalidate @submit.prevent="onSubmit">
     <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
+
+    <div class="custom-form-row">
+      <div class="custom-form-label-wrapper">
+        <label for="file-input">Profile Picture</label>
+      </div>
+      <RoundedProfilePicture
+        class="pointer mx-auto h-40 w-40"
+        :img-url="profilePicture?.url"
+        alt="S"
+        @click="selectFile"
+      ></RoundedProfilePicture>
+
+      <input id="file-input" ref="fileInput" type="file" hidden @change="uploadFile" />
+    </div>
+
+    <p
+      v-for="err in formErrors.get('ProfilePicture')?.values()"
+      :key="err"
+      class="custom-form-field-error mt-4"
+    >
+      {{ err }}
+    </p>
 
     <div class="custom-form-row">
       <div class="custom-form-label-wrapper">

@@ -8,6 +8,8 @@ namespace HootOut.Contracts.ChatServers.Requests
 
         public string Description { get; init; } = string.Empty;
 
+        public Guid? ProfilePictureId { get; set; }
+
         public void Validate() => new CreateChatServerRequestValidator().ValidateAndThrow(this);
     }
 
@@ -16,7 +18,7 @@ namespace HootOut.Contracts.ChatServers.Requests
         public CreateChatServerRequestValidator()
         {
             RuleFor(x => x.Name).NotEmpty().MinimumLength(5).MaximumLength(50);
-            RuleFor(x => x.Description).MaximumLength(200);
+            RuleFor(x => x.Description).MaximumLength(200); 
         }
     }
 }

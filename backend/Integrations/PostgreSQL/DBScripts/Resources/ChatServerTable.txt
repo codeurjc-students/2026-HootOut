@@ -25,13 +25,17 @@ then
 		"OwnerId" UUID NOT NULL,
 		"Name" TEXT NOT NULL,
 		"Description" TEXT,
+		"ProfilePictureId" UUID,
 		"Deleted" boolean NOT NULL DEFAULT false,
 		"CreatedAt" timestamptz  NOT NULL,
 		"ModifiedAt" timestamptz NOT NULL,
 		CONSTRAINT fk_chat_server_owner FOREIGN KEY ("OwnerId") REFERENCES "HootOut"."UserInfo" ("Id")
 	);
 
-end if;  
+end if; 
+
+-- ALTER TABLE "HootOut"."ChatServer"
+--		ADD COLUMN "ProfilePictureId" UUID;
 
 CREATE INDEX IF NOT EXISTS ix_chat_server_owner
 ON "HootOut"."ChatServer" ("OwnerId")

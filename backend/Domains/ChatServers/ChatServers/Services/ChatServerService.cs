@@ -3,6 +3,7 @@ using FluentValidation.Results;
 using HootOut.ChatServers.Entities;
 using HootOut.ChatServers.Mappers;
 using HootOut.ChatServers.Repositories;
+using HootOut.CommonDomain.FileStorage;
 using HootOut.Contracts.ChatServers.Dtos;
 using HootOut.Contracts.ChatServers.Requests;
 using HootOut.Contracts.ChatServers.Services;
@@ -23,6 +24,7 @@ namespace HootOut.ChatServers.Services
         private readonly IServerMemberRepository memberRepository;
         private readonly IServerInvitationRepository invitationRepository;
         private readonly IUserService userService;
+        private readonly IMediaUrlService mediaUrlService;
 
         public ChatServerService(
             ISaver<ChatServer> serverSaver,
@@ -31,7 +33,8 @@ namespace HootOut.ChatServers.Services
             IChatServerRepository serverRepository,
             IUserService userService,
             IServerInvitationRepository invitationRepository,
-            IServerMemberRepository memberRepository
+            IServerMemberRepository memberRepository,
+            IMediaUrlService mediaUrlService
             )
         {
             this.serverSaver = serverSaver ?? throw new ArgumentNullException(nameof(serverSaver));
@@ -41,6 +44,7 @@ namespace HootOut.ChatServers.Services
             this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
             this.invitationRepository = invitationRepository ?? throw new ArgumentNullException(nameof(invitationRepository));
             this.memberRepository = memberRepository ?? throw new ArgumentNullException(nameof(memberRepository));
+            this.mediaUrlService = mediaUrlService ?? throw new ArgumentException(nameof(mediaUrlService));
         }
 
         public async Task<ChatServerDto> CreateChatServerAsync(CreateChatServerRequest request, Guid ownerId, CancellationToken ct = default)
@@ -53,9 +57,12 @@ namespace HootOut.ChatServers.Services
 
             newServer.Name = request.Name;
             newServer.Description = request.Description;
+            newServer.ProfilePictureId = request.ProfilePictureId;
             newServer.OwnerId = ownerId;
 
             await serverSaver.SaveAsync(newServer, ct);
+
+
 
             var member = Persistable.CreateNew<ServerMember>();
             member.ChatServerId = newServer.Id;
@@ -63,18 +70,38 @@ namespace HootOut.ChatServers.Services
 
             await memberSaver.SaveAsync(member, ct);
 
-            return newServer.ToDto();
+            var server = newServer.ToDto();
+
+            if (server.ProfilePicture != null)
+            {
+                server.ProfilePicture.Url = await mediaUrlService.GetViewUrlAsync(server.ProfilePicture.MediaFileId, server.ProfilePicture.ContentType, server.ProfilePicture.FileName) ?? "";
+            }
+
+            return server;
         }
 
         public async Task<PageResult<ChatServerDto>> GetServerDtosByUserIdAsync(PageRequest request, Guid userId, CancellationToken ct = default)
         {
-            return await serverRepository.GetServerDtosByUserIdAsync(request, userId, ct);
+            var servers = await serverRepository.GetServerDtosByUserIdAsync(request, userId, ct);
+            foreach(var server in servers.Items)
+            {
+                if (server.ProfilePicture != null)
+                {
+                    server.ProfilePicture.Url = await mediaUrlService.GetViewUrlAsync(server.ProfilePicture.MediaFileId, server.ProfilePicture.ContentType, server.ProfilePicture.FileName) ?? "";
+                }
+            }
+            return servers;
         }
 
         public async Task<ChatServerDto?> GetServerDtoByIdAsync(Guid serverId, Guid userId, CancellationToken ct = default)
         {
             await ValidateUserIsInServer(serverId, userId, ct);
-            return await serverRepository.GetServerDtoByIdAsync(serverId, ct);
+            var server = await serverRepository.GetServerDtoByIdAsync(serverId, ct);
+            if (server != null && server.ProfilePicture != null)
+            {
+                server.ProfilePicture.Url = await mediaUrlService.GetViewUrlAsync(server.ProfilePicture.MediaFileId, server.ProfilePicture.ContentType, server.ProfilePicture.FileName) ?? "";
+            }
+            return server;
         }
 
         public async Task<PageResult<ServerMemberDto>> GetServerMemberDtosAsync(Guid serverId, Guid userId, PageRequest request, CancellationToken ct = default)

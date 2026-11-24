@@ -4,6 +4,7 @@ using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.ChatChannels.Dtos;
 using HootOut.Contracts.ChatServers.Dtos;
 using HootOut.Contracts.Common;
+using HootOut.Contracts.Common.Dto;
 using HootOut.PostgreSQL.Helpers;
 
 namespace HootOut.PostgreSQL.Repositories.ChatServers
@@ -38,6 +39,8 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                 FROM "HootOut"."ChatServer" m
                 INNER JOIN "HootOut"."ServerMember" member
                     ON m."Id" = member."ChatServerId" AND member."UserId" = @UserId AND member."Deleted" = FALSE
+                LEFT JOIN "HootOut"."MediaFile" mf
+                    ON m."ProfilePictureId" = mf."Id"
                 """;
 
             var serversWhere = """ WHERE m."Deleted" = FALSE """;
@@ -45,7 +48,10 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
             var sql =
             $"""
                 SELECT
-                {serverColumns}
+                {serverColumns},
+                mf."Id" as MediaFileId,
+                mf."FileName",
+                mf."ContentType"
                 {serversFrom}
                 {serversWhere}
                 {PaginatedQueryHelper.CursorFilter(serversFrom, sort, request)}
@@ -64,7 +70,16 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                 Take = request.Size + 1,
             }, cancellationToken: ct));
 
-            var members = (await multi.ReadAsync<ChatServerDto>()).ToList();
+            var members = multi.Read<ChatServerDto, PictureDto?, ChatServerDto>(
+                (server, picture) =>
+                {
+                    if (picture != null)
+                    {
+                        server.ProfilePicture = picture;
+                    }
+                    return server;
+                }, splitOn: "MediaFileId").ToList();
+
             var total = await multi.ReadSingleAsync<int>();
 
             return PaginatedQueryHelper.ToPage(members, request, x => x.Id, total);
@@ -79,21 +94,26 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                     channel."Id", 
                     channel."ChatServerId",
                     channel."Name",
-                    channel."ChatConversationId"
+                    channel."ChatConversationId",
+                    mf."Id" as MediaFileId,
+                    mf."FileName",
+                    mf."ContentType"
                 FROM "HootOut"."ChatServer" m
                 LEFT JOIN "HootOut"."ChatChannel" channel
                     ON m."Id" = channel."ChatServerId" AND channel."Deleted" = FALSE
+                LEFT JOIN "HootOut"."MediaFile" mf
+                    ON m."ProfilePictureId" = mf."Id"
                 WHERE m."Id" = @ServerId AND m."Deleted" = FALSE 
                 ORDER BY channel."Name"
                 """;
 
             ChatServerDto? result = null;
 
-            await conn.QueryAsync<ChatServerDto?, ChatChannelDto?, ChatServerDto?>(new CommandDefinition(sql, new
+            await conn.QueryAsync<ChatServerDto?, ChatChannelDto?, PictureDto?, ChatServerDto?>(new CommandDefinition(sql, new
             {
                 ServerId = serverId
             }, cancellationToken: ct),
-            (server, channel) =>
+            (server, channel, profilePicture) =>
             {
                 if (server == null)
                     return null;
@@ -103,10 +123,15 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                     result = server;
                 }
 
+                if (profilePicture != null)
+                {
+                    result.ProfilePicture = profilePicture;
+                }
+
                 if (channel != null)
                     result.Channels.Add(channel);
                 return server;
-            }, splitOn: "Id");
+            }, splitOn: "Id, MediaFileId");
 
             return result;
         }

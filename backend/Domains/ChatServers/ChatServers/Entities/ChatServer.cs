@@ -8,7 +8,7 @@ namespace HootOut.ChatServers.Entities
 
         public string Description { get; set; } = string.Empty;
 
-        public Guid ProfilePicture { get; set; }
+        public Guid? ProfilePictureId { get; set; }
 
         public Guid OwnerId { get; set; }
     }
