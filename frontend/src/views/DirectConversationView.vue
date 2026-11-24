@@ -91,6 +91,8 @@
 
   .chat-left-bar {
     max-height: calc(100vh - var(--navbar-height));
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   @media (width < 520px) {

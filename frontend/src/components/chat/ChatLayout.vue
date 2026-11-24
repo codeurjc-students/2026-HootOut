@@ -82,6 +82,10 @@
 
   .chat-left-bar {
     max-height: calc(100vh - var(--navbar-height));
+    /* A grid item is at least as wide as its content: a long username would make it wider
+       than its 300px column and the chat would cover its right side (e.g. its buttons) */
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .chat-members {

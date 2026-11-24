@@ -19,8 +19,10 @@ test.use({ viewport: { width: 1440, height: 900 } })
 
 const onlineList = (page: Page): Locator => page.locator('#online-members')
 const offlineList = (page: Page): Locator => page.locator('#offline-members')
+// The rows of both lists have the class "member" (the offline list is an InfiniteScrollList,
+// which decides its own markup)
 const memberIn = (list: Locator, username: string): Locator =>
-  list.locator('li').filter({ hasText: username })
+  list.locator('.member').filter({ hasText: username })
 
 async function setupServer(owner: Page, memberPage: Page, memberUsername: string): Promise<Server> {
   await owner.goto('/chat')
