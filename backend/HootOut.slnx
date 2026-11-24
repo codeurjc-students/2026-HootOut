@@ -47,8 +47,10 @@
     <Project Path="Integrations/PostgreSQL.IntegrationTests/PostgreSQL.IntegrationTests.csproj" Id="0eea31ca-6c14-4867-a644-587a40f44e0f" />
     <Project Path="Integrations/PostgreSQL.UnitTests/PostgreSQL.UnitTests.csproj" Id="7d5e144f-df1f-495c-99c8-2a79a9876a2f" />
     <Project Path="Integrations/PostgreSQL/PostgreSQL.csproj" Id="0dfcf893-6bb3-45c4-b4ff-85775ac5321a" />
+    <Project Path="Integrations/RabbitMQ.IntegrationTests/RabbitMQ.IntegrationTests.csproj" Id="b298a748-204a-4096-8657-03e53e61275f" />
     <Project Path="Integrations/RabbitMQ/RabbitMQ.csproj" Id="aa9d1ffe-599f-42a3-b6ee-e5fd37f149ec" />
-    <Project Path="Integrations/RabbitMQIntegrationTests/RabbitMQIntegrationTests.csproj" Id="b298a748-204a-4096-8657-03e53e61275f" />
+    <Project Path="Integrations/Redis.IntegrationTests/Redis.IntegrationTests.csproj" Id="92b56f93-a05a-4c74-87b7-63d7c6837a42" />
+    <Project Path="Integrations/Redis/Redis.csproj" />
   </Folder>
   <Folder Name="/Sites/">
     <Project Path="HootOutAPI/HootOutAPI.csproj" />

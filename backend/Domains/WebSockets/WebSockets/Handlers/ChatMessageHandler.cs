@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 namespace HootOut.WebSockets.Actions
 {
     public class ChatMessageHandler : IWSMessageHandler
-    {  
+    {
 
         public WSHandlerType Type => WSHandlerType.ChatMessage;
         private IWSPubSubService wsPubSubService;

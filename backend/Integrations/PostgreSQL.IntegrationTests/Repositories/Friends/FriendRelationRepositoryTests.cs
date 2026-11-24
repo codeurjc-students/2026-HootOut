@@ -9,7 +9,6 @@ using HootOut.Contracts.ChatConversations.Enums;
 using HootOut.Contracts.Common;
 using HootOut.Contracts.Common.Enums;
 using HootOut.Contracts.Common.Saver;
-using HootOut.Contracts.Friends.Dtos;
 using HootOut.Contracts.Friends.Responses;
 using HootOut.Friends.Entities;
 using HootOut.Friends.Repositories;
@@ -103,7 +102,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.Friends
             dto.Friend.Should().NotBeNull();
             dto.Friend.Id.Should().Be(friend.Id);
             dto.Friend.Username.Should().Be("friend");
-            dto.ChatConversationId.Should().Be(conversation.ChatConversationId); 
+            dto.ChatConversationId.Should().Be(conversation.ChatConversationId);
             result.Total.Should().Be(1);
         }
 

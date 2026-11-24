@@ -18,6 +18,8 @@ namespace HootOut.WebSockets
             builder.RegisterType<ChannelSubscribeHandler>().As<IWSMessageHandler>().SingleInstance();
             builder.RegisterType<ChannelUnsubscribeHandler>().As<IWSMessageHandler>().SingleInstance();
             builder.RegisterType<ChatMessageHandler>().As<IWSMessageHandler>().SingleInstance();
+            builder.RegisterType<PresenceSubscribeHandler>().As<IWSMessageHandler>();
+            builder.RegisterType<PresenceUnsubscribeHandler>().As<IWSMessageHandler>();
         }
     }
 }

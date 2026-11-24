@@ -16,12 +16,15 @@ namespace HootOut.HootOutWebsockets.Schedulers
             this.wsPubSubService = wsPubSubService ?? throw new ArgumentNullException(nameof(wsPubSubService));
         }
 
-        public Task StartAsync(CancellationToken ct)
+        public async Task StartAsync(CancellationToken ct)
         {
-            return queuePubService.StartConsuming<WebSocketMessage>(nameof(WSHandlerType.ChatMessage),
+            await queuePubService.StartConsuming<WebSocketMessage>(nameof(WSHandlerType.ChatMessage),
                 async (exchange, channelId, message) => await wsPubSubService.ReceiveMessageAsync(exchange, channelId, message),
                 ct);
-            ;
+
+            await queuePubService.StartConsuming<WebSocketMessage>(nameof(WSHandlerType.Presence),
+                wsPubSubService.ReceiveMessageAsync,
+                ct);
         }
 
         public Task StopAsync(CancellationToken ct) => Task.CompletedTask;

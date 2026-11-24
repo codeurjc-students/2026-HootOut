@@ -84,7 +84,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.DirectMessages
             }, ct);
             subscribeError.Should().Be(CannotSubscribeError);
             CountSubscribers(conversationAB).Should().Be(2);
-            pubSubService.ConnectionSubscriptions.ContainsKey(GetConnectionId(userC.Id)).Should().BeFalse();
+            ChatSubscriptions(userC.Id).Should().BeEmpty();
 
             // C cannot send
             var sendError = await SendExpectingErrorAsync(socketC, ChatMessage(conversationAB, "intruder", Guid.NewGuid()), ct);
@@ -368,7 +368,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.DirectMessages
             }
 
             CountSubscribers(conversationId).Should().Be(1);
-            pubSubService.ConnectionSubscriptions[GetConnectionId(userB.Id)].Should().BeEquivalentTo(new[] { conversationId.ToString() });
+            ChatSubscriptions(userB.Id).Should().BeEquivalentTo(new[] { conversationId.ToString() });
 
             await SendChatMessageAsync(socketA, conversationId, "one", ct);
             await SendChatMessageAsync(socketA, conversationId, "two", ct);
@@ -379,7 +379,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.DirectMessages
             // A single Unsubscribe is enough. Any duplicate received meanwhile stays pending and fails the last check
             await UnsubscribeAsync(socketB, conversationId, ct);
             CountSubscribers(conversationId).Should().Be(0);
-            pubSubService.ConnectionSubscriptions.ContainsKey(GetConnectionId(userB.Id)).Should().BeFalse();
+            ChatSubscriptions(userB.Id).Should().BeEmpty();
 
             await SendChatMessageAsync(socketA, conversationId, "three", ct);
             (await GetMessagesOldestFirstAsync(conversationId, ct)).Select(x => x.Content).Should().Equal("one", "two", "three");

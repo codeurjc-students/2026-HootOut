@@ -1,10 +1,7 @@
-﻿using HootOut.Contracts.ChatChannels.Dtos;
-using HootOut.Contracts.ChatConversations.Dtos;
+﻿using HootOut.Contracts.ChatConversations.Dtos;
 using HootOut.Contracts.ChatConversations.Services;
 using HootOut.HootOutAPI.Helpers;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using NLog.LayoutRenderers.Wrappers;
 using System.Security.Claims;
 
 namespace HootOut.HootOutAPI.Controllers
@@ -28,7 +25,7 @@ namespace HootOut.HootOutAPI.Controllers
         {
             var userId = User.FindFirstValue("sub");
             if (userId is null)
-                return Unauthorized(); 
+                return Unauthorized();
 
             return await CommandLaunchHelper.LaunchAsync(
                logger,
@@ -36,6 +33,6 @@ namespace HootOut.HootOutAPI.Controllers
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );
-        } 
+        }
     }
 }

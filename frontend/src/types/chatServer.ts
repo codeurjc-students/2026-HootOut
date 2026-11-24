@@ -58,3 +58,9 @@ export interface ServerMember {
   userId: string
   createdAt: string
 }
+
+// Online members of a server: items is capped by the backend, total is the real number online
+export interface OnlineServerMembers {
+  items: ServerMember[]
+  total: number
+}

@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 namespace HootOut.WebSockets.Service
 {
     public class WSMessageDeserializer : IWSMessageDeserializer
-    {   
+    {
         private ILogger<WSMessageDeserializer> logger;
         private IEnumerable<IWSMessageHandler> wsMessageHandlers;
 

@@ -49,7 +49,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatMessages
                  FROM "HootOut"."MediaFile"
                  WHERE "Id" = @Id
                 """
-                , new {Id = mediaFileId },cancellationToken: ct));
+                , new { Id = mediaFileId }, cancellationToken: ct));
         }
     }
 }

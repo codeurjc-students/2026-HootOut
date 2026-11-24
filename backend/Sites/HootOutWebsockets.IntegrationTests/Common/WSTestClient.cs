@@ -20,6 +20,15 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
 
         public int PendingCount => pending.Count;
 
+        /// <summary>
+        /// Drops Presence and PresenceSnapshot messages. True by default so the chat tests are not affected
+        /// by the presence of their users; the presence tests set it to false.
+        /// </summary>
+        public bool IgnorePresence { get; set; } = true;
+
+        public static bool IsPresence(WebSocketMessageDto message)
+            => message.Type is WSHandlerType.Presence or WSHandlerType.PresenceSnapshot;
+
         public static JsonSerializerSettings JsonSettings { get; set; } = new()
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
@@ -72,7 +81,18 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
         // ---------- Receive ----------
 
         public Task<WebSocketMessageDto> ReceiveAsync(CancellationToken ct = default)
-            => pending.Count > 0 ? Task.FromResult(pending.Dequeue()) : ReceiveAsync<WebSocketMessageDto>(ct);
+            => pending.Count > 0 ? Task.FromResult(pending.Dequeue()) : ReceiveMessageAsync(ct);
+
+        /// <summary>Next message from the socket, skipping presence messages if <see cref="IgnorePresence"/>.</summary>
+        private async Task<WebSocketMessageDto> ReceiveMessageAsync(CancellationToken ct)
+        {
+            while (true)
+            {
+                var message = await ReceiveAsync<WebSocketMessageDto>(ct);
+                if (!IgnorePresence || !IsPresence(message))
+                    return message;
+            }
+        }
 
         public async Task<T> ReceiveAsync<T>(CancellationToken ct = default)
         {
@@ -118,7 +138,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
 
             while (true)
             {
-                var msg = await ReceiveAsync<WebSocketMessageDto>(ct);
+                var msg = await ReceiveMessageAsync(ct);
                 if (predicate(msg)) return msg;
                 pending.Enqueue(msg);
             }
@@ -158,13 +178,22 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
             using var cts = new CancellationTokenSource(window);
             try
             {
-                var buffer = new byte[4 * 1024];
-                await Socket.ReceiveAsync(buffer, cts.Token);
-                return false;
+                while (true)
+                {
+                    var text = await ReceiveTextAsync(cts.Token);
+                    var message = JsonConvert.DeserializeObject<WebSocketMessageDto>(text, JsonSettings);
+                    if (!IgnorePresence || message == null || !IsPresence(message))
+                        return false;
+                }
             }
             catch (OperationCanceledException)
             {
                 return true;
+            }
+            catch (InvalidOperationException)
+            {
+                // Closed by the server: that is a message too
+                return false;
             }
         }
 

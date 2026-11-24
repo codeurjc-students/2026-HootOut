@@ -1,9 +1,6 @@
 ﻿using HootOut.ChatConversations.Repositories;
 using HootOut.Contracts.ChatConversations.Dtos;
 using HootOut.Contracts.ChatConversations.Services;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.ChatConversations.Services
 {

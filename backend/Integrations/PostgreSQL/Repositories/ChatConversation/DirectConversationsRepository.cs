@@ -1,13 +1,8 @@
 ﻿using Dapper;
-using HootOut.ChatConversations.Entities;
 using HootOut.ChatConversations.Repositories;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.ChatConversations.Dtos;
 using HootOut.Contracts.Users.Dtos;
-using HootOut.Users.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HootOut.PostgreSQL.Repositories.ChatConversation
 {
@@ -21,7 +16,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatConversation
         }
 
         public async Task<DirectConversationDto?> GetDirectConversationByIdAsync(Guid directConversatioId, Guid userId, CancellationToken ct)
-        { 
+        {
             await using var conn = await provider.OpenConnectionAsync(ct);
 
             var result = await conn.QueryAsync<DirectConversationDto?, UserDto, UserDto, DirectConversationDto?>(
@@ -40,7 +35,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatConversation
                         ON u2."Id" = m."User2Id"
                 WHERE m."Id" = @DirectConversationId AND (u1."Id" = @UserId OR u2."Id" = @UserId)
                 """,
-                new { DirectConversationId = directConversatioId, userId = userId } ,
+                new { DirectConversationId = directConversatioId, userId = userId },
                 cancellationToken: ct), (directConversation, user1, user2) =>
                 {
                     if (directConversation != null)
@@ -53,5 +48,5 @@ namespace HootOut.PostgreSQL.Repositories.ChatConversation
 
             return result.FirstOrDefault();
         }
-    } 
+    }
 }

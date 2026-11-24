@@ -84,4 +84,9 @@ WHERE "Deleted" = FALSE;
 CREATE INDEX IF NOT EXISTS ix_server_member_server_createdAt
 ON "HootOut"."ServerMember" ("ChatServerId", "CreatedAt" DESC, "Id" DESC);
 
+CREATE INDEX IF NOT EXISTS ix_server_member_user
+ON "HootOut"."ServerMember" ("UserId")
+WHERE "Deleted" = FALSE;
+
+
 end $$;

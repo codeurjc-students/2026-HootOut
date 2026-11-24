@@ -10,6 +10,7 @@ namespace HootOut.ChatServers
         public void Register(ContainerBuilder builder)
         {
             builder.RegisterType<ChatServerService>().As<IChatServerService>().SingleInstance();
+            builder.RegisterType<ServerMemberPresenceService>().As<IServerMemberPresenceService>().SingleInstance();
         }
     }
 }

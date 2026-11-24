@@ -4,7 +4,6 @@ using HootOut.CommonIntegrationTests.Services;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.Common.Saver;
-using HootOut.Contracts.WebSockets.Handlers;
 using HootOut.HootOutWebsockets.IntegrationTests.Common;
 using HootOut.MediaFiles.Entities;
 

@@ -40,8 +40,15 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
              cancellationToken: ct)));
         }
 
-        public async Task<PageResult<ServerMemberDto>> GetServerMemberDtosAsync(Guid serverId, PageRequest request, CancellationToken ct = default)
+        public Task<PageResult<ServerMemberDto>> GetServerMemberDtosAsync(Guid serverId, PageRequest request, CancellationToken ct = default)
         {
+            return GetServerMemberDtosAsync(serverId, request, [], ct);
+        }
+
+        public async Task<PageResult<ServerMemberDto>> GetServerMemberDtosAsync(Guid serverId, PageRequest request, IReadOnlyCollection<Guid> excludedUserIds, CancellationToken ct = default)
+        {
+            ArgumentNullException.ThrowIfNull(excludedUserIds);
+
             await using var conn = await provider.OpenConnectionAsync(ct);
 
             if (!sortColumns.TryGetValue(request.SortBy?.ToLowerInvariant() ?? "", out var sort))
@@ -54,7 +61,12 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
                 INNER JOIN "HootOut"."UserInfo" u
                     ON m."UserId" = u."Id"
                 """;
-            var membersWhere = """ WHERE m."ChatServerId" = @ServerId AND m."Deleted" = FALSE """;
+            // "<> ALL" of an empty array is true: without exclusions it is the same query as before.
+            // Npgsql sends the array as one uuid[] parameter (Dapper does not expand it)
+            var membersWhere = """
+                WHERE m."ChatServerId" = @ServerId AND m."Deleted" = FALSE
+                    AND m."UserId" <> ALL(@ExcludedUserIds)
+                """;
 
             var sql = $"""
                 SELECT
@@ -76,6 +88,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
             using var multi = await conn.QueryMultipleAsync(new CommandDefinition(sql, new
             {
                 ServerId = serverId,
+                ExcludedUserIds = excludedUserIds.ToArray(),
                 request.Next,
                 Take = request.Size + 1,
             }, cancellationToken: ct));
@@ -84,6 +97,68 @@ namespace HootOut.PostgreSQL.Repositories.ChatServers
             var total = await multi.ReadSingleAsync<int>();
 
             return PaginatedQueryHelper.ToPage(members, request, x => x.Id, total);
+        }
+
+        public async Task<IReadOnlyList<ServerMemberDto>> GetServerMemberDtosByUserIdsAsync(Guid serverId, IReadOnlyCollection<Guid> userIds, int limit, CancellationToken ct = default)
+        {
+            ArgumentNullException.ThrowIfNull(userIds);
+
+            if (userIds.Count == 0 || limit <= 0)
+                return [];
+
+            await using var conn = await provider.OpenConnectionAsync(ct);
+
+            // Same order as the paginated list sorted by username, with the id as tie breaker
+            var members = await conn.QueryAsync<ServerMemberDto>(new CommandDefinition($"""
+                SELECT
+                    m."Id",
+                    m."UserId",
+                    m."CreatedAt",
+                    u."Username"
+                FROM "HootOut"."ServerMember" m
+                INNER JOIN "HootOut"."UserInfo" u
+                    ON m."UserId" = u."Id"
+                WHERE m."ChatServerId" = @ServerId AND m."Deleted" = FALSE
+                    AND m."UserId" = ANY(@UserIds)
+                ORDER BY {sortColumns["username"]}, m."Id"
+                LIMIT @Limit
+                """,
+                new { ServerId = serverId, UserIds = userIds.ToArray(), Limit = limit },
+                cancellationToken: ct));
+
+            return members.AsList();
+        }
+
+        public async Task<IEnumerable<Guid>> GetServerIdsByUserIdAsync(Guid userId, CancellationToken ct)
+        {
+            await using var conn = await provider.OpenConnectionAsync(ct);
+
+            var ids = await conn.QueryAsync<Guid>(new CommandDefinition("""
+                SELECT "ChatServerId"
+                FROM "HootOut"."ServerMember"
+                WHERE "UserId" = @UserId
+                  AND "Deleted" = FALSE
+                """,
+                new { UserId = userId },
+                cancellationToken: ct));
+
+            return ids.AsList();
+        }
+
+        public async Task<IEnumerable<Guid>> GetServerMemberIdsAsync(Guid serverId, CancellationToken ct)
+        {
+            await using var conn = await provider.OpenConnectionAsync(ct);
+
+            var ids = await conn.QueryAsync<Guid>(new CommandDefinition("""
+                SELECT "UserId"
+                FROM "HootOut"."ServerMember"
+                WHERE "ChatServerId" = @ServerId
+                  AND "Deleted" = FALSE
+                """,
+           new { ServerId = serverId },
+           cancellationToken: ct));
+
+            return ids.AsList();
         }
     }
 }

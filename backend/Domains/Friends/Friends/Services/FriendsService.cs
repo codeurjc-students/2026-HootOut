@@ -126,7 +126,7 @@ namespace HootOut.Friends.Services
 
             return await friendRelationRepository.GetUserFriendsAsync(request, userId, ct);
         }
-         
+
 
         public async Task ValidateUserCanSendMessageAsync(Guid chatConversationId, Guid userId, CancellationToken ct)
         {
@@ -135,6 +135,11 @@ namespace HootOut.Friends.Services
             {
                 throw new ValidationException(new[] { new ValidationFailure("Message", "The conversation could not be found") });
             }
+        }
+
+        public Task<IEnumerable<Guid>> GetFriendIdsAsync(Guid userId, CancellationToken ct = default)
+        {
+            return friendRelationRepository.GetFriendIdsAsync(userId, ct);
         }
 
         private async Task<Guid?> AcceptFriendRequestAsync(UpdateFriendRequest request, Guid userId, CancellationToken ct)

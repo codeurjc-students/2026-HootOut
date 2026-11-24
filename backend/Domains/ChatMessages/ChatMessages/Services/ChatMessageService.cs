@@ -16,7 +16,7 @@ using HootOut.Contracts.Friends.Services;
 namespace HootOut.ChatMessages.Services
 {
     public class ChatMessageService : IChatMessageService
-    {  
+    {
 
         private readonly ISaver<ChatMessage> saver;
         private readonly IChatMessageRepository search;
@@ -75,7 +75,7 @@ namespace HootOut.ChatMessages.Services
             ChatMessageDto messageDto = chatMessage.ToDto();
 
             if (request != null && request.Attachments.Any())
-            { 
+            {
                 messageDto.Attachments = (await attachmentService.CreateMessageAttachments(chatMessage.Id, request.Attachments, ct)).ToList();
             }
 
@@ -114,6 +114,6 @@ namespace HootOut.ChatMessages.Services
             {
                 throw new ValidationException(new[] { new ValidationFailure("Conversation", "Cannot send a message to this conversation", conversationId) });
             }
-        } 
+        }
     }
 }

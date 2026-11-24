@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace HootOut.WebSockets.Handlers
 {
     public class ChannelSubscribeHandler : IWSMessageHandler
-    {   
+    {
 
         public WSHandlerType Type => WSHandlerType.Subscribe;
 

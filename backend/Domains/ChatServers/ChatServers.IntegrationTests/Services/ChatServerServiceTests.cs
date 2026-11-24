@@ -1144,7 +1144,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
 
             // Accepts second Invitation
             await chatServerService.UpdateServerInvitationAsync(
-                new UpdateServerInvitationRequest { Id = invitation2.Id, Status = InvitationStatus.Accepted }, userId2, ct); 
+                new UpdateServerInvitationRequest { Id = invitation2.Id, Status = InvitationStatus.Accepted }, userId2, ct);
 
             var dbInvitation = await invitationRepository.GetServerInvitationByIdAsync(invitation.Id, ct);
             dbInvitation.Should().NotBeNull();

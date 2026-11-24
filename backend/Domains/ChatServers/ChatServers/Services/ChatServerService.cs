@@ -141,6 +141,20 @@ namespace HootOut.ChatServers.Services
                     throw new ValidationException(new[] { new ValidationFailure("Status", "Invalid invitation status") });
             }
         }
+        public Task<IEnumerable<Guid>> GetServerIdsByUserIdAsync(Guid userId, CancellationToken ct = default)
+        {
+            return memberRepository.GetServerIdsByUserIdAsync(userId, ct);
+        }
+
+        /// <summary>Members of the server. Throws ValidationException if <paramref name="userId"/> is not a member.</summary>
+        public async Task<IEnumerable<Guid>> GetServerMemberIdsAsync(Guid serverId, Guid userId, CancellationToken ct = default)
+        {
+            ServerMember? member = await memberRepository.GetServerMemberAsync(serverId, userId, ct);
+            if (member == null)
+                throw new ValidationException(new[] { new ValidationFailure("member", "User is not a member of the server") });
+
+            return await memberRepository.GetServerMemberIdsAsync(serverId, ct);
+        }
 
         public async Task<PageResult<ServerInvitationDto>> GetUserServerInvitations(Guid userId, PageRequest request, CancellationToken ct = default)
         {

@@ -2,7 +2,6 @@
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common;
 using HootOut.Contracts.Common.Enums;
-using HootOut.Contracts.Friends.Dtos;
 using HootOut.Contracts.Friends.Responses;
 using HootOut.Contracts.Users.Dtos;
 using HootOut.Friends.Repositories;
@@ -75,7 +74,7 @@ namespace HootOut.PostgreSQL.Repositories.Friends
 
             var friendRelations = multi.Read<UserFriendResponse, UserDto, UserFriendResponse>((friendRelation, user) =>
             {
-                friendRelation.Friend = user; 
+                friendRelation.Friend = user;
                 return friendRelation;
             }, splitOn: "Id").ToList();
 
@@ -125,6 +124,20 @@ namespace HootOut.PostgreSQL.Repositories.Friends
         """,
                 new { UserA = userA, UserB = userB },
                 cancellationToken: ct));
-        } 
+        }
+
+        public async Task<IEnumerable<Guid>> GetFriendIdsAsync(Guid userId, CancellationToken ct)
+        {
+            await using var conn = await provider.OpenConnectionAsync(ct);
+
+            return await conn.QueryAsync<Guid>(new CommandDefinition("""
+            SELECT CASE WHEN "User1Id" = @UserId THEN "User2Id" ELSE "User1Id" END
+            FROM "HootOut"."FriendRelation"
+            WHERE ("User1Id" = @UserId OR "User2Id" = @UserId)
+              AND "Deleted" = FALSE
+            """,
+                new { UserId = userId },
+                cancellationToken: ct));
+        }
     }
 }

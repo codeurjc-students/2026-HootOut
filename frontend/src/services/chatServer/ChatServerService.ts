@@ -2,6 +2,7 @@ import type {
   ChatServer,
   CreateChatServerRequest,
   InviteServerMemberRequest,
+  OnlineServerMembers,
   PageRequest,
   PageResult,
   ServerInvitation,
@@ -51,6 +52,19 @@ const ChatServerService = {
     pageRequest: PageRequest
   ): Promise<PageResult<ServerMember>> {
     return await get(`chatservers/${serverid}/members`, pageRequest)
+  },
+
+  // Online members sorted by username. Not paginated: capped by the backend, total is the real count
+  getOnlineServerMembers: async function (serverId: string): Promise<OnlineServerMembers> {
+    return await get(`chatservers/${serverId}/members/online`)
+  },
+
+  // Members that are not online, paginated (sorted by username ascending when sortBy is missing)
+  getOfflineServerMembers: async function (
+    serverId: string,
+    pageRequest: PageRequest
+  ): Promise<PageResult<ServerMember>> {
+    return await get(`chatservers/${serverId}/members/offline`, pageRequest)
   },
 }
 

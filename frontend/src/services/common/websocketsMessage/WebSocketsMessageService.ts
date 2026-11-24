@@ -29,6 +29,8 @@ export class WebSocketMessageService {
 
   private subscriptions: Record<string, (payload: WebSocketMessage) => void> = {}
   private pendingSubscriptions: Record<string, (payload: WebSocketMessage) => void> = {}
+  // Messages routed by their type instead of by their channel (e.g. presence)
+  private typeHandlers: Partial<Record<WSMessageType, (payload: WebSocketMessage) => void>> = {}
   private pending = new Map<string, Pending>()
 
   async connect(onOnpen: () => Promise<void>) {
@@ -150,8 +152,34 @@ export class WebSocketMessageService {
   }
 
   onMessage(message: WebSocketMessage) {
+    const typeHandler = this.typeHandlers[message.type as WSMessageType]
+    if (typeHandler) {
+      typeHandler(message)
+      return
+    }
     const key = message.channel
     this.subscriptions[key!]?.(message)
+  }
+
+  // Every message of the type goes to the handler, whatever its channel. Replaces the previous one
+  setTypeHandler(type: WSMessageType, handler: (payload: WebSocketMessage) => void): void {
+    this.typeHandlers[type] = handler
+  }
+
+  removeTypeHandler(type: WSMessageType): void {
+    delete this.typeHandlers[type]
+  }
+
+  // Receives the presence of the members of the server: the server answers with a
+  // PresenceSnapshot (channel = serverId) and then the ack. Rejects if the user is not a member
+  presenceSubscribe(serverId: string, timeoutMs = 5000): Promise<WebSocketMessage> {
+    const message: WebSocketMessage = { channel: serverId, type: WSMessageType.PresenceSubscribe }
+    return this.sendWithAck(message, timeoutMs).promise
+  }
+
+  presenceUnsubscribe(serverId: string, timeoutMs = 5000): Promise<WebSocketMessage> {
+    const message: WebSocketMessage = { channel: serverId, type: WSMessageType.PresenceUnsubscribe }
+    return this.sendWithAck(message, timeoutMs).promise
   }
 
   addPendingSubscription(channel: string, callback: (payload: WebSocketMessage) => void): void {

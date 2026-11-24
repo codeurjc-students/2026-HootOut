@@ -30,6 +30,7 @@
     <ProjectReference Include="..\Integrations\FileStorage\FileStorage\FileStorage.csproj" />
     <ProjectReference Include="..\Integrations\PostgreSQL\PostgreSQL.csproj" />
     <ProjectReference Include="..\Integrations\RabbitMQ\RabbitMQ.csproj" />
+    <ProjectReference Include="..\Integrations\Redis\Redis.csproj" />
   </ItemGroup>
 
 </Project>

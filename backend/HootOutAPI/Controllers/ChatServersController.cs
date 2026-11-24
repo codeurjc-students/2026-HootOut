@@ -14,13 +14,16 @@ namespace HootOut.HootOutAPI.Controllers
     {
         private readonly ILogger<ChatServersController> logger;
         private readonly IChatServerService chatServerService;
+        private readonly IServerMemberPresenceService memberPresenceService;
 
         public ChatServersController(
             ILogger<ChatServersController> logger,
-            IChatServerService chatServerService)
+            IChatServerService chatServerService,
+            IServerMemberPresenceService memberPresenceService)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.chatServerService = chatServerService ?? throw new ArgumentNullException(nameof(chatServerService));
+            this.memberPresenceService = memberPresenceService ?? throw new ArgumentNullException(nameof(memberPresenceService));
         }
 
         [HttpGet("joined")]
@@ -146,6 +149,46 @@ namespace HootOut.HootOutAPI.Controllers
             return await CommandLaunchHelper.LaunchAsync(
                logger,
                async () => await chatServerService.GetServerMemberDtosAsync(id, Guid.Parse(userId), page, ct),
+               BadRequest,
+               (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
+           );
+        }
+
+        /// <summary>Online members, sorted by username. Not paginated: capped, with the real total.</summary>
+        [HttpGet("{id:guid}/members/online")]
+        public async Task<ActionResult<OnlineServerMembersDto>> GetOnlineServerMembers([FromRoute] Guid id, CancellationToken ct)
+        {
+            var userId = User.FindFirstValue("sub");
+            if (userId is null)
+                return Unauthorized();
+
+            return await CommandLaunchHelper.LaunchAsync(
+               logger,
+               async () => await memberPresenceService.GetOnlineMembersAsync(id, Guid.Parse(userId), ct),
+               BadRequest,
+               (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
+           );
+        }
+
+        /// <summary>Members that are not online, paginated. Sorted by username ascending by default.</summary>
+        [HttpGet("{id:guid}/members/offline")]
+        public async Task<ActionResult<PageResult<ServerMemberDto>>> GetOfflineServerMembers([FromRoute] Guid id, [FromQuery] string? sortBy, [FromQuery] Guid? next, [FromQuery] bool descending, [FromQuery] int? pageSize, CancellationToken ct)
+        {
+            var userId = User.FindFirstValue("sub");
+            if (userId is null)
+                return Unauthorized();
+
+            var page = new PageRequest
+            {
+                Next = next,
+                Descending = descending,
+                PageSize = pageSize ?? 50,
+                SortBy = sortBy
+            };
+
+            return await CommandLaunchHelper.LaunchAsync(
+               logger,
+               async () => await memberPresenceService.GetOfflineMembersAsync(id, Guid.Parse(userId), page, ct),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );
