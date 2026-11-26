@@ -2,7 +2,6 @@
   import { onBeforeUnmount, watch } from 'vue'
   import { storeToRefs } from 'pinia'
   import InfiniteScrollList from '@/components/shared/infiniteScroll/InfiniteScrollList.vue'
-  import PresenceIndicator from '@/components/shared/presence/PresenceIndicator.vue'
   import { presenceStore } from '@/stores/presence'
   import { serverMembersStore } from '@/stores/serverMembers'
   import type { ServerMember } from '@/types'

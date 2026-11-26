@@ -7,8 +7,18 @@
   import type { PageResult, ServerMember, PageRequest } from '@/types'
   import { storeToRefs } from 'pinia'
   import UserTag from '@/components/shared/UserTag.vue'
+  import { onMounted } from 'vue'
+  import wsMessageService from '@/services/common/websocketsMessage/WebSocketsMessageService'
 
   const { currentServer } = storeToRefs(serverInfoStore())
+
+  onMounted(async () => {
+    try {
+      await wsMessageService.tryReconnect()
+    } catch {
+      // The members are shown offline; the automatic reconnection keeps trying
+    }
+  })
 
   async function getServerMembers(request: PageRequest): Promise<PageResult<ServerMember>> {
     return await ChatServerService.getServerMembers(currentServer.value!.id, request)

@@ -1,11 +1,6 @@
 import type { WebSocketService } from '@/services/common/websockets/WebSocketService'
 import webSocketService from '@/services/common/websockets/WebSocketService'
-import {
-  WSMessageType,
-  type ChatChannel,
-  type WebSocketMessage,
-  type WSTicketRespone,
-} from '@/types'
+import { WSMessageType, type WebSocketMessage, type WSTicketRespone } from '@/types'
 import { ref, watch } from 'vue'
 import { newId } from '../utils'
 import { post } from '../api/ApiService'

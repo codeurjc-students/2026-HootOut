@@ -55,7 +55,7 @@ function makeFriend(id: string, username = id): UserFriendResponse {
 
 function friendsPage(
   items: UserFriendResponse[],
-  next: string | null = null,
+  next: string | null = null
 ): PageResult<UserFriendResponse> {
   return { items, next, total: items.length, pageSize: 20 }
 }
@@ -99,9 +99,9 @@ async function mountFriendsList(path = '/chat/direct') {
 }
 
 const links = (wrapper: VueWrapper) => wrapper.findAll('a')
-const usernames = (wrapper: VueWrapper) => links(wrapper).map((a) => a.text())
+const usernames = (wrapper: VueWrapper) => links(wrapper).map((a) => a.find('.username').text())
 const link = (wrapper: VueWrapper, username: string) =>
-  links(wrapper).find((a) => a.text() === username)!
+  links(wrapper).find((a) => a.text().includes(username))!
 const presenceOf = (wrapper: VueWrapper, username: string) =>
   link(wrapper, username).find('[data-presence]').attributes('data-presence')
 
@@ -157,7 +157,7 @@ describe('FriendsList.vue', () => {
 
     it('shows a link with the username of each friend', async () => {
       friendsService.getUserFriends.mockResolvedValue(
-        friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')]),
+        friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')])
       )
       const wrapper = await mountFriendsList()
 
@@ -169,7 +169,7 @@ describe('FriendsList.vue', () => {
     it('adds the next page after the friends already loaded', async () => {
       friendsService.getUserFriends
         .mockResolvedValueOnce(
-          friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')], 'cursor-2'),
+          friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')], 'cursor-2')
         )
         .mockResolvedValueOnce(friendsPage([makeFriend('u3', 'user3')]))
       const wrapper = await mountFriendsList()
@@ -248,7 +248,7 @@ describe('FriendsList.vue', () => {
   describe('links', () => {
     it('link to the direct conversation of each friend', async () => {
       friendsService.getUserFriends.mockResolvedValue(
-        friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')]),
+        friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')])
       )
       const wrapper = await mountFriendsList()
 
@@ -260,7 +260,7 @@ describe('FriendsList.vue', () => {
 
     it('highlight only the friend whose conversation is open', async () => {
       friendsService.getUserFriends.mockResolvedValue(
-        friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')]),
+        friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')])
       )
       const wrapper = await mountFriendsList('/chat/direct/dc-u2')
 
@@ -281,7 +281,7 @@ describe('FriendsList.vue', () => {
 
     it('navigate to the conversation and select it in the store when clicked', async () => {
       friendsService.getUserFriends.mockResolvedValue(
-        friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')]),
+        friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')])
       )
       const wrapper = await mountFriendsList('/chat/direct/dc-u1')
       await observer().trigger()
@@ -307,7 +307,7 @@ describe('FriendsList.vue', () => {
     it('goes first while it is not in the pages loaded', async () => {
       directConversationStore().selectFriendConversation(makeFriend('u9', 'user9'))
       friendsService.getUserFriends.mockResolvedValue(
-        friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')], 'cursor-2'),
+        friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')], 'cursor-2')
       )
       const wrapper = await mountFriendsList('/chat/direct/dc-u9')
 
@@ -325,7 +325,7 @@ describe('FriendsList.vue', () => {
       directConversationStore().selectFriendConversation(makeFriend('u3', 'user3'))
       friendsService.getUserFriends
         .mockResolvedValueOnce(
-          friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')], 'cursor-2'),
+          friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')], 'cursor-2')
         )
         .mockResolvedValueOnce(friendsPage([makeFriend('u3', 'user3'), makeFriend('u4', 'user4')]))
       const wrapper = await mountFriendsList('/chat/direct/dc-u3')
@@ -340,7 +340,7 @@ describe('FriendsList.vue', () => {
     it('is not repeated when it is already in the list', async () => {
       directConversationStore().selectFriendConversation(makeFriend('u2', 'user2'))
       friendsService.getUserFriends.mockResolvedValue(
-        friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')]),
+        friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')])
       )
       const wrapper = await mountFriendsList('/chat/direct/dc-u2')
 
@@ -366,7 +366,7 @@ describe('FriendsList.vue', () => {
   describe('presence', () => {
     beforeEach(() => {
       friendsService.getUserFriends.mockResolvedValue(
-        friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')]),
+        friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')])
       )
     })
 

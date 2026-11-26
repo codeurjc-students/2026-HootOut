@@ -6,6 +6,7 @@ using HootOut.ChatServers.Entities;
 using HootOut.ChatServers.Repositories;
 using HootOut.ChatServers.Services;
 using HootOut.CommonDomain.DefaultValues;
+using HootOut.CommonDomain.FileStorage;
 using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.CommonIntegrationTests.S3;
@@ -38,6 +39,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
         private readonly IPersistenceProvider provider;
 
         private readonly IServerMemberRepository memberRepository;
+        private readonly IMediaUrlService mediaUrlService;
         private readonly IChatServerService chatServerService;
         private readonly ISaver<ServerMember> memberSaver;
         private readonly RedisPresenceStore presenceStore;
@@ -60,6 +62,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             memberRepository = container.Resolve<IServerMemberRepository>();
             chatServerService = container.Resolve<IChatServerService>();
             memberSaver = container.Resolve<ISaver<ServerMember>>();
+            mediaUrlService = container.Resolve<IMediaUrlService>();
 
             presenceStore = new RedisPresenceStore(redisFactory.Connect(), new PresenceInstance(), new PresenceOptions());
             service = CreateService(presenceStore);
@@ -78,7 +81,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
         }
 
         private ServerMemberPresenceService CreateService(IPresenceStore store) =>
-            new(NullLogger<ServerMemberPresenceService>.Instance, memberRepository, new Lazy<IPresenceStore>(() => store));
+            new(NullLogger<ServerMemberPresenceService>.Instance, memberRepository, new Lazy<IPresenceStore>(() => store), mediaUrlService);
 
         #region Validation
 
@@ -240,7 +243,7 @@ namespace HootOut.ChatServers.IntegrationTests.Services
             var (server, members) = await CreateServerAsync(["a"], ct);
             // E.g. REDIS_HOST is not defined: the factory of the multiplexer throws
             var broken = new ServerMemberPresenceService(NullLogger<ServerMemberPresenceService>.Instance, memberRepository,
-                new Lazy<IPresenceStore>(() => throw new InvalidOperationException("REDIS_HOST is not defined")));
+                new Lazy<IPresenceStore>(() => throw new InvalidOperationException("REDIS_HOST is not defined")), mediaUrlService);
 
             var result = await broken.GetOnlineMembersAsync(server, members["owner"], ct);
 

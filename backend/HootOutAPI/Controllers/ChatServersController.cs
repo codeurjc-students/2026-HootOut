@@ -4,6 +4,7 @@ using HootOut.Contracts.ChatServers.Services;
 using HootOut.Contracts.Common;
 using HootOut.HootOutAPI.Helpers;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 using System.Security.Claims;
 
 namespace HootOut.HootOutAPI.Controllers
@@ -172,15 +173,23 @@ namespace HootOut.HootOutAPI.Controllers
 
         /// <summary>Members that are not online, paginated. Sorted by username ascending by default.</summary>
         [HttpGet("{id:guid}/members/offline")]
-        public async Task<ActionResult<PageResult<ServerMemberDto>>> GetOfflineServerMembers([FromRoute] Guid id, PageRequest request, CancellationToken ct)
+        public async Task<ActionResult<PageResult<ServerMemberDto>>> GetOfflineServerMembers([FromRoute] Guid id, [FromQuery] string? sortBy, [FromQuery] Guid? next, [FromQuery] bool descending, [FromQuery] int? pageSize, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
             if (userId is null)
-                return Unauthorized(); 
+                return Unauthorized();
+
+            var page = new PageRequest
+            {
+                Next = next,
+                Descending = descending,
+                PageSize = pageSize ?? 50,
+                SortBy = sortBy
+            };
 
             return await CommandLaunchHelper.LaunchAsync(
                logger,
-               async () => await memberPresenceService.GetOfflineMembersAsync(id, Guid.Parse(userId), request, ct),
+               async () => await memberPresenceService.GetOfflineMembersAsync(id, Guid.Parse(userId), page, ct),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );

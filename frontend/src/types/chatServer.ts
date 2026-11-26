@@ -11,7 +11,7 @@ export interface ChatServer {
   name: string
   description?: string | null
   channels: ChatChannel[]
-  profilePicture: Picture
+  profilePicture?: Picture | undefined
   createdAt: string | null
   modifiedAt: string | null
 }

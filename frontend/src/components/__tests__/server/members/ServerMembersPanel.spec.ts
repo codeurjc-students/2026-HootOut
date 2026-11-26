@@ -89,9 +89,12 @@ async function mountPanel(serverId: string | null = SERVER, firstPage = true) {
   return wrapper
 }
 
-const onlineNames = (w: VueWrapper) => w.findAll('#online-members li').map((li) => li.text())
+const onlineNames = (w: VueWrapper) =>
+  w.findAll('#online-members li').map((li) => li.find('.username').text())
 const offlineNames = (w: VueWrapper) =>
-  w.findAll('#offline-members [data-member-status="offline"]').map((m) => m.text())
+  w
+    .findAll('#offline-members [data-member-status="offline"]')
+    .map((m) => m.find('.username').text())
 const onlineTitle = (w: VueWrapper) => w.find('#online-members-title').text()
 const offlineTitle = (w: VueWrapper) => w.find('#offline-members-title').text()
 

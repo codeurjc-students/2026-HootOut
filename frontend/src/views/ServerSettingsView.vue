@@ -1,19 +1,14 @@
 <script setup lang="ts">
   import ChatSideBar from '@/components/chat/ChatSideBar.vue'
   import ServerSettingsSections from '@/components/server/settings/ServerSettingsSections.vue'
-  import wsMessageService from '@/services/common/websocketsMessage/WebSocketsMessageService'
   import { serverInfoStore } from '@/stores/serverInfo'
   import { storeToRefs } from 'pinia'
-  import { onMounted, ref, watch } from 'vue'
+  import { ref, watch } from 'vue'
   import { useRoute } from 'vue-router'
 
   const serverInfo = serverInfoStore()
   const { currentServer } = storeToRefs(serverInfo)
   const route = useRoute()
-
-  onMounted(async () => {
-    await wsMessageService.tryReconnect()
-  })
 
   const mobileClass = ref('settings-list')
 

@@ -70,6 +70,7 @@ describe('ServerSettingsProfile.vue', () => {
       const wrapper = mountProfile()
 
       expect(details(wrapper)).toEqual({
+        'Server Profile Picture:': 'M',
         'Server Name:': 'My Server',
         'Server Description:': 'A server to talk about Vue',
         'Server Created:': dateTimeMapper('2026-11-05T10:42:00Z'),
