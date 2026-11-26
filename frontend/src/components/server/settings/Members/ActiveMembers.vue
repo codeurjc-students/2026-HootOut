@@ -6,8 +6,19 @@
   import { serverInfoStore } from '@/stores/serverInfo'
   import type { PageResult, ServerMember, PageRequest } from '@/types'
   import { storeToRefs } from 'pinia'
+  import UserTag from '@/components/shared/UserTag.vue'
+  import { onMounted } from 'vue'
+  import wsMessageService from '@/services/common/websocketsMessage/WebSocketsMessageService'
 
   const { currentServer } = storeToRefs(serverInfoStore())
+
+  onMounted(async () => {
+    try {
+      await wsMessageService.tryReconnect()
+    } catch {
+      // The members are shown offline; the automatic reconnection keeps trying
+    }
+  })
 
   async function getServerMembers(request: PageRequest): Promise<PageResult<ServerMember>> {
     return await ChatServerService.getServerMembers(currentServer.value!.id, request)
@@ -23,7 +34,7 @@
       Server: {{ currentServer?.name }}
     </h2>
 
-    <h1 class="mb-4 hidden text-2xl md:block">Active Members:</h1>
+    <h1 class="py- mb-4 hidden text-2xl md:block">Active Members:</h1>
     <div class="h-[80%] max-h-[80%]">
       <PaginatedTable
         :headers="[
@@ -31,7 +42,13 @@
           { key: 'createdAt', name: 'Joined At', canSort: true, mapper: dateTimeMapper },
         ]"
         :query-function="getServerMembers"
-      />
+      >
+        <template v-slot:cell-username="{ row }">
+          <span class="inline-flex items-center gap-2">
+            <UserTag :user="row.data" :user-id="row.data.userId"></UserTag>
+          </span>
+        </template>
+      </PaginatedTable>
     </div>
   </div>
 </template>

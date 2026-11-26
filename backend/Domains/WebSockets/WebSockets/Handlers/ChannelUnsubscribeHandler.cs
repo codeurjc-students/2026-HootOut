@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace HootOut.WebSockets.Handlers
 {
     public class ChannelUnsubscribeHandler : IWSMessageHandler
-    {  
+    {
         public WSHandlerType Type => WSHandlerType.Unsubscribe;
 
         private readonly ILogger<ChannelUnsubscribeHandler> logger;

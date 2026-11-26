@@ -1,8 +1,9 @@
-import { get } from '../common/api/ApiService'
+import type { Picture, UpdateProfilePictureRequest } from '@/types'
+import { put } from '../common/api/ApiService'
 
 const UserService = {
-  getAllUsers: async function (): Promise<Array<any>> {
-    return await get('users/all')
+  updateProfilePicture: async function (request: UpdateProfilePictureRequest): Promise<Picture> {
+    return await put('users/profile/picture', request)
   },
 }
 

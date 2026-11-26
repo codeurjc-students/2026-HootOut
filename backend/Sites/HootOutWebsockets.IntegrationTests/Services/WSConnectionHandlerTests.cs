@@ -3,7 +3,6 @@ using HootOut.Contracts.WebSockets.Dtos;
 using HootOut.Contracts.WebSockets.Services;
 using HootOut.HootOutWebsockets.IntegrationTests.Common;
 using HootOut.HootOutWebsockets.Services;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System.Collections.Concurrent;

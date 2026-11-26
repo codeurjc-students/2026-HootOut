@@ -37,7 +37,7 @@ function wsMessage(
   options: { channel?: string; replyTo?: string } = {}
 ): WebSocketMessage {
   return {
-    channel: options.channel,
+    channel: options.channel ?? '',
     replyTo: options.replyTo,
     type: WSMessageType.ChatMessage,
     payload: JSON.stringify(message),

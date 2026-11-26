@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using HootOut.Contracts.WebSockets.Services;
 using HootOut.HootOutWebsockets.Contracts;
+using HootOut.HootOutWebsockets.Presence;
 using HootOut.HootOutWebsockets.Services;
 using HootOut.Infraestructure.DI;
 using HootOut.WebSockets.Service;
@@ -14,6 +15,7 @@ namespace HootOut.HootOutWebsockets
             builder.RegisterType<WSConnectionManager>().As<IWSConnectionManager, IWSMessageSender>().SingleInstance();
             builder.RegisterType<WSConnectionHandler>().As<IWSConnectionHandler>().SingleInstance();
             builder.RegisterType<WSPubSubService>().As<IWSPubSubService>().SingleInstance();
+            builder.RegisterType<PresenceTracker>().AsSelf().As<IPresenceTracker>().SingleInstance();
         }
     }
 }

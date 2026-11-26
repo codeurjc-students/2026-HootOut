@@ -1,8 +1,8 @@
 ﻿using Dapper;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.Common;
+using HootOut.Contracts.Common.Dto;
 using HootOut.Contracts.Common.Enums;
-using HootOut.Contracts.Friends.Dtos;
 using HootOut.Contracts.Friends.Responses;
 using HootOut.Contracts.Users.Dtos;
 using HootOut.Friends.Repositories;
@@ -43,6 +43,8 @@ namespace HootOut.PostgreSQL.Repositories.Friends
                     ON u."Id" = CASE WHEN m."User1Id" = @UserId THEN m."User2Id" ELSE m."User1Id" END
                 INNER JOIN "HootOut"."DirectConversation" dc
                     ON m."User1Id" = dc."User1Id" AND m."User2Id" = dc."User2Id"
+                LEFT JOIN "HootOut"."MediaFile" mf
+                    ON u."ProfilePictureId" = mf."Id"
                 """;
 
             var invitationsWhere = """ WHERE (m."User1Id" = @UserId OR m."User2Id" = @UserId) AND m."Deleted" = FALSE """;
@@ -53,7 +55,10 @@ namespace HootOut.PostgreSQL.Repositories.Friends
                     dc."Id" as DirectConversationId,
                     dc."ChatConversationId",
                     u."Id",
-                    u."Username"
+                    u."Username",
+                    mf."Id" as MediaFileId,
+                    mf."FileName",
+                    mf."ContentType"
                     {invitationsFrom}
                     {invitationsWhere}
                     {PaginatedQueryHelper.CursorFilter(invitationsFrom, sort, request)}
@@ -73,11 +78,15 @@ namespace HootOut.PostgreSQL.Repositories.Friends
                 Take = request.Size + 1,
             }, cancellationToken: ct));
 
-            var friendRelations = multi.Read<UserFriendResponse, UserDto, UserFriendResponse>((friendRelation, user) =>
+            var friendRelations = multi.Read<UserFriendResponse, UserDto, PictureDto?, UserFriendResponse>((friendRelation, user, picture) =>
             {
-                friendRelation.Friend = user; 
+                friendRelation.Friend = user;
+                if (picture != null)
+                {
+                    user.ProfilePicture = picture;
+                }
                 return friendRelation;
-            }, splitOn: "Id").ToList();
+            }, splitOn: "Id,MediaFileId").ToList();
 
             var total = await multi.ReadSingleAsync<int>();
 
@@ -125,6 +134,20 @@ namespace HootOut.PostgreSQL.Repositories.Friends
         """,
                 new { UserA = userA, UserB = userB },
                 cancellationToken: ct));
-        } 
+        }
+
+        public async Task<IEnumerable<Guid>> GetFriendIdsAsync(Guid userId, CancellationToken ct)
+        {
+            await using var conn = await provider.OpenConnectionAsync(ct);
+
+            return await conn.QueryAsync<Guid>(new CommandDefinition("""
+            SELECT CASE WHEN "User1Id" = @UserId THEN "User2Id" ELSE "User1Id" END
+            FROM "HootOut"."FriendRelation"
+            WHERE ("User1Id" = @UserId OR "User2Id" = @UserId)
+              AND "Deleted" = FALSE
+            """,
+                new { UserId = userId },
+                cancellationToken: ct));
+        }
     }
 }

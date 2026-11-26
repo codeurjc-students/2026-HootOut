@@ -16,6 +16,7 @@ using HootOut.Contracts.ChatServers.Requests;
 using HootOut.Contracts.ChatServers.Services;
 using HootOut.Contracts.Common;
 using HootOut.Contracts.Common.Enums;
+using HootOut.Contracts.Common.Presence;
 using HootOut.Contracts.Friends.Requests;
 using HootOut.Contracts.Friends.Services;
 using HootOut.Contracts.Users.Dtos.Request;
@@ -24,8 +25,10 @@ using HootOut.Contracts.WebSockets.Dtos;
 using HootOut.Contracts.WebSockets.Handlers;
 using HootOut.Contracts.WebSockets.Services;
 using HootOut.HootOutWebsockets.Contracts;
+using HootOut.HootOutWebsockets.Presence;
 using HootOut.HootOutWebsockets.Services;
 using HootOut.RabbitMQ.Configuration;
+using HootOut.Redis.Configuration;
 using HootOut.WebSockets.Service;
 using Newtonsoft.Json;
 
@@ -48,6 +51,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
         protected const string InvalidChannelError = "Invalid channel";
         protected const string InvalidPayloadError = "Invalid message";
         protected const string UnsupportedTypeError = "Unsupported message type";
+        protected const string CannotSubscribePresenceError = "Cannot subscribe to this server";
 
         protected Guid GetConnectionId(Guid userId)
             => connectionManager.Connections.Single(x => x.Value.User?.UserId == userId).Key;
@@ -66,6 +70,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
 
         protected readonly WSConnectionManager connectionManager;
         protected readonly WSPubSubService pubSubService;
+        protected readonly IPresenceStore presenceStore;
 
         protected WSTestBase(WebSocketServerFixture serverFixture, TestContaineRabbitConnectionFactory rabbitConnectionFactory)
         {
@@ -83,6 +88,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
             persistenceProvider = container.Resolve<IPersistenceProvider>();
             Assert.Same(serverFixture.PostgreSQLProvider, persistenceProvider);
             Assert.Same(rabbitConnectionFactory, container.Resolve<IRabbitConnectionFactory>());
+            Assert.Same(serverFixture.RedisConnectionFactory, container.Resolve<IRedisConnectionFactory>());
 
             clearTables = container.Resolve<ClearAllTables>();
             var defaultValues = container.Resolve<IEnumerable<IDefaultValues>>().OrderBy(x => x.Priority);
@@ -102,6 +108,7 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
             // Singletons of the WebSocket server: shared by every test of the class
             connectionManager = (WSConnectionManager)container.Resolve<IWSConnectionManager>();
             pubSubService = (WSPubSubService)container.Resolve<IWSPubSubService>();
+            presenceStore = container.Resolve<IPresenceStore>();
         }
 
         public async ValueTask InitializeAsync()
@@ -147,7 +154,10 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
             return users;
         }
 
-        /// <summary>Gets a new ticket, connects and waits until the server has registered the connection.</summary>
+        /// <summary>
+        /// Gets a new ticket, connects and waits until the server has registered the connection.
+        /// Presence messages are ignored: use <see cref="ConnectWithPresenceAsync"/> to receive them.
+        /// </summary>
         protected async Task<WSTestClient> ConnectAsync(TestUser user, CancellationToken ct)
         {
             var ticket = await authService.CreateWebSocketTicketAsync(user.Id, user.Username, ct);
@@ -158,6 +168,32 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
 
             return client;
         }
+
+        /// <summary>
+        /// Connects receiving presence messages. Returns after the friends snapshot arrived and the user is online
+        /// in the store, so the Online of this user has already been published.
+        /// </summary>
+        protected async Task<(WSTestClient Client, PresenceSnapshotPayload Snapshot)> ConnectWithPresenceAsync(TestUser user, CancellationToken ct)
+        {
+            var client = await ConnectAsync(user, ct);
+            client.IgnorePresence = false;
+
+            var snapshot = await client.ReceiveAsync(ct);
+            snapshot.Type.Should().Be(WSHandlerType.PresenceSnapshot);
+            snapshot.Channel.Should().Be(PresenceTracker.FriendsSnapshotChannel);
+
+            await WaitUntilOnlineAsync(user, true);
+            return (client, ReadPayload<PresenceSnapshotPayload>(snapshot));
+        }
+
+        protected Task WaitUntilOnlineAsync(TestUser user, bool online, TimeSpan? timeout = null)
+            => WaitUntilAsync(() => presenceStore.IsOnlineAsync(user.Id).GetAwaiter().GetResult() == online, timeout);
+
+        /// <summary>Subscriptions of the user's connection that are not presence channels.</summary>
+        protected IEnumerable<string> ChatSubscriptions(Guid userId)
+            => pubSubService.ConnectionSubscriptions.TryGetValue(GetConnectionId(userId), out var channels)
+                ? channels.Where(x => !x.StartsWith("presence.")).ToList()
+                : [];
 
         protected int CountConnections(Guid userId)
             => connectionManager.Connections.Values.Count(x => x.User?.UserId == userId);
@@ -265,6 +301,61 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
             var page = await chatMessageService.GetMessagesByConversationIdAsync(conversationId, next: null, pageSize: 100, ct: ct);
             return Enumerable.Reverse(page.Items).ToList(); // The repository returns the newest first
         }
+
+        #endregion
+
+        #region Presence
+
+        protected static T ReadPayload<T>(WebSocketMessageDto message)
+        {
+            message.Payload.Should().NotBeNullOrWhiteSpace();
+            var payload = JsonConvert.DeserializeObject<T>(message.Payload!);
+            payload.Should().NotBeNull();
+            return payload!;
+        }
+
+        /// <summary>Sends PresenceSubscribe and returns the snapshot of the server, which arrives before the Ack.</summary>
+        protected static async Task<PresenceSnapshotPayload> PresenceSubscribeAsync(WSTestClient client, Guid serverId, CancellationToken ct)
+        {
+            var ack = await client.SendWithAckAsync(new WebSocketMessageDto
+            {
+                Type = WSHandlerType.PresenceSubscribe,
+                Channel = serverId.ToString()
+            }, ct);
+            ack.Type.Should().Be(WSHandlerType.Ack);
+
+            var snapshot = await client.ReceiveUntilAsync(
+                x => x.Type == WSHandlerType.PresenceSnapshot && x.Channel == serverId.ToString(), ct);
+            return ReadPayload<PresenceSnapshotPayload>(snapshot);
+        }
+
+        protected static Task<WebSocketMessageDto> PresenceUnsubscribeAsync(WSTestClient client, Guid serverId, CancellationToken ct)
+            => client.SendWithAckAsync(new WebSocketMessageDto
+            {
+                Type = WSHandlerType.PresenceUnsubscribe,
+                Channel = serverId.ToString()
+            }, ct);
+
+        /// <summary>The next message must be a presence change of <paramref name="user"/> on <paramref name="channel"/>.</summary>
+        protected static async Task ExpectPresenceAsync(WSTestClient client, string channel, TestUser user, PresenceStatus status, CancellationToken ct)
+        {
+            var received = await client.ReceiveAsync(ct);
+
+            received.Type.Should().Be(WSHandlerType.Presence);
+            received.ReplyTo.Should().BeNull();
+            received.Channel.Should().Be(channel);
+
+            var payload = ReadPayload<PresenceChangedPayload>(received);
+            payload.UserId.Should().Be(user.Id);
+            payload.Status.Should().Be(status);
+        }
+
+        protected static string FriendChannel(TestUser user) => PresenceTracker.UserChannel(user.Id);
+
+        protected static string ServerChannel(Guid serverId) => PresenceTracker.ServerChannel(serverId);
+
+        protected int CountPresenceSubscribers(string channel)
+            => pubSubService.ChannelSubscribers.TryGetValue(channel, out var subscribers) ? subscribers.Count : 0;
 
         #endregion
 

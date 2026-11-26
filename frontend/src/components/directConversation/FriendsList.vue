@@ -3,7 +3,9 @@
   import { computed, ref } from 'vue'
   import { storeToRefs } from 'pinia'
   import InfiniteScrollList from '../shared/infiniteScroll/InfiniteScrollList.vue'
+  import PresenceIndicator from '../shared/presence/PresenceIndicator.vue'
   import { directConversationStore, type FriendConversation } from '@/stores/directConversation'
+  import UserTag from '../shared/UserTag.vue'
 
   const friends = ref<FriendConversation[]>([])
   const dc = directConversationStore()
@@ -52,7 +54,9 @@
         active-class="background-light"
         @click="updateCurrentConversation(asFriendConversation(item))"
       >
-        {{ asFriendConversation(item).friend.username }}
+        <span class="flex min-w-0 items-center gap-2">
+          <UserTag :user="asFriendConversation(item).friend"></UserTag>
+        </span>
       </RouterLink>
     </template>
   </InfiniteScrollList>

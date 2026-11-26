@@ -1,5 +1,6 @@
 ﻿using HootOut.ChatServers.Entities;
 using HootOut.Contracts.ChatServers.Dtos;
+using HootOut.Contracts.Common.Dto;
 
 namespace HootOut.ChatServers.Mappers
 {
@@ -14,6 +15,7 @@ namespace HootOut.ChatServers.Mappers
                 Description = chatServer.Description,
                 OwnerId = chatServer.OwnerId,
                 Channels = [],
+                ProfilePicture = chatServer.ProfilePictureId == null ? null : new PictureDto { MediaFileId = chatServer.ProfilePictureId.Value },
                 CreatedAt = chatServer.CreatedAt,
                 ModifiedAt = chatServer.ModifiedAt,
             };

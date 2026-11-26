@@ -3,20 +3,37 @@ import { mount, flushPromises, RouterLinkStub, type VueWrapper } from '@vue/test
 import { createPinia, setActivePinia, type Pinia } from 'pinia'
 import ActiveMembers from '@/components/server/settings/Members/ActiveMembers.vue'
 import { serverInfoStore } from '@/stores/serverInfo'
+import { presenceStore } from '@/stores/presence'
 import { dateTimeMapper } from '@/services/common/utils'
-import type { ChatServer, PageResult, ServerMember } from '@/types'
+import {
+  PresenceStatus,
+  WSMessageType,
+  type ChatServer,
+  type PageResult,
+  type ServerMember,
+} from '@/types'
 
 // ---------- mocks ----------
 
 const serverService = vi.hoisted(() => ({ getServerMembers: vi.fn() }))
 vi.mock('@/services/chatServer/ChatServerService', () => ({ default: serverService }))
 
+const wsMessageService = vi.hoisted(() => ({ tryReconnect: vi.fn() }))
+vi.mock('@/services/common/websocketsMessage/WebSocketsMessageService', () => ({
+  default: wsMessageService,
+}))
+
 // ---------- helpers ----------
 
 const server = { id: 'server-1', name: 'My Server' } as ChatServer
 
 function member(id: number, createdAt = '2026-11-05T10:42:00Z'): ServerMember {
-  return { id: `member-${id}`, username: `user-${id}`, createdAt } as ServerMember
+  return {
+    id: `member-${id}`,
+    userId: `user-id-${id}`,
+    username: `user-${id}`,
+    createdAt,
+  } as ServerMember
 }
 
 function page(
@@ -42,6 +59,18 @@ async function mountActiveMembers(currentServer: ChatServer | null = server) {
 const rows = (wrapper: VueWrapper) => wrapper.findAll('tbody tr')
 const headerCell = (wrapper: VueWrapper, name: string) =>
   wrapper.findAll('th').find((th) => th.text().includes(name))!
+const presenceOf = (wrapper: VueWrapper, rowIndex: number) =>
+  rows(wrapper)[rowIndex]!.find('[data-presence]').attributes('data-presence')
+
+// The member's presence as the websocket would send it, on the channel of the current server
+function receivePresence(userId: string, status: PresenceStatus) {
+  presenceStore().handleMessage({
+    type: WSMessageType.Presence,
+    channel: `presence.server.${server.id}`,
+    payload: JSON.stringify({ UserId: userId, Status: status }),
+  })
+}
+
 const nextButton = (wrapper: VueWrapper) =>
   wrapper.findAll('button').find((b) => b.text() === 'chevron_right')
 
@@ -53,6 +82,8 @@ describe('ActiveMembers.vue', () => {
     setActivePinia(pinia)
     serverService.getServerMembers.mockReset()
     serverService.getServerMembers.mockResolvedValue(page([member(1), member(2)]))
+    wsMessageService.tryReconnect.mockReset()
+    wsMessageService.tryReconnect.mockResolvedValue(undefined)
     // Dates are shown in the local time zone: fix it so the tests behave the same everywhere
     vi.stubEnv('TZ', 'Europe/Madrid')
   })
@@ -109,8 +140,8 @@ describe('ActiveMembers.vue', () => {
       const wrapper = await mountActiveMembers()
 
       expect(rows(wrapper)).toHaveLength(2)
-      expect(rows(wrapper)[0]!.findAll('td')[0]!.text()).toBe('user-1')
-      expect(rows(wrapper)[1]!.findAll('td')[0]!.text()).toBe('user-2')
+      expect(rows(wrapper)[0]!.findAll('td')[0]!.find('.username').text()).toBe('user-1')
+      expect(rows(wrapper)[1]!.findAll('td')[0]!.find('.username').text()).toBe('user-2')
     })
 
     it('formats the join date with dateTimeMapper', async () => {
@@ -172,6 +203,69 @@ describe('ActiveMembers.vue', () => {
       expect(serverService.getServerMembers).not.toHaveBeenCalled()
       expect(rows(wrapper)).toHaveLength(0)
       expect(wrapper.find('h2').text()).toBe('Server:')
+    })
+  })
+
+  describe('presence', () => {
+    beforeEach(() => {
+      // The presence sync sets the server of the route
+      presenceStore().setCurrentServer(server.id)
+    })
+
+    it('connects the websocket, so the presence arrives when the page is loaded from its url', async () => {
+      await mountActiveMembers()
+
+      expect(wsMessageService.tryReconnect).toHaveBeenCalledOnce()
+    })
+
+    it('still shows the members when the websocket cannot connect', async () => {
+      wsMessageService.tryReconnect.mockRejectedValue(new Error('No ticket'))
+
+      const wrapper = await mountActiveMembers()
+
+      expect(rows(wrapper)).toHaveLength(2)
+      expect(presenceOf(wrapper, 0)).toBe('offline')
+    })
+
+    it('shows every member offline until their presence arrives', async () => {
+      const wrapper = await mountActiveMembers()
+
+      expect(presenceOf(wrapper, 0)).toBe('offline')
+      expect(presenceOf(wrapper, 1)).toBe('offline')
+    })
+
+    it('shows the members of the snapshot of the server online', async () => {
+      const wrapper = await mountActiveMembers()
+
+      presenceStore().handleMessage({
+        type: WSMessageType.PresenceSnapshot,
+        channel: server.id,
+        payload: JSON.stringify({ OnlineUserIds: ['user-id-2'] }),
+      })
+      await flushPromises()
+
+      expect(presenceOf(wrapper, 0)).toBe('offline')
+      expect(presenceOf(wrapper, 1)).toBe('online')
+    })
+
+    it('updates a member when it goes online and offline', async () => {
+      const wrapper = await mountActiveMembers()
+
+      receivePresence('user-id-1', PresenceStatus.Online)
+      await flushPromises()
+      expect(presenceOf(wrapper, 0)).toBe('online')
+
+      receivePresence('user-id-1', PresenceStatus.Offline)
+      await flushPromises()
+      expect(presenceOf(wrapper, 0)).toBe('offline')
+    })
+
+    it('keeps the username as the text of the cell', async () => {
+      receivePresence('user-id-1', PresenceStatus.Online)
+
+      const wrapper = await mountActiveMembers()
+
+      expect(rows(wrapper)[0]!.findAll('td')[0]!.find('.username').text()).toBe('user-1')
     })
   })
 })

@@ -4,6 +4,8 @@ using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests;
 using HootOut.CommonIntegrationTests.S3;
 using HootOut.CommonIntegrationTests.Services;
+using HootOut.Contracts.Common.Presence;
+using HootOut.Redis.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +19,15 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
         public TestContainerPostgreSQLProvider? PostgreSQLProvider { get; set; }
         public TestS3Container? TestS3Container { get; set; }
 
+        /// <summary>
+        /// Valkey for the presence. Here and not as a class fixture like RabbitMQ: the controller resolves
+        /// IPresenceTracker on every connection, so every WebSocket test class needs it.
+        /// </summary>
+        public TestContainerRedisConnectionFactory? RedisConnectionFactory { get; set; }
+
+        /// <summary>Short grace period so the offline tests do not wait 5 s.</summary>
+        public PresenceOptions PresenceOptions { get; } = new() { OfflineGracePeriod = TimeSpan.FromSeconds(1) };
+
         public Action<ContainerBuilder?>? RegisterDependencies;
         protected override IHostBuilder CreateHostBuilder()
         {
@@ -24,6 +35,8 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
             testRegistrationManager.RegisterTest = (builder) =>
             {
                 builder?.RegisterInstance(PostgreSQLProvider!).As<IPersistenceProvider>().SingleInstance();
+                builder?.RegisterInstance(RedisConnectionFactory!).As<IRedisConnectionFactory>().SingleInstance();
+                builder?.RegisterInstance(PresenceOptions).AsSelf().SingleInstance();
 
                 if (RegisterDependencies != null)
                 {
@@ -61,12 +74,16 @@ namespace HootOut.HootOutWebsockets.IntegrationTests.Common
 
             TestS3Container = new TestS3Container();
             await TestS3Container.InitializeAsync();
+
+            RedisConnectionFactory = new TestContainerRedisConnectionFactory();
+            await RedisConnectionFactory.InitializeAsync();
         }
 
         public new async ValueTask DisposeAsync()
         {
             await PostgreSQLProvider!.DisposeAsync();
             await TestS3Container!.DisposeAsync();
+            await RedisConnectionFactory!.DisposeAsync();
             GC.SuppressFinalize(this);
         }
     }

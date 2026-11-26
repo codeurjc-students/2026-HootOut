@@ -12,12 +12,12 @@
   <div class="chat-info flex background-light px-4 py-2">
     <GoBackLink :to="backLink">
       <div>
-        {{ chatName }}
+        <slot>{{ chatName }}</slot>
       </div>
     </GoBackLink>
 
     <div class="hidden font-semibold md:block">
-      {{ chatName }}
+      <slot>{{ chatName }}</slot>
     </div>
   </div>
 </template>

@@ -1,10 +1,17 @@
 import type { ChatChannel } from './chatChannel'
 
+export interface Picture {
+  mediaFileId: string
+  fileName: string
+  url: string
+}
+
 export interface ChatServer {
   id: string
   name: string
   description?: string | null
   channels: ChatChannel[]
+  profilePicture?: Picture | undefined
   createdAt: string | null
   modifiedAt: string | null
 }
@@ -12,6 +19,7 @@ export interface ChatServer {
 export interface CreateChatServerRequest {
   name: string
   description: string
+  profilePictureId?: string | undefined
 }
 
 export enum InvitationStatus {
@@ -56,5 +64,12 @@ export interface ServerMember {
   id: string
   username: string
   userId: string
+  profilePicture?: Picture | undefined
   createdAt: string
+}
+
+// Online members of a server: items is capped by the backend, total is the real number online
+export interface OnlineServerMembers {
+  items: ServerMember[]
+  total: number
 }

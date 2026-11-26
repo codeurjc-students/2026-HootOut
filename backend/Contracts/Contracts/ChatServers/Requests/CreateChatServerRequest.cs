@@ -8,6 +8,8 @@ namespace HootOut.Contracts.ChatServers.Requests
 
         public string Description { get; init; } = string.Empty;
 
+        public Guid? ProfilePictureId { get; set; }
+
         public void Validate() => new CreateChatServerRequestValidator().ValidateAndThrow(this);
     }
 

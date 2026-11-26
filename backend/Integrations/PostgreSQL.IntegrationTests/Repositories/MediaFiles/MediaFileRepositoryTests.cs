@@ -6,9 +6,9 @@ using HootOut.CommonDomain.Persistence;
 using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.Common.Saver;
+using HootOut.Infraestructure.DI;
 using HootOut.MediaFiles.Entities;
 using HootOut.MediaFiles.Repositories;
-using HootOut.Infraestructure.DI;
 using HootOut.Users.Entities;
 
 namespace HootOut.PostgreSQL.IntegrationTests.Repositories.MediaFiles

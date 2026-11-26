@@ -1,4 +1,5 @@
 ﻿using HootOut.Contracts.ChatChannels.Dtos;
+using HootOut.Contracts.Common.Dto;
 
 namespace HootOut.Contracts.ChatServers.Dtos
 {
@@ -13,6 +14,8 @@ namespace HootOut.Contracts.ChatServers.Dtos
         public string Description { get; set; } = string.Empty;
 
         public List<ChatChannelDto> Channels { get; set; } = [];
+
+        public PictureDto? ProfilePicture { get; set; }
 
         public DateTime CreatedAt { get; set; }
 

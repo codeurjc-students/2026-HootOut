@@ -195,7 +195,7 @@ namespace HootOut.PostgreSQL.IntegrationTests.Repositories.Users
 
         #endregion
 
-        
+
 
         private async Task<UserInfo> CreateUserAsync(string username, string email, CancellationToken ct)
         {

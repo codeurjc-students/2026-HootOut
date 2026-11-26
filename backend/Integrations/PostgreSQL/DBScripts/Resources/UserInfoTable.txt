@@ -25,6 +25,7 @@ then
 		"Email" TEXT NOT NULL,
 		"Username" TEXT NOT NULL,
 		"PasswordHash" TEXT NOT NULL,
+		"ProfilePictureId" UUID,
 		"CreatedAt" timestamptz  NOT NULL,
 		"ModifiedAt" timestamptz NOT NULL
 	);
@@ -34,6 +35,8 @@ end if;
 create unique index if not exists ix_users_username_lower on "HootOut"."UserInfo" (lower("Username"));
 create unique index if not exists ix_users_email_lower on "HootOut"."UserInfo" (lower("Email"));
 
+-- ALTER TABLE "HootOut"."UserInfo"
+--		ADD COLUMN "ProfilePictureId" UUID; 
 
 
 if NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES

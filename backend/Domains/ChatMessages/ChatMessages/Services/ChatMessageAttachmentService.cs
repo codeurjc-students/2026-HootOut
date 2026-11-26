@@ -6,7 +6,7 @@ using HootOut.CommonDomain.FileStorage;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
-using HootOut.Contracts.Common.Saver; 
+using HootOut.Contracts.Common.Saver;
 
 namespace HootOut.ChatMessages.Services
 {
@@ -16,7 +16,7 @@ namespace HootOut.ChatMessages.Services
 
         private readonly ISaver<ChatMessageAttachment> saver;
         private readonly IMediaUrlService mediaUrlService;
-        private readonly IChatMessageAttachmentRepository chatMessageAttachmentSearch; 
+        private readonly IChatMessageAttachmentRepository chatMessageAttachmentSearch;
 
         public ChatMessageAttachmentService(
             ISaver<ChatMessageAttachment> saver,
@@ -25,7 +25,7 @@ namespace HootOut.ChatMessages.Services
         {
             this.saver = saver ?? throw new ArgumentNullException(nameof(saver));
             this.mediaUrlService = mediaUrlService ?? throw new ArgumentNullException(nameof(mediaUrlService));
-            this.chatMessageAttachmentSearch = chatMessageAttachmentSearch ?? throw new ArgumentNullException(nameof(chatMessageAttachmentSearch)); 
+            this.chatMessageAttachmentSearch = chatMessageAttachmentSearch ?? throw new ArgumentNullException(nameof(chatMessageAttachmentSearch));
         }
 
         /// <summary>

@@ -7,7 +7,7 @@ using HootOut.RabbitMQ.Services;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace HootOut.RabbitMQIntegrationTests.Services
+namespace HootOut.RabbitMQ.IntegrationTests.Services
 {
     public class RabbitPubSubServiceTests : IClassFixture<TestContaineRabbitConnectionFactory>
     {

@@ -18,6 +18,10 @@ namespace HootOut.WebSockets.Service
         public readonly ConcurrentDictionary<string, HashSet<Guid>> ChannelSubscribers = new();
         public readonly ConcurrentDictionary<Guid, HashSet<string>> ConnectionSubscriptions = new();
 
+        // Exchange of each channel, so RemoveAllConnectionSubscriptions unbinds from the right one
+        // (chat conversations use ChatMessage, "presence.<userId>" channels use Presence)
+        public readonly ConcurrentDictionary<string, string> ChannelExchanges = new();
+
         private readonly SemaphoreSlim initLock = new(1, 1);
 
         public WSPubSubService(ILogger<WSPubSubService> logger, IWSConnectionManager wsConnectionManager, IQueuePubService queuePubService)
@@ -36,6 +40,7 @@ namespace HootOut.WebSockets.Service
                 if (subscribers.Count == 0)
                 {
                     await queuePubService.Subscribe(exchange, channel, ct); //messageQueue subscription
+                    ChannelExchanges[channel] = exchange;
                 }
                 subscribers.Add(connectionId);
 
@@ -62,6 +67,7 @@ namespace HootOut.WebSockets.Service
                     if (subscribers.Count == 0)
                     {
                         ChannelSubscribers.TryRemove(channel, out _);
+                        ChannelExchanges.TryRemove(channel, out _);
                         await queuePubService.UnSubscribe(exchange, channel, ct);
                     }
                 }
@@ -85,7 +91,7 @@ namespace HootOut.WebSockets.Service
 
         public async Task RemoveAllConnectionSubscriptions(Guid connectionId, CancellationToken ct)
         {
-            List<string> channels;
+            List<(string Channel, string Exchange)> channels;
             await initLock.WaitAsync(ct);
             try
             {
@@ -93,16 +99,18 @@ namespace HootOut.WebSockets.Service
                     return;
 
                 // Copy inside the lock: Subscribe can modify the set from another connection's thread
-                channels = subscriptions.ToList();
+                channels = subscriptions
+                    .Select(channel => (channel, ChannelExchanges.TryGetValue(channel, out var exchange) ? exchange : nameof(WSHandlerType.ChatMessage)))
+                    .ToList();
             }
             finally
             {
                 initLock.Release();
             }
 
-            foreach (var channel in channels)
+            foreach (var (channel, exchange) in channels)
             {
-                await HandleUnsubscribeAsync(connectionId, nameof(WSHandlerType.ChatMessage), channel, ct); //TO-DO hardcoded exchange chat message
+                await HandleUnsubscribeAsync(connectionId, exchange, channel, ct);
             }
         }
 

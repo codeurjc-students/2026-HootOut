@@ -39,6 +39,7 @@
         const display = header.mapper ? (header.mapper(value) ?? value) : value
         row[header.key as keyof Object] = { value, display }
       }
+      row.data = item
       rows.push(row)
     }
     return rows
@@ -153,7 +154,6 @@
           <tr class="border-bottom-1">
             <th
               v-for="header in headers"
-              :key="header.key"
               class="py-2"
               :class="header.canSort ? 'pointer' : ''"
               @click="
@@ -178,10 +178,13 @@
           </tr>
         </thead>
         <tbody class="overflow-y-auto">
-          <tr v-for="row in tableRows" :key="row" class="border-bottom-1 hover:background-light">
+          <tr v-for="row in tableRows" class="border-bottom-1 hover:background-light">
             <!-- data-label is shown next to the value in the mobile card layout -->
-            <td v-for="header in headers" class="py-4" :key="header.key" :data-label="header.name">
-              {{ row[header.key].display }}
+            <td v-for="header in headers" class="py-4" :data-label="header.name">
+              <!-- cell-<key> replaces the content of the cell (e.g. to add an icon) -->
+              <slot :name="`cell-${header.key}`" :row="row">
+                {{ row[header.key].display }}
+              </slot>
             </td>
             <td v-if="hasActions" class="actions-cell">
               <slot name="actions" :row="row"></slot>
@@ -216,7 +219,7 @@
 
 <style scoped>
   /* Mobile: each row becomes a card with "Column: value" lines and the actions at the bottom */
-  @media (max-width: 520px) {
+  @media (width < 520px) {
     .responsive-table,
     .responsive-table tbody,
     .responsive-table tr,
@@ -262,7 +265,7 @@
     }
   }
 
-  @media (min-width: 520px) {
+  @media (width >= 520px) {
     .mobile-sort {
       display: none;
     }

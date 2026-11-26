@@ -5,7 +5,8 @@ import { createPinia, setActivePinia, type Pinia } from 'pinia'
 import { createMemoryHistory, createRouter, type Router } from 'vue-router'
 import FriendsList from '@/components/directConversation/FriendsList.vue'
 import { directConversationStore } from '@/stores/directConversation'
-import type { PageResult, UserFriendResponse } from '@/types'
+import { presenceStore } from '@/stores/presence'
+import { PresenceStatus, WSMessageType, type PageResult, type UserFriendResponse } from '@/types'
 
 // ---------- mocks ----------
 
@@ -98,9 +99,28 @@ async function mountFriendsList(path = '/chat/direct') {
 }
 
 const links = (wrapper: VueWrapper) => wrapper.findAll('a')
-const usernames = (wrapper: VueWrapper) => links(wrapper).map((a) => a.text())
+const usernames = (wrapper: VueWrapper) => links(wrapper).map((a) => a.find('.username').text())
 const link = (wrapper: VueWrapper, username: string) =>
-  links(wrapper).find((a) => a.text() === username)!
+  links(wrapper).find((a) => a.text().includes(username))!
+const presenceOf = (wrapper: VueWrapper, username: string) =>
+  link(wrapper, username).find('[data-presence]').attributes('data-presence')
+
+// As the websocket sends them: the snapshot after connecting and the events of each friend
+function receiveFriendsSnapshot(onlineUserIds: string[]) {
+  presenceStore().handleMessage({
+    type: WSMessageType.PresenceSnapshot,
+    channel: 'friends',
+    payload: JSON.stringify({ OnlineUserIds: onlineUserIds }),
+  })
+}
+
+function receivePresence(userId: string, status: PresenceStatus) {
+  presenceStore().handleMessage({
+    type: WSMessageType.Presence,
+    channel: `presence.user.${userId}`,
+    payload: JSON.stringify({ UserId: userId, Status: status }),
+  })
+}
 
 // ---------- tests ----------
 
@@ -340,6 +360,64 @@ describe('FriendsList.vue', () => {
       await flushPromises()
 
       expect(usernames(wrapper)).toEqual(['user1'])
+    })
+  })
+
+  describe('presence', () => {
+    beforeEach(() => {
+      friendsService.getUserFriends.mockResolvedValue(
+        friendsPage([makeFriend('u1', 'user1'), makeFriend('u2', 'user2')])
+      )
+    })
+
+    it('shows every friend offline until their presence arrives', async () => {
+      const wrapper = await mountFriendsList()
+      await observer().trigger()
+
+      expect(presenceOf(wrapper, 'user1')).toBe('offline')
+      expect(presenceOf(wrapper, 'user2')).toBe('offline')
+    })
+
+    it('shows the friends of the snapshot online', async () => {
+      receiveFriendsSnapshot(['u2'])
+
+      const wrapper = await mountFriendsList()
+      await observer().trigger()
+
+      expect(presenceOf(wrapper, 'user1')).toBe('offline')
+      expect(presenceOf(wrapper, 'user2')).toBe('online')
+    })
+
+    it('updates a friend when it goes online and offline', async () => {
+      const wrapper = await mountFriendsList()
+      await observer().trigger()
+
+      receivePresence('u1', PresenceStatus.Online)
+      await flushPromises()
+      expect(presenceOf(wrapper, 'user1')).toBe('online')
+
+      receivePresence('u1', PresenceStatus.Offline)
+      await flushPromises()
+      expect(presenceOf(wrapper, 'user1')).toBe('offline')
+    })
+
+    it('shows the presence of the open conversation that is not in the pages loaded', async () => {
+      directConversationStore().selectFriendConversation(makeFriend('u9', 'user9'))
+      receiveFriendsSnapshot(['u9'])
+
+      const wrapper = await mountFriendsList('/chat/direct/dc-u9')
+
+      expect(presenceOf(wrapper, 'user9')).toBe('online')
+    })
+
+    it('keeps the username as the accessible name of the link', async () => {
+      receiveFriendsSnapshot(['u1'])
+      const wrapper = await mountFriendsList()
+      await observer().trigger()
+
+      const indicator = link(wrapper, 'user1').find('[data-presence]')
+      expect(indicator.attributes('aria-hidden')).toBe('true')
+      expect(indicator.text()).toBe('')
     })
   })
 })

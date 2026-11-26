@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using HootOut.CommonDomain.FileStorage;
 using HootOut.Contracts.Common;
 using HootOut.Contracts.Common.Enums;
 using HootOut.Contracts.Common.Saver;
@@ -21,18 +22,21 @@ namespace HootOut.Friends.Services
         private readonly IUserService userService;
         private readonly IFriendRequestRepository friendRequestRepository;
         private readonly IFriendRelationRepository friendRelationRepository;
+        private readonly IMediaUrlService mediaUrlService;
 
         public FriendsService(
             ISaver<FriendRequest> friendRequestSaver,
             IUserService userService,
             IFriendRequestRepository friendRequestRepository,
-            IFriendRelationRepository friendRelationRepository
+            IFriendRelationRepository friendRelationRepository,
+            IMediaUrlService mediaUrlService
             )
         {
             this.friendRequestSaver = friendRequestSaver ?? throw new ArgumentNullException(nameof(friendRequestSaver));
             this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
             this.friendRequestRepository = friendRequestRepository ?? throw new ArgumentNullException(nameof(friendRequestRepository));
             this.friendRelationRepository = friendRelationRepository ?? throw new ArgumentNullException(nameof(friendRelationRepository));
+            this.mediaUrlService = mediaUrlService ?? throw new ArgumentNullException(nameof(mediaUrlService));
         }
 
         public async Task<FriendRequestDto> SendFriendRequestAsync(SendFriendRequest request, Guid userId, CancellationToken ct)
@@ -124,9 +128,19 @@ namespace HootOut.Friends.Services
         {
             ArgumentNullException.ThrowIfNull(request);
 
-            return await friendRelationRepository.GetUserFriendsAsync(request, userId, ct);
+            var friends = await friendRelationRepository.GetUserFriendsAsync(request, userId, ct);
+
+            foreach (var friend in friends.Items)
+            {
+                if (friend.Friend.ProfilePicture != null)
+                {
+                    friend.Friend.ProfilePicture.Url = await mediaUrlService.GetViewUrlAsync(friend.Friend.ProfilePicture.MediaFileId, friend.Friend.ProfilePicture.ContentType, friend.Friend.ProfilePicture.FileName) ?? "";
+                }
+            }
+
+            return friends;
         }
-         
+
 
         public async Task ValidateUserCanSendMessageAsync(Guid chatConversationId, Guid userId, CancellationToken ct)
         {
@@ -135,6 +149,11 @@ namespace HootOut.Friends.Services
             {
                 throw new ValidationException(new[] { new ValidationFailure("Message", "The conversation could not be found") });
             }
+        }
+
+        public Task<IEnumerable<Guid>> GetFriendIdsAsync(Guid userId, CancellationToken ct = default)
+        {
+            return friendRelationRepository.GetFriendIdsAsync(userId, ct);
         }
 
         private async Task<Guid?> AcceptFriendRequestAsync(UpdateFriendRequest request, Guid userId, CancellationToken ct)

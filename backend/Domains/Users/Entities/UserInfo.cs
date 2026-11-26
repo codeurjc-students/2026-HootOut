@@ -2,12 +2,11 @@
 
 namespace HootOut.Users.Entities
 {
-    public class UserInfo : Persistable
+    public sealed class UserInfo : Persistable
     {
         public string Username { get; set; } = string.Empty;
-
         public string Email { get; set; } = string.Empty;
-
         public string Password { get; set; } = string.Empty;
+        public Guid? ProfilePictureId { get; set; }
     }
 }

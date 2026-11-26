@@ -16,15 +16,18 @@ jobs:
       POSTGRES_PORT: 5432
       RABBIT_HOSTNAME: hootout
       RABBITMQ_USER: rabbit_user
-      RABBITMQ_PASSWORD: rabbit_test_123 
+      RABBITMQ_PASSWORD: rabbit_test_123
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redis_password_123
       RUSTFS_PORT: 9000
       RUSTFS_ACCESS_KEY: hootout_s3
-      RUSTFS_SECRET_KEY: rustfs_test_123 
+      RUSTFS_SECRET_KEY: rustfs_test_123
       TLS_CERT: ../certs/cert.pem
       TLS_KEY: ../certs/key.pem
     steps:
-      - uses: actions/checkout@v7 
-      
+      - uses: actions/checkout@v7
+
       - name: Create self signed certificate for https connections
         working-directory: .
         run: |
@@ -52,12 +55,12 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: '24.12.0'
+          node-version: "24.12.0"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install npm dependencies
-        run: npm ci  
+        run: npm ci
 
       - name: Unit Tests
         run: npm run test:unit:coverage
@@ -113,7 +116,7 @@ jobs:
             -Dsonar.test.inclusions=**/*.test.ts,**/*.spec.ts,**/__tests__/**,e2e/**
             -Dsonar.javascript.lcov.reportPaths=coverage/vitest/lcov.info,coverage/e2e/lcov.info
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_FRONTEND_TOKEN }}  
+          SONAR_TOKEN: ${{ secrets.SONAR_FRONTEND_TOKEN }}
 
       - name: Stop containers
         if: always()

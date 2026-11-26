@@ -1,5 +1,6 @@
 using Autofac;
 using HootOut.FileStorage.Configuration;
+using HootOut.HootOutWebsockets.Presence;
 using HootOut.HootOutWebsockets.Schedulers;
 using HootOut.Infraestructure.DI;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -23,6 +24,7 @@ namespace HootOut.HootOutWebsockets
         {
             services.AddControllers();
             services.AddHostedService<PubSubQueueConsumerService>();
+            services.AddHostedService<PresenceBackgroundService>();
 
             services.Configure<FileStorageSettings>(Configuration.GetSection("FileStorage"));
             services.AddHealthChecks();

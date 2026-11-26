@@ -6,6 +6,7 @@
   import { storeToRefs } from 'pinia'
   import { onMounted } from 'vue'
   import { RouterLink, useRouter } from 'vue-router'
+  import UserTag from '../UserTag.vue'
 
   const userInfo = userInfoStore()
   const authStore = useAuthStore()
@@ -27,7 +28,7 @@
   <div class="dropdown relative inline-block text-left">
     <span class="rounded-md">
       <button class="pointer" type="button" aria-controls="navbar-user-dropdown">
-        {{ user?.username }}
+        <UserTag :user="user"></UserTag>
       </button>
     </span>
     <div class="dropdown-menu hidden">

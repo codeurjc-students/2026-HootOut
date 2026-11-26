@@ -14,18 +14,22 @@ namespace HootOut.HootOutWebsockets.Controllers
 
         private readonly IWSTicketService ticketService;
 
+        private readonly IPresenceTracker presenceTracker;
+
         public WebSocketController(
             ILogger<WebSocketController> logger,
             IWSConnectionManager connectionManager,
             IWSConnectionHandler connectionHandler,
             IWSPubSubService pubSubService,
-            IWSTicketService ticketService)
+            IWSTicketService ticketService,
+            IPresenceTracker presenceTracker)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
             this.connectionHandler = connectionHandler ?? throw new ArgumentNullException(nameof(connectionHandler));
             this.pubSubService = pubSubService ?? throw new ArgumentNullException(nameof(pubSubService));
             this.ticketService = ticketService ?? throw new ArgumentNullException(nameof(ticketService));
+            this.presenceTracker = presenceTracker ?? throw new ArgumentNullException(nameof(presenceTracker));
         }
 
         [Route("/ws")]
@@ -47,6 +51,7 @@ namespace HootOut.HootOutWebsockets.Controllers
                 var connectionId = await connectionManager.AddConnectionAsync(webSocket, user);
                 try
                 {
+                    await TrackPresenceAsync(() => presenceTracker.ConnectedAsync(user, connectionId, HttpContext.RequestAborted), connectionId);
                     await connectionHandler.ReadMessagesAsync(webSocket, connectionId, user);
                 }
                 catch (Exception ex)
@@ -58,11 +63,25 @@ namespace HootOut.HootOutWebsockets.Controllers
                 {
                     await connectionManager.RemoveConnectionAsync(connectionId);
                     await pubSubService.RemoveAllConnectionSubscriptions(connectionId);
+                    await TrackPresenceAsync(() => presenceTracker.DisconnectedAsync(user, connectionId), connectionId);
                 }
             }
             else
             {
                 HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            }
+        }
+
+        /// <summary>Presence is not essential: if Valkey is down the chat must keep working.</summary>
+        private async Task TrackPresenceAsync(Func<Task> action, Guid connectionId)
+        {
+            try
+            {
+                await action();
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                logger.LogWarning(ex, "Presence update failed for connection {ConnectionId}", connectionId);
             }
         }
     }

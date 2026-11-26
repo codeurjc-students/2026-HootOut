@@ -16,7 +16,7 @@
     id="chat"
     class="chat-conversation grid grid-rows-[auto_1fr_auto] border-1 background-primary"
   >
-    <ChatInfo :chat-name="chatName" :back-link="backLink" />
+    <ChatInfo :chat-name="chatName" :back-link="backLink"> <slot></slot></ChatInfo>
     <ChatMessages />
     <ChatMessageBar :chat-name="chatName" />
   </div>

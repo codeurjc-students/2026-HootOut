@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import FilePreviewList from '@/components/shared/filePreview/FilePreviewList.vue'
+  import UserTag from '@/components/shared/UserTag.vue'
   import { dateTimeMapper } from '@/services/common/utils'
   import { conversationStore } from '@/stores/conversation'
   import { userInfoStore } from '@/stores/userInfo'
@@ -56,8 +57,8 @@
       class="chat-message px-4 py-2 border-bottom-1-dark"
       :class="{ 'background-soft': message.author.username == user.username }"
     >
-      <div>
-        <span class="font-semibold"> {{ message.author.username }}</span>
+      <div class="flex items-center">
+        <UserTag :user="message.author"></UserTag>
         <span class="px-4 text-sm"> {{ dateTimeMapper(message.createdAt) }} </span>
       </div>
 

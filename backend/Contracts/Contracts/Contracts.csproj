@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <Folder Include="ChatMessage\Responses\" />
-    <Folder Include="MediaFile\Services\" />
   </ItemGroup>
 
 </Project>

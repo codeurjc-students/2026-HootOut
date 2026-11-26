@@ -7,8 +7,8 @@ using HootOut.CommonIntegrationTests.PostgreSQL;
 using HootOut.CommonIntegrationTests.S3;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Infraestructure.DI;
-using HootOut.Users.Entities;
 using HootOut.MediaFiles.Entities;
+using HootOut.Users.Entities;
 using Npgsql;
 
 namespace HootOut.PostgreSQL.IntegrationTests.Savers.MediaFiles

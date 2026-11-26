@@ -2,6 +2,7 @@
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.ChatMessage.Requests;
 using HootOut.Contracts.ChatMessage.Services;
+using HootOut.Contracts.Users.Services;
 using HootOut.Contracts.WebSockets.Dtos;
 using HootOut.Contracts.WebSockets.Entities;
 using HootOut.Contracts.WebSockets.Handlers;
@@ -11,19 +12,22 @@ using Newtonsoft.Json;
 namespace HootOut.WebSockets.Actions
 {
     public class ChatMessageHandler : IWSMessageHandler
-    {  
+    {
 
         public WSHandlerType Type => WSHandlerType.ChatMessage;
         private IWSPubSubService wsPubSubService;
+        private IUserService userService;
 
         private IChatMessageService chatMessageService;
 
         public ChatMessageHandler(
             IWSPubSubService pubSubService,
-            IChatMessageService chatMessageService)
+            IChatMessageService chatMessageService,
+            IUserService userService)
         {
             this.wsPubSubService = pubSubService ?? throw new ArgumentNullException(nameof(pubSubService));
             this.chatMessageService = chatMessageService ?? throw new ArgumentNullException(nameof(chatMessageService));
+            this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
         public async Task HandleMessageAsync(Guid connectionId, WSUserInfo user, WebSocketMessage message, CancellationToken ct = default)
@@ -56,7 +60,7 @@ namespace HootOut.WebSockets.Actions
 
             ChatMessageDto savedMessage = await chatMessageService.CreateChatMessageAsync(request, ct);
 
-            savedMessage.Author?.Username = user.Username;
+            savedMessage.Author = await userService.GetUserDtoByIdAsync(user.UserId, ct);
 
             message.Payload = JsonConvert.SerializeObject(savedMessage);
 
