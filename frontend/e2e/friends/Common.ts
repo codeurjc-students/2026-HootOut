@@ -12,7 +12,9 @@ export async function submitFriendRequest(page: Page, username: string): Promise
   // Retried: the click can arrive before the view is ready to open the modal
   await expect(async () => {
     // With a timeout: actionTimeout is 0, and a click that cannot be done would never end
-    await page.getByRole('button', { name: 'Send friend request', exact: true }).click({ timeout: 2000 })
+    await page
+      .getByRole('button', { name: 'Send friend request', exact: true })
+      .click({ timeout: 2000 })
     await expect(modal).toBeVisible({ timeout: 1000 })
   }).toPass()
   await expect(page.locator('.modal-title')).toContainText('Send Friend Request')
@@ -71,7 +73,7 @@ export async function makeFriends(user1: NewUser, user2: NewUser): Promise<void>
 
 // Link of a friend in the friends list of the direct messages view
 export function friendLink(page: Page, username: string): Locator {
-  return page.locator('.chat-left-bar').getByRole('link', { name: username, exact: true })
+  return page.locator('.chat-left-bar').getByRole('link', { name: username })
 }
 
 export type DirectConversationIds = { directConversationId: string; chatConversationId: string }
