@@ -3,6 +3,7 @@ using HootOut.ChatMessages.Repositories;
 using HootOut.CommonDomain.Persistence;
 using HootOut.Contracts.ChatMessage.Dtos;
 using HootOut.Contracts.Common;
+using HootOut.Contracts.Common.Dto;
 using HootOut.Contracts.Users.Dtos;
 
 namespace HootOut.PostgreSQL.Repositories.ChatMessages
@@ -44,10 +45,13 @@ namespace HootOut.PostgreSQL.Repositories.ChatMessages
                     p."Id", p."CreatedAt", p."ModifiedAt", p."Content", p."ChatConversationId",
                     u."Id", u."Username", u."Email",
                     a."Id", a."MessageId", a."MediaFileId", a."CreatedAt",
-                    mf."FileName", mf."ContentType"
+                    mf."FileName", mf."ContentType",
+                    umf."Id" as MediaFileId, umf."FileName", umf."ContentType"
                 FROM page p
                 LEFT JOIN "HootOut"."UserInfo" u
                        ON u."Id" = p."AuthorId"
+                LEFT JOIN "HootOut"."MediaFile" umf
+                       ON u."ProfilePictureId" = umf."Id"
                 LEFT JOIN ("HootOut"."ChatMessageAttachment" a
                     INNER JOIN "HootOut"."MediaFile" mf
                             ON mf."Id" = a."MediaFileId" AND mf."Deleted" = false)
@@ -60,19 +64,25 @@ namespace HootOut.PostgreSQL.Repositories.ChatMessages
 
             await using var conn = await provider.OpenConnectionAsync(ct);
 
-            await conn.QueryAsync<ChatMessageDto, UserDto?, ChatMessageAttachmentDto?, ChatMessageDto>(
+            await conn.QueryAsync<ChatMessageDto, UserDto?, ChatMessageAttachmentDto?, PictureDto?, ChatMessageDto>(
                 new CommandDefinition(sql, new
                 {
                     ConversationId = conversationId,
                     Next = next,
                     Take = pageSize + 1
                 }, cancellationToken: ct),
-                (message, author, attachment) =>
+                (message, author, attachment, profilePicture) =>
                 {
                     if (!lookup.TryGetValue(message.Id, out var m))
                     {
                         m = message;
                         m.Author = author;
+
+                        if (m.Author != null && profilePicture!= null)
+                        {
+                            m.Author.ProfilePicture = profilePicture;
+                        }
+
                         lookup.Add(m.Id, m);
                         messages.Add(m);
                     }
@@ -82,7 +92,7 @@ namespace HootOut.PostgreSQL.Repositories.ChatMessages
 
                     return m;
                 },
-                splitOn: "Id,Id");
+                splitOn: "Id,Id,MediaFileId");
 
             var hasMore = messages.Count > pageSize;
             if (hasMore)

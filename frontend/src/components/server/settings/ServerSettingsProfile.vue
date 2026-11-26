@@ -16,7 +16,7 @@
       <div class="py-2 border-bottom-1">
         <div class="font-semibold">Server Profile Picture:</div>
         <RoundedProfilePicture
-          class="pointer m-4 h-40 w-40"
+          class="pointer m-4 h-40 w-40 text-[3rem]!"
           :img-url="currentServer.profilePicture?.url"
           :alt="currentServer.name.charAt(0).toUpperCase()"
           v-tooltip:right="currentServer.name"

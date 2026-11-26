@@ -2,6 +2,7 @@
   import ChatConversationView from '@/components/chat/ChatConversationView.vue'
   import ChatSideBar from '@/components/chat/ChatSideBar.vue'
   import FriendsBar from '@/components/directConversation/FriendsBar.vue'
+  import UserTag from '@/components/shared/UserTag.vue'
   import wsMessageService from '@/services/common/websocketsMessage/WebSocketsMessageService'
   import { conversationStore } from '@/stores/conversation'
   import { directConversationStore } from '@/stores/directConversation'
@@ -79,7 +80,9 @@
       :back-link="{
         name: 'directConversation',
       }"
-    />
+    >
+      <UserTag v-if="currentConversation" :user="currentConversation.friend"></UserTag>
+    </ChatConversationView>
   </section>
 </template>
 

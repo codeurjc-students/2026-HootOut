@@ -39,6 +39,7 @@
         const display = header.mapper ? (header.mapper(value) ?? value) : value
         row[header.key as keyof Object] = { value, display }
       }
+      row.data = item
       rows.push(row)
     }
     return rows

@@ -41,3 +41,15 @@ export function dateTimeMapper(date_string: string | null | undefined, locale?: 
     timeStyle: 'short',
   }).format(date)
 }
+
+const validPictureTypes = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/tiff',
+  'image/bmp',
+])
+
+export function isValidPicture(contentType: string): boolean {
+  return validPictureTypes.has(contentType)
+}

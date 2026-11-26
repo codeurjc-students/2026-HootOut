@@ -172,23 +172,15 @@ namespace HootOut.HootOutAPI.Controllers
 
         /// <summary>Members that are not online, paginated. Sorted by username ascending by default.</summary>
         [HttpGet("{id:guid}/members/offline")]
-        public async Task<ActionResult<PageResult<ServerMemberDto>>> GetOfflineServerMembers([FromRoute] Guid id, [FromQuery] string? sortBy, [FromQuery] Guid? next, [FromQuery] bool descending, [FromQuery] int? pageSize, CancellationToken ct)
+        public async Task<ActionResult<PageResult<ServerMemberDto>>> GetOfflineServerMembers([FromRoute] Guid id, PageRequest request, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
             if (userId is null)
-                return Unauthorized();
-
-            var page = new PageRequest
-            {
-                Next = next,
-                Descending = descending,
-                PageSize = pageSize ?? 50,
-                SortBy = sortBy
-            };
+                return Unauthorized(); 
 
             return await CommandLaunchHelper.LaunchAsync(
                logger,
-               async () => await memberPresenceService.GetOfflineMembersAsync(id, Guid.Parse(userId), page, ct),
+               async () => await memberPresenceService.GetOfflineMembersAsync(id, Guid.Parse(userId), request, ct),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );

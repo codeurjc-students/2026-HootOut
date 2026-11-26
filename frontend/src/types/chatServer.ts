@@ -64,6 +64,7 @@ export interface ServerMember {
   id: string
   username: string
   userId: string
+  profilePicture?: Picture | undefined
   createdAt: string
 }
 

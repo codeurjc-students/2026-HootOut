@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace HootOut.Contracts.Common.Dto
+﻿namespace HootOut.Contracts.Common.Dto
 {
     public sealed record PictureDto
     {

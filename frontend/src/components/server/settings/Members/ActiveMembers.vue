@@ -5,26 +5,14 @@
   import { dateTimeMapper } from '@/services/common/utils'
   import { serverInfoStore } from '@/stores/serverInfo'
   import type { PageResult, ServerMember, PageRequest } from '@/types'
-  import PresenceIndicator from '@/components/shared/presence/PresenceIndicator.vue'
-  import wsMessageService from '@/services/common/websocketsMessage/WebSocketsMessageService'
   import { storeToRefs } from 'pinia'
-  import { onMounted } from 'vue'
+  import UserTag from '@/components/shared/UserTag.vue'
 
   const { currentServer } = storeToRefs(serverInfoStore())
 
   async function getServerMembers(request: PageRequest): Promise<PageResult<ServerMember>> {
     return await ChatServerService.getServerMembers(currentServer.value!.id, request)
   }
-
-  // The presence of the members arrives through the websocket. The settings are not inside the
-  // chat, so the page may have been loaded here without connecting it
-  onMounted(async () => {
-    try {
-      await wsMessageService.tryReconnect()
-    } catch {
-      // The members are shown offline; the automatic reconnection keeps trying
-    }
-  })
 </script>
 
 <template>
@@ -47,8 +35,7 @@
       >
         <template v-slot:cell-username="{ row }">
           <span class="inline-flex items-center gap-2">
-            <PresenceIndicator :user-id="row.userId" />
-            {{ row.username.display }}
+            <UserTag :user="row.data" :user-id="row.data.userId"></UserTag>
           </span>
         </template>
       </PaginatedTable>

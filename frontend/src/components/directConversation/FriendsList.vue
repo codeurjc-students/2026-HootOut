@@ -5,6 +5,7 @@
   import InfiniteScrollList from '../shared/infiniteScroll/InfiniteScrollList.vue'
   import PresenceIndicator from '../shared/presence/PresenceIndicator.vue'
   import { directConversationStore, type FriendConversation } from '@/stores/directConversation'
+  import UserTag from '../shared/UserTag.vue'
 
   const friends = ref<FriendConversation[]>([])
   const dc = directConversationStore()
@@ -54,8 +55,7 @@
         @click="updateCurrentConversation(asFriendConversation(item))"
       >
         <span class="flex min-w-0 items-center gap-2">
-          <PresenceIndicator :user-id="asFriendConversation(item).friend.id" />
-          <span class="truncate">{{ asFriendConversation(item).friend.username }}</span>
+          <UserTag :user="asFriendConversation(item).friend"></UserTag>
         </span>
       </RouterLink>
     </template>

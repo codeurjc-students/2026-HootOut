@@ -2,11 +2,13 @@
 using FluentValidation.Results;
 using HootOut.ChatServers.Entities;
 using HootOut.ChatServers.Repositories;
+using HootOut.CommonDomain.FileStorage;
 using HootOut.Contracts.ChatServers.Dtos;
 using HootOut.Contracts.ChatServers.Services;
 using HootOut.Contracts.Common;
 using HootOut.Contracts.Common.Presence;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 
 namespace HootOut.ChatServers.Services
 {
@@ -35,15 +37,18 @@ namespace HootOut.ChatServers.Services
         // fails (e.g. REDIS_HOST missing) it must fail here, inside the try, and not when the controller is created,
         // which would break every endpoint of ChatServersController
         private readonly Lazy<IPresenceStore> presenceStore;
+        private IMediaUrlService mediaUrlService;
 
         public ServerMemberPresenceService(
             ILogger<ServerMemberPresenceService> logger,
             IServerMemberRepository memberRepository,
-            Lazy<IPresenceStore> presenceStore)
+            Lazy<IPresenceStore> presenceStore,
+            IMediaUrlService mediaUrlService)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.memberRepository = memberRepository ?? throw new ArgumentNullException(nameof(memberRepository));
             this.presenceStore = presenceStore ?? throw new ArgumentNullException(nameof(presenceStore));
+            this.mediaUrlService = mediaUrlService ?? throw new ArgumentNullException(nameof(mediaUrlService));
         }
 
         public async Task<OnlineServerMembersDto> GetOnlineMembersAsync(Guid serverId, Guid userId, CancellationToken ct = default)
@@ -54,8 +59,17 @@ namespace HootOut.ChatServers.Services
             if (onlineIds.Count == 0)
                 return new OnlineServerMembersDto();
 
-            var items = await memberRepository.GetServerMemberDtosByUserIdsAsync(serverId, onlineIds, MaxOnlineMembers, ct);
-            return new OnlineServerMembersDto { Items = items, Total = onlineIds.Count };
+            var members = await memberRepository.GetServerMemberDtosByUserIdsAsync(serverId, onlineIds, MaxOnlineMembers, ct);
+
+            foreach (var member in members)
+            {
+                if (member.ProfilePicture != null)
+                {
+                    member.ProfilePicture.Url = await mediaUrlService.GetViewUrlAsync(member.ProfilePicture.MediaFileId, member.ProfilePicture.ContentType, member.ProfilePicture.FileName) ?? "";
+                }
+            } 
+
+            return new OnlineServerMembersDto { Items = members, Total = onlineIds.Count };
         }
 
         public async Task<PageResult<ServerMemberDto>> GetOfflineMembersAsync(Guid serverId, Guid userId, PageRequest request, CancellationToken ct = default)
@@ -69,7 +83,17 @@ namespace HootOut.ChatServers.Services
                 ? request with { SortBy = DefaultOfflineSort }
                 : request;
 
-            return await memberRepository.GetServerMemberDtosAsync(serverId, sorted, onlineIds, ct);
+            var members = await memberRepository.GetServerMemberDtosAsync(serverId, sorted, onlineIds, ct); 
+            foreach (var member in members.Items)
+            {
+                if (member.ProfilePicture != null)
+                {
+                    member.ProfilePicture.Url = await mediaUrlService.GetViewUrlAsync(member.ProfilePicture.MediaFileId, member.ProfilePicture.ContentType, member.ProfilePicture.FileName) ?? "";
+                }
+            }
+
+            return members;
+
         }
 
         private async Task<IReadOnlyCollection<Guid>> GetOnlineMemberIdsAsync(Guid serverId, CancellationToken ct)

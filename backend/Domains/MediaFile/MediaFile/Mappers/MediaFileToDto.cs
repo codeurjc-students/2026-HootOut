@@ -12,6 +12,7 @@ namespace HootOut.MediaFiles.Mappers
                 Id = mediaFile.Id,
                 FileName = mediaFile.FileName,
                 OwnerId = mediaFile.OwnerId,
+                ContentType = mediaFile.ContentType,
                 Md5 = mediaFile.Checksum,
                 Url = mediaFile.Url,
             };

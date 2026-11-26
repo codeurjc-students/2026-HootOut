@@ -3,6 +3,7 @@ using FluentValidation.Results;
 using HootOut.ChatMessages.Entities;
 using HootOut.ChatMessages.Mappers;
 using HootOut.ChatMessages.Repositories;
+using HootOut.CommonDomain.FileStorage;
 using HootOut.Contracts.ChatConversations.Enums;
 using HootOut.Contracts.ChatConversations.Services;
 using HootOut.Contracts.ChatMessage.Dtos;
@@ -12,6 +13,7 @@ using HootOut.Contracts.ChatServers.Services;
 using HootOut.Contracts.Common;
 using HootOut.Contracts.Common.Saver;
 using HootOut.Contracts.Friends.Services;
+using HootOut.Contracts.Users.Dtos;
 
 namespace HootOut.ChatMessages.Services
 {
@@ -24,6 +26,7 @@ namespace HootOut.ChatMessages.Services
         private readonly IChatServerService chatServerService;
         private readonly IFriendsService friendsService;
         private readonly IChatConversationsService chatConversationsService;
+        private readonly IMediaUrlService mediaUrlService;
 
         public ChatMessageService(
             ISaver<ChatMessage> saver,
@@ -31,7 +34,8 @@ namespace HootOut.ChatMessages.Services
             IChatMessageAttachmentService attachmentService,
             IChatServerService chatServerService,
             IFriendsService friendsService,
-            IChatConversationsService chatConversationsService
+            IChatConversationsService chatConversationsService,
+            IMediaUrlService mediaUrlService
             )
         {
             this.saver = saver ?? throw new ArgumentNullException(nameof(saver));
@@ -40,6 +44,7 @@ namespace HootOut.ChatMessages.Services
             this.chatServerService = chatServerService ?? throw new ArgumentNullException(nameof(chatServerService));
             this.friendsService = friendsService ?? throw new ArgumentNullException(nameof(friendsService));
             this.chatConversationsService = chatConversationsService ?? throw new ArgumentNullException(nameof(chatConversationsService));
+            this.mediaUrlService = mediaUrlService ?? throw new ArgumentNullException(nameof(mediaUrlService));
         }
         public async Task<PageResult<ChatMessageDto>> GetMessagesByConversationIdAsync(Guid conversationId, Guid? next, int pageSize = 10, CancellationToken ct = default)
         {
@@ -52,6 +57,11 @@ namespace HootOut.ChatMessages.Services
             foreach (var message in messages.Items)
             {
                 await attachmentService.SetAttachmentsUrl(message.Attachments, ct);
+                var authorPicture = message?.Author?.ProfilePicture;
+                if (authorPicture != null)
+                {
+                    authorPicture.Url = await mediaUrlService.GetViewUrlAsync(authorPicture.MediaFileId, authorPicture.ContentType, authorPicture.FileName) ?? ""; 
+                }
             }
 
             return messages;

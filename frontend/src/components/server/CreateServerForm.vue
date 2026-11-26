@@ -1,6 +1,6 @@
 <script lang="ts" setup>
   import ChatServerService from '@/services/chatServer/ChatServerService'
-  import { getValidationErrors } from '@/services/common/utils'
+  import { getValidationErrors, isValidPicture } from '@/services/common/utils'
   import MediaFileService from '@/services/mediaFile/MediaFileService'
   import { ApiError, ValidationError, type ChatServer, type UploadFileResponse } from '@/types'
   import { computed, reactive, ref } from 'vue'
@@ -65,12 +65,7 @@
     try {
       const response = await MediaFileService.uploadFile(file)
       if (response) {
-        if (!(
-          response.contentType.includes('png') ||
-          response.contentType.includes('jpg') ||
-          response.contentType.includes('jpeg') ||
-          response.contentType.includes('webp')
-        )) {
+        if (!isValidPicture(response.contentType)) {
           const err = new Map<string, string>()
           err.set('error', 'This file type is not valid for the server profile picture')
           formErrors.value.set('ProfilePicture', err)
@@ -97,6 +92,7 @@
     form.name = ''
     form.description = ''
     submitting.value = false
+    profilePicture.value = undefined
   }
 </script>
 

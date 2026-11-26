@@ -15,7 +15,7 @@ namespace HootOut.Contracts.ChatServers.Dtos
 
         public List<ChatChannelDto> Channels { get; set; } = [];
 
-        public PictureDto? ProfilePicture { get; set;}
+        public PictureDto? ProfilePicture { get; set; }
 
         public DateTime CreatedAt { get; set; }
 

@@ -1,4 +1,6 @@
-﻿using HootOut.Contracts.Users.Dtos;
+﻿using HootOut.Contracts.Common.Dto;
+using HootOut.Contracts.Users.Dtos;
+using HootOut.Contracts.Users.Requests;
 using HootOut.Contracts.Users.Services;
 using HootOut.HootOutAPI.Helpers;
 using Microsoft.AspNetCore.Mvc;
@@ -35,6 +37,25 @@ namespace HootOut.HootOutAPI.Controllers
             return await CommandLaunchHelper.LaunchAsync(
                logger,
                async () => await userService.GetUserDtoByIdAsync(Guid.Parse(userIdString), ct),
+               BadRequest,
+               (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
+           );
+        }
+
+        [HttpPut("profile/picture")]
+        public async Task<ActionResult<PictureDto>> UpdateProfilePicture(UpdateProfilePictureRequest request, CancellationToken ct)
+        {
+            ClaimsPrincipal principal = HttpContext.User;
+            var userIdString = principal.FindFirstValue("sub");
+
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return StatusCode(StatusCodes.Status401Unauthorized);
+            }
+
+            return await CommandLaunchHelper.LaunchAsync(
+               logger,
+               async () => await userService.UpdateProfilePictureAsync(request.MediaFileId, Guid.Parse(userIdString), ct),
                BadRequest,
                (err) => StatusCode(StatusCodes.Status500InternalServerError, err)
            );

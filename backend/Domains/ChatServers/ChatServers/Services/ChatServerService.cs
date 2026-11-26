@@ -62,8 +62,6 @@ namespace HootOut.ChatServers.Services
 
             await serverSaver.SaveAsync(newServer, ct);
 
-
-
             var member = Persistable.CreateNew<ServerMember>();
             member.ChatServerId = newServer.Id;
             member.UserId = ownerId;
@@ -83,7 +81,7 @@ namespace HootOut.ChatServers.Services
         public async Task<PageResult<ChatServerDto>> GetServerDtosByUserIdAsync(PageRequest request, Guid userId, CancellationToken ct = default)
         {
             var servers = await serverRepository.GetServerDtosByUserIdAsync(request, userId, ct);
-            foreach(var server in servers.Items)
+            foreach (var server in servers.Items)
             {
                 if (server.ProfilePicture != null)
                 {
@@ -108,7 +106,17 @@ namespace HootOut.ChatServers.Services
         {
             await ValidateUserIsInServer(serverId, userId, ct);
 
-            return await memberRepository.GetServerMemberDtosAsync(serverId, request, ct);
+            var members = await memberRepository.GetServerMemberDtosAsync(serverId, request, ct);
+
+            foreach (var member in members.Items)
+            {
+                if (member.ProfilePicture != null)
+                {
+                    member.ProfilePicture.Url = await mediaUrlService.GetViewUrlAsync(member.ProfilePicture.MediaFileId, member.ProfilePicture.ContentType, member.ProfilePicture.FileName) ?? "";
+                }
+            }
+
+            return members;
         }
 
         public async Task<PageResult<ServerInvitationDto>> GetServerInvitationsAsync(Guid serverId, Guid userId, PageRequest request, CancellationToken ct = default)

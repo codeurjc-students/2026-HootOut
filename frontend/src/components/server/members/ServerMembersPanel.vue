@@ -6,10 +6,11 @@
   import { presenceStore } from '@/stores/presence'
   import { serverMembersStore } from '@/stores/serverMembers'
   import type { ServerMember } from '@/types'
+  import UserTag from '@/components/shared/UserTag.vue'
 
   const { serverId } = defineProps<{ serverId?: string }>()
 
-  const store = serverMembersStore()
+  const serverMembers = serverMembersStore()
   const {
     loading,
     error,
@@ -20,22 +21,22 @@
     onlineCount,
     offlineCount,
     hiddenOnlineCount,
-  } = storeToRefs(store)
+  } = storeToRefs(serverMembers)
 
   // The presence of the members (who is online) comes from the websocket. PresenceSync
   // subscribes to the server of the route, this only listens
-  const stopListening = presenceStore().onServerPresence(store.handlePresenceEvent)
+  const stopListening = presenceStore().onServerPresence(serverMembers.handlePresenceEvent)
 
   watch(
     () => serverId,
-    (id) => store.load(id),
+    (id) => serverMembers.load(id),
     { immediate: true }
   )
 
   onBeforeUnmount(stopListening)
 
   function retry() {
-    void store.load(serverId)
+    void serverMembers.load(serverId)
   }
 
   const asMember = (item: unknown) => item as ServerMember
@@ -67,8 +68,7 @@
             class="member flex items-center gap-2 truncate"
             data-member-status="online"
           >
-            <PresenceIndicator :user-id="member.userId" />
-            <span class="truncate">{{ member.username }}</span>
+            <UserTag :user="member" :user-id="member.userId"></UserTag>
           </li>
         </ul>
         <p v-if="hiddenOnlineCount > 0" class="mt-1 text-xs opacity-70">
@@ -84,19 +84,20 @@
         <InfiniteScrollList
           :key="offlineListVersion"
           :items="offlineMembers"
-          :load-more="store.loadOfflinePage"
+          :load-more="serverMembers.loadOfflinePage"
           class="flex flex-col gap-1 opacity-70"
         >
           <template v-slot:scroll-item="{ item }">
             <div class="member flex items-center gap-2 truncate" data-member-status="offline">
-              <PresenceIndicator :user-id="asMember(item).userId" />
-              <span class="truncate">{{ asMember(item).username }}</span>
+              <UserTag :user="asMember(item)"></UserTag>
             </div>
           </template>
         </InfiniteScrollList>
         <div v-if="offlineError" class="mt-2 text-xs" role="alert">
           <p>Could not load the offline members.</p>
-          <button type="button" class="underline" @click="store.retryOffline()">Retry</button>
+          <button type="button" class="underline" @click="serverMembers.retryOffline()">
+            Retry
+          </button>
         </div>
       </section>
     </div>
