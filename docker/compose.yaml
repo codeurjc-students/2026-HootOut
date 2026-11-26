@@ -125,7 +125,9 @@ services:
       VALKEYCLI_AUTH: ${REDIS_PASSWORD}
       REDISCLI_AUTH: ${REDIS_PASSWORD}
     ports:
-      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+      - target: 6379
+        published: "${REDIS_PORT:-6379}"
+        protocol: tcp
     healthcheck:
       test: ["CMD-SHELL", "valkey-cli ping | grep -q PONG"]
       interval: 5s
