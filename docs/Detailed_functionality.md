@@ -3,15 +3,15 @@
 ## Basic Functionality:
 
 - Unregistered users will have access only to public facing pages, such as the Landing Page, Register and Login. (done)
-- Users can register with an email (unique), username (unique) and a password. They will be able to upload a profile picture after registration. (done except profile pictures)
-- Users can send a friend request to another user by username.
-- Two users that are friends can send direct messages between them.
+- Users can register with an email (unique), username (unique) and a password. They will be able to upload a profile picture after registration. (done)
+- Users can send a friend request to another user by username. (done)
+- Two users that are friends can send direct messages between them. (done)
 - Users can create a group chat, called "Server. The Server will have a server name, a short description and a Server picture. (done)
 - The creator of the Server will be able to edit name, description and picture. They will be able to delete the Server.
 - Users that join a Server, will be able to add users to a Server. (done)
 - Users inside a Server will be able to create, edit and delete Channels inside a Server. A Channel will only have a name. (done)
 - Users will be able to send messages inside a Channel of a Server they are part of. (done)
-- All messages will have the username, the profile picture, the local time when the message was stored on the server and the message content. (done except profile pictures)
+- All messages will have the username, the profile picture, the local time when the message was stored on the server and the message content. (done)
 - Messages can include text, pictures, GIFs, videos, audio files, and documents. The user will be able to download them. (done)
 - Messages composed of text, pictures, GIFs, videos or audio will be displayed on the applications. (done)
 - Users will have a connection status. These statuses are connected or disconnected. Users will be able to see friend and Server members status.
