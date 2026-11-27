@@ -1,5 +1,14 @@
 ## [0.2.0] - Unreleased
 
+- Users can see the profile picture of friends, server members and in direct messages
+- Users can upload a profile picture from server settings
+- Users can upload a profile picture when creating a new server
+- Users can see the connection status of friends and server members
+- Users have a connection status
+- Users can send direct messages to friends
+- Users can accept, reject or revoke friend requests
+- Users can send friend requests to other Users
+
 ## [0.1.0] - 2026/11/12
 
 #### Added
