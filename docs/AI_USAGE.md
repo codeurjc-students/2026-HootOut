@@ -158,3 +158,21 @@ Add some unit and integration test to the project, both in the backend and in th
 ##### Usage:
 
 Chat with claude code passing tests requirements for some component testing in the frontend, and in the backend for testing the postgresql repositories, and making some changes suggested by claude
+
+#### Objective: User connection status functionallity
+
+##### Date:
+
+25/11/2026
+
+##### Tool:
+
+Claude Chat, Opus 5.5 Medium
+
+##### Problems to solve:
+
+We want to display the connection status of users on the application. This will be shown on various parts of the application (chat view, friend list, server members, etc). Having a distributed architecture, we don't have a way to know what users are connected at any point in time. So we need a system
+
+##### Usage:
+
+Chat with Claude to plan the architecture. After debating some alternatives (using only postgres to log when a user connects and disconnect, having rabbit queues to sync between servers the connected users, adding redis to record user connections with ttl entries). After landing on a solution, adding adding redis to record user connections with ttl entries, and use rabbitmq to notify of connection updates, code with claude to write some code following the existing coding practices and write tests for it.
