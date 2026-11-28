@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { PresenceStatus, WSMessageType, type WebSocketMessage } from '@/types'
+import { userInfoStore } from './userInfo'
 
 // Channel of the snapshot of the friends that the server sends right after connecting
 export const FRIENDS_SNAPSHOT_CHANNEL = 'friends'
@@ -54,6 +55,8 @@ export const presenceStore = defineStore('presence', () => {
   // Server whose members are being followed (the server of the route), already normalized
   const currentServerId = ref<string>()
 
+  const userStore = userInfoStore()
+
   // Users followed through their own channel (the friends, from the snapshot of the friends and
   // from presence.user.<id>). Their status stays up to date when the server changes.
   // It is not returned by the store: nothing outside needs it
@@ -80,6 +83,10 @@ export const presenceStore = defineStore('presence', () => {
 
   function isOnline(userId: string | null | undefined): boolean {
     if (!userId) return false
+    if (userStore?.user?.id === userId) {
+      // User is always connected
+      return true
+    }
     return statuses.value[normalizeId(userId)] === PresenceStatus.Online
   }
 

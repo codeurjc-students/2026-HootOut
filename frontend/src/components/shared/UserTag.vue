@@ -17,7 +17,7 @@
         :img-url="user.profilePicture?.url"
         alt="account_circle"
       ></RoundedProfilePicture>
-      <PresenceIndicator class="absolute right-0 bottom-0" :user-id="presenceId" />
+      <PresenceIndicator class="absolute right-0 bottom-1" :user-id="presenceId" />
     </div>
     <div class="username mx-2">{{ user?.username }}</div>
   </div>
